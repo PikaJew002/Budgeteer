@@ -27,6 +27,8 @@
     },
     "dependencies": {
         "bootstrap-vue": "^2.1.0",
+        "kind-of": "^6.0.3",
+        "minimist": "^1.2.5",
         "moment": "^2.24.0",
         "serialize-javascript": "^2.1.1",
         "vuelidate": "^0.7.4"
