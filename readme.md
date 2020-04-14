@@ -19,14 +19,17 @@ So, I get paid for 13 "months", but have 12 months of bills. How do I decide wha
 ## The Solution
 
 The solution that Budgeteer gives is this: you define the monthly bills and when you get paid, assign bills to paychecks. That's it. Simple, low-complexity solution.
-Currently, I'll be hosting the app on my own private server for my own private use. But here's the source code. If you like it, you can use it!
-
-In the near future, it will live at budgeteer.ironmthome.com, for production testing purposes. If and when that happens shoot me an email if you'd like to use it. The only thing I ask is that you'd provide me with come feedback, in exchange for use of my server space. We both win! You get a soon to be great budget app and I get user feedback!
+Currently, I'm hosting the app on some personal shared hosting. But here's the source code. If you like it, you can use it! When a new user registers, I get notified and I'll reach out to you to provide some first steps like docs (pre-documentation, if you will).
 
 ## Entered Testing Phase!
 
-Yay! I've deployed the app at [here](https://www.budgeteer.ironmthome.com) and public registration is open. However, to be able to login in after registration you'll need to be verified. So after registration shoot budgeteer@ironmthome.com an email and I'll verify your account. As I have no documentation on how to use the app (yet) or real testing data, I may ask you to fill out a short survey about the applicaiton and tell me about any problems you had/bugs. Or submit an issue on GitHub (here). Anyways, hope those who use it find it helpful and can help me out. Cheers!
--AE (PikaJew002)
+Yay! I've deployed the app at [here](https://www.budgeteer.ironmthome.com) and public registration is open. However, to be able to login in after registration you'll need to be verified. So after registration, I get a notification, I'll verify your account and provide some basic guidelines for using the app. As I have no documentation on how to use the app (yet) or real testing data, if you have ideas or just general feedback shoot me an email. If you'd like to rip me a new one anonymously, I'll be throwing up a feedback form, which won't include an idetifier leading back to you. Or submit an issue here on GitHub. Anyways, hope those who use it find it helpful and can give me any kind of feedback. Cheers!
+-AE
+
+## Roadmap
+
+ * 4/13/20 - added sorting in monthly bills and paychecks automatically (by paid on in paychecks and day due on in bills)
+ * (Sometime in the future?) - adding functionality to split bills across paychecks within an individual month
 
 ## License
 
