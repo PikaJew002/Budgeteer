@@ -8,7 +8,7 @@
             Bills <button type="button" :disabled="showmakebill" class="btn btn-outline-base btn-sm" @click="makeBill()">+</button>
           </div>
           <hr>
-          <collection :items="billsMonth"
+          <collection :items="billsMonthSorted"
                       type="bills"
                       :month="[month, year]"
                       :size="1"
@@ -22,7 +22,7 @@
             Paychecks <button type="button" :disabled="showmakepaycheck" class="btn btn-outline-base btn-sm" @click="makePaycheck()">+</button>
           </div>
           <hr>
-          <collection :items="paychecksMonth"
+          <collection :items="paychecksMonthSorted"
                       type="paychecks"
                       :size="1"
                       @open-item="itemSelected"
@@ -141,6 +141,12 @@
         });
       },
       /**
+        Gets the paychecks that fall within "this" month, sorted
+        */
+      paychecksMonthSorted() {
+        return this.paychecksMonth.sort(this.comparePaychecks);
+      },
+      /**
         Gets the incomes load status
         */
       incomesLoadStatus() {
@@ -159,12 +165,41 @@
         return this.bills.filter((bill) => {
           return moment(this.startDate).isSameOrBefore(bill.end_on) && moment(this.endDate).isSameOrAfter(bill.start_on);
         });
-      }
+      },
+      /**
+        Gets the paychecks that fall within "this" month, sorted
+        */
+      billsMonthSorted() {
+        return this.billsMonth.sort(this.compareBills);
+      },
     },
 
     methods: {
       itemSelected(id, event) {
 
+      },
+
+      comparePaychecks(a, b) {
+        let comparison = 0;
+        if(moment(a.paid_on).isBefore(b.paid_on)) {
+          comparison = -1;
+        } else if (moment(a.paid_on).isAfter(b.paid_on)) {
+          comparison = 1;
+        }
+        return comparison;
+      },
+
+      compareBills(a, b) {
+        if(a == null || b == null) {
+          return 0;
+        }
+        let comparison = 0;
+        if(a.day_due_on < b.day_due_on) {
+          comparison = -1;
+        } else if (a.day_due_on > b.day_due_on) {
+          comparison = 1;
+        }
+        return comparison;
       },
 
       makeBill() {
