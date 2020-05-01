@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\User;
+use App\Notifications\UserVerified;
+use Auth;
 use App\Http\Resources\UserResource;
 use Illuminate\Http\Request;
 
@@ -15,7 +17,7 @@ class UsersController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api');
+        $this->middleware('auth:api')->except(['verify', 'verified']);
     }
 
     /**
@@ -48,6 +50,37 @@ class UsersController extends Controller
     public function store(Request $request)
     {
         //
+    }
+
+    /**
+     * Change resource verified column from false to true.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function verify(Request $request, User $user)
+    {
+        if(Auth::user()->id == 1) {
+            if($user->verified == false) {
+                $user->verified = true;
+                $user->save();
+                $user->notify(new UserVerified);
+            }
+            return redirect()->route('user.verified', ['user' => $user->id]);
+        } else {
+            return redirect()->route('app');
+        }
+    }
+
+    /**
+     * Change resource verified column from false to true.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function verified(Request $request, User $user)
+    {
+        return view('user_verified', ['user' => $user]);
     }
 
     /**

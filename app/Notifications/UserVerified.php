@@ -3,13 +3,11 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Notifications\Notification;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
-use App\User;
-
-class UserRegistered extends Notification implements ShouldQueue
+class UserVerified extends Notification implements ShouldQueue
 {
     use Queueable;
 
@@ -18,15 +16,10 @@ class UserRegistered extends Notification implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct()
     {
-        $this->user = $user;
+        //
     }
-    /**
-     *
-     * @var User $user
-     */
-    public $user;
 
     /**
      * Get the notification's delivery channels.
@@ -47,13 +40,12 @@ class UserRegistered extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
-        $url = url('/user/verify/'.$this->user->id);
         return (new MailMessage)
-                    ->line('A user has registered to Budgeteer!')
-                    ->line('Name: '.$this->user->name)
-                    ->line('Email: '.$this->user->email)
-                    ->line('Click below to verify new user')
-                    ->action('Verify User', $url);
+                    ->line($notifiable->name.', ')
+                    ->line('Your account at Budgeteer has been verified!')
+                    ->line('Login to start using Budgeteer.')
+                    ->action('Login', url('/login'))
+                    ->line('Thank you for using our application!');
     }
 
     /**

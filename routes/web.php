@@ -20,8 +20,11 @@ Route::get('/', function () {
 
 Auth::routes();
 
-Route::get('/', 'Web\AppController@getApp');
+Route::get('/', 'Web\AppController@getApp')->name('app');
 Route::get('/logout', 'Web\AppController@getLogout')->name('logout');
+
+Route::get('/user/verify/{user}', ['as' => 'user.verify', 'uses' => 'UsersController@verify'])->middleware('auth');
+Route::get('/user_verified/{user}', ['as' => 'user.verified', 'uses' => 'UsersController@verified'])->middleware('auth');
 //Route::post('/login', 'Web\AppController@postLogin');
 // Route::post('login', function (Request $request) {
 //
