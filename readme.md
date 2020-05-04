@@ -29,6 +29,7 @@ Yay! I've deployed the app at [here](https://www.budgeteer.ironmthome.com) and p
 ## Roadmap
 
  * 4/13/20 - added sorting in monthly bills and paychecks automatically (by paid on in paychecks and day due on in bills)
+ * 5/4/20 - added "Notify when paid" feature to paychecks
  * (Sometime in the future?) - adding functionality to split bills across paychecks within an individual month
 
 ## License
