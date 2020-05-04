@@ -57,7 +57,8 @@
               <input type="checkbox" class="custom-control-input" id="notify" v-model="paycheck.notify_when_paid" :disabled="!isNotifiable">
               <label class="custom-control-label" for="notify">Notify when paid?</label>
             </div>
-            <span class="text-muted">You'll receive an email</span>
+            <span v-if="isNotifiable">You'll receive an email</span>
+            <span v-else class="text-muted">You can't recieve a notification from the past...</span>
           </div>
         </div>
         <div class="form-group">
@@ -68,7 +69,8 @@
                   id="paid_on"
                   type="date"
                   placeholder="mm/dd/yyyy"
-                  v-model.date="paycheck.paid_on" @change="onPaidOnChange()">
+                  v-model.date="paycheck.paid_on"
+                  @change="onPaidOnChange()">
           <div v-if="!$v.paycheck.paid_on.required" class="invalid-feedback">
             A valid date is required
           </div>
