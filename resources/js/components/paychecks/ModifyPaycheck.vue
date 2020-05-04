@@ -40,7 +40,7 @@
                                'is-valid': !$v.paycheck.amount.$invalid && !$v.paycheck.amount.$pending }">
             </div>
             <div class="custom-control custom-checkbox">
-              <input type="checkbox" class="custom-control-input" id="projected" v-model="projected" @change="onCheck()">
+              <input type="checkbox" class="custom-control-input" id="projected" v-model="projected" @change="onCheckProjected()">
               <label class="custom-control-label" for="projected">Projected?</label>
             </div>
             <div v-if="!$v.paycheck.amount.required || !$v.paycheck.amount_project.required" class="invalid-feedback d-block">
@@ -57,7 +57,8 @@
               <input type="checkbox" class="custom-control-input" id="notify" v-model="paycheck.notify_when_paid" :disabled="!isNotifiable">
               <label class="custom-control-label" for="notify">Notify when paid?</label>
             </div>
-            <span class="text-muted">You'll receive an email</span>
+            <span v-if="isNotifiable">You'll receive an email</span>
+            <span v-else class="text-muted">You can't recieve a notification from the past...</span>
           </div>
         </div>
         <div class="row">
@@ -73,7 +74,8 @@
                   id="paid_on"
                   type="date"
                   placeholder="mm/dd/yyyy"
-                  v-model.date="paycheck.paid_on">
+                  v-model.date="paycheck.paid_on"
+                  @change="onPaidOnChange()">
           <div v-if="!$v.paycheck.paid_on.required" class="invalid-feedback">
             A valid date is required
           </div>
@@ -194,13 +196,18 @@
           this.paycheck.amount_project = Number(this.paycheck.amount_project).toFixed(2);
         }
       },
-      onCheck() {
+      onCheckProjected() {
         if(this.projected) {
           this.paycheck.amount_project = this.paycheck.amount;
           this.paycheck.amount = null;
         } else {
           this.paycheck.amount = this.paycheck.amount_project;
           this.paycheck.amount_project = null;
+        }
+      },
+      onPaidOnChange() {
+        if(this.paycheck.notify_when_paid && !this.isNotifiable) {
+          this.paycheck.notify_when_paid = false;
         }
       }
     },
