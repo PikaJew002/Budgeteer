@@ -40,7 +40,7 @@
                                'is-valid': !$v.paycheck.amount.$invalid && !$v.paycheck.amount.$pending }">
             </div>
             <div class="custom-control custom-checkbox">
-              <input type="checkbox" class="custom-control-input" id="projected" v-model="projected" @change="onCheck()">
+              <input type="checkbox" class="custom-control-input" id="projected" v-model="projected" @change="onCheckProjected()">
               <label class="custom-control-label" for="projected">Projected?</label>
             </div>
             <div v-if="!$v.paycheck.amount.required || !$v.paycheck.amount_project.required" class="invalid-feedback d-block">
@@ -51,6 +51,21 @@
             </div>
           </div>
         </div>
+        <div class="row">
+          <div class="col form-group" v-if="this.paycheck.notified_at == null || isNotifiable">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="notify" v-model="paycheck.notify_when_paid" :disabled="!isNotifiable">
+              <label class="custom-control-label" for="notify">Notify when paid?</label>
+            </div>
+            <span v-if="isNotifiable">You'll receive an email</span>
+            <span v-else class="text-muted">You can't recieve a notification from the past...</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col" v-if="this.paycheck.notified_at != null">
+            You've already been notified for this paycheck, if you change the paid on date to today or later, another notification will be sent on that day.
+          </div>
+        </div>
         <div class="form-group">
           <label for="paid_on">Paid On: </label>
           <input class="form-control"
@@ -59,7 +74,8 @@
                   id="paid_on"
                   type="date"
                   placeholder="mm/dd/yyyy"
-                  v-model.date="paycheck.paid_on">
+                  v-model.date="paycheck.paid_on"
+                  @change="onPaidOnChange()">
           <div v-if="!$v.paycheck.paid_on.required" class="invalid-feedback">
             A valid date is required
           </div>
@@ -83,6 +99,7 @@
 <script>
   import { BModal, BAlert, BButton } from 'bootstrap-vue';
   import { helpers, required, requiredIf, minValue } from 'vuelidate/lib/validators';
+  import moment from 'moment';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
@@ -110,6 +127,8 @@
           income_id: 0,
           amount_project: null,
           amount: null,
+          notified_at: null,
+          notify_when_paid: false,
           paid_on: ""
         }
       };
@@ -150,6 +169,8 @@
           this.paycheck.amount_project = null;
           this.projected = false;
         }
+        this.paycheck.notified_at = obj.notified_at;
+        this.paycheck.notify_when_paid = obj.notify_when_paid;
         this.paycheck.paid_on = obj.paid_on;
         this.showModal = true;
       });
@@ -175,13 +196,18 @@
           this.paycheck.amount_project = Number(this.paycheck.amount_project).toFixed(2);
         }
       },
-      onCheck() {
+      onCheckProjected() {
         if(this.projected) {
           this.paycheck.amount_project = this.paycheck.amount;
           this.paycheck.amount = null;
         } else {
           this.paycheck.amount = this.paycheck.amount_project;
           this.paycheck.amount_project = null;
+        }
+      },
+      onPaidOnChange() {
+        if(this.paycheck.notify_when_paid && !this.isNotifiable) {
+          this.paycheck.notify_when_paid = false;
         }
       }
     },
@@ -197,6 +223,9 @@
             this.$emit('close');
           }
         }
+      },
+      isNotifiable() {
+        return this.paycheck.paid_on && moment().isSameOrBefore(this.paycheck.paid_on, 'day');
       },
       /**
         Gets the incomes
