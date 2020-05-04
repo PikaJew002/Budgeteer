@@ -35,6 +35,8 @@ class PaycheckResource extends JsonResource
             }),
             'amount' => $this->amount,
             'amount_project' => $this->amount_project,
+            'notified_at' => $this->notified_at,
+            'notify_when_paid' => $this->notify_when_paid,
             'paid_on' => $this->paid_on,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at

@@ -13,4 +13,8 @@ class Paycheck extends Model
     public function bills() {
         return $this->belongsToMany('App\Bill')->withPivot(['amount', 'amount_project', 'due_on', 'paid_on'])->withTimestamps();
     }
+
+    public function notifications() {
+        return $this->morphMany('App\Notification', 'notifiable');
+    }
 }
