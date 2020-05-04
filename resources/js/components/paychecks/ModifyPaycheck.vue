@@ -51,6 +51,20 @@
             </div>
           </div>
         </div>
+        <div class="row">
+          <div class="col form-group" v-if="this.paycheck.notified_at == null || isNotifiable">
+            <div class="custom-control custom-checkbox">
+              <input type="checkbox" class="custom-control-input" id="notify" v-model="paycheck.notify_when_paid" :disabled="!isNotifiable">
+              <label class="custom-control-label" for="notify">Notify when paid?</label>
+            </div>
+            <span class="text-muted">You'll receive an email</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col" v-if="this.paycheck.notified_at != null">
+            You've already been notified for this paycheck, if you change the paid on date to today or later, another notification will be sent on that day.
+          </div>
+        </div>
         <div class="form-group">
           <label for="paid_on">Paid On: </label>
           <input class="form-control"
@@ -83,6 +97,7 @@
 <script>
   import { BModal, BAlert, BButton } from 'bootstrap-vue';
   import { helpers, required, requiredIf, minValue } from 'vuelidate/lib/validators';
+  import moment from 'moment';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
@@ -110,6 +125,8 @@
           income_id: 0,
           amount_project: null,
           amount: null,
+          notified_at: null,
+          notify_when_paid: false,
           paid_on: ""
         }
       };
@@ -150,6 +167,8 @@
           this.paycheck.amount_project = null;
           this.projected = false;
         }
+        this.paycheck.notified_at = obj.notified_at;
+        this.paycheck.notify_when_paid = obj.notify_when_paid;
         this.paycheck.paid_on = obj.paid_on;
         this.showModal = true;
       });
@@ -197,6 +216,9 @@
             this.$emit('close');
           }
         }
+      },
+      isNotifiable() {
+        return this.paycheck.paid_on && moment().isSameOrBefore(this.paycheck.paid_on, 'day');
       },
       /**
         Gets the incomes
