@@ -68,7 +68,7 @@ class PaychecksController extends Controller
         /* create new model from request */
         $paycheck->amount = $request->input('amount');
         $paycheck->amount_project = $request->input('amount_project');
-        $paycheck->notify_when_paid = $request->input('notify_when_paid') == "true" ? true : false;
+        $paycheck->notify_when_paid = $request->input('notify_when_paid');
         $paycheck->paid_on = $request->input('paid_on');
         /* save model */
         if($paycheck->save()) {
@@ -116,7 +116,7 @@ class PaychecksController extends Controller
         $now = new DateTime;
         $nowDay = new DateTime($now->format('Y-m-d'));
         if(!$paycheck->notify_when_paid) { // did not have a notification when paid scheduled or sent
-            if($request->input('notify_when_paid') == "true") { // wants to add a notification
+            if($request->input('notify_when_paid')) { // wants to add a notification
                 // does not have a notification scheduled
                 if($paycheck->notifications->isEmpty()) {
                     // new paid_on is today or after
@@ -134,7 +134,7 @@ class PaychecksController extends Controller
                 }
             } // does not want to add a notification, do nothing, continue
         } else { // does have a notification when paid scheduled
-            if($request->input('notify_when_paid') == "false") { // wants to remove a notification
+            if(!$request->input('notify_when_paid')) { // wants to remove a notification
                 // check that there are is a scheduled notification
                 if($paycheck->notified_at == null && $paycheck->notifications->isNotEmpty()) {
                     Notification::destroy($paycheck->notifications->modelKeys());
