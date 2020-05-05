@@ -23,14 +23,16 @@ Currently, I'm hosting the app on some personal shared hosting. But here's the s
 
 ## Entered Testing Phase!
 
-Yay! I've deployed the app at [here](https://www.budgeteer.ironmthome.com) and public registration is open. However, to be able to login in after registration you'll need to be verified. So after registration, I get a notification, I'll verify your account and provide some basic guidelines for using the app. As I have no documentation on how to use the app (yet) or real testing data, if you have ideas or just general feedback shoot me an email. If you'd like to rip me a new one anonymously, I'll be throwing up a feedback form, which won't include an idetifier leading back to you. Or submit an issue here on GitHub. Anyways, hope those who use it find it helpful and can give me any kind of feedback. Cheers!
+Yay! I've deployed the app at [here](https://www.budgeteer.ironmthome.com) and public registration is open. However, to be able to login in after registration you'll need to be verified. So after registration, I get a notification, I'll verify your account and provide some basic guidelines for using the app. As I have no documentation on how to use the app (yet) or real testing data, if you have ideas or just general feedback shoot me an email. If you'd like to rip me a new one anonymously, I'll be throwing up a feedback form, which won't include an identifier leading back to you. Or submit an issue here on GitHub. Anyways, hope those who use it find it helpful and can give me any kind of feedback. Cheers!
 -AE
 
 ## Roadmap
 
- * 4/13/20 - added sorting in monthly bills and paychecks automatically (by paid on in paychecks and day due on in bills)
- * 5/4/20 - added "Notify when paid" feature to paychecks
- * (Sometime in the future?) - adding functionality to split bills across paychecks within an individual month
+ * 4/13/20 - Added sorting in monthly bills and paychecks automatically (by paid on in paychecks and day due on in bills)
+ * 5/4/20 - Added "Notify when paid" feature to paychecks
+ * Later in May 2020 - Add optional frequency to incomes
+ * Maybe next month - Add savings goals feature to track savings over a span of months
+ * (Sometime in the future?) - Adding functionality to split bills across paychecks within an individual month
 
 ## License
 
