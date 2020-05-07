@@ -14,6 +14,12 @@ use Illuminate\Support\Facades\Auth;
 |
 */
 
+Route::get('goal', ['as' => 'goal.index', 'uses' => 'GoalsController@index']);
+Route::get('goal/{goal}', ['as' => 'goal.show', 'uses' => 'GoalsController@show']);
+Route::post('goal', ['as' => 'goal.store', 'uses' => 'GoalsController@store']);
+Route::put('goal/{goal}', ['as' => 'goal.update', 'uses' => 'GoalsController@update']);
+Route::delete('goal/{goal}', ['as' => 'goal.destroy', 'uses' => 'GoalsController@destroy']);
+
 Route::get('income', ['as' => 'income.index', 'uses' => 'IncomesController@index']);
 Route::get('income/{income}', ['as' => 'income.show', 'uses' => 'IncomesController@show']);
 Route::post('income', ['as' => 'income.store', 'uses' => 'IncomesController@store']);
