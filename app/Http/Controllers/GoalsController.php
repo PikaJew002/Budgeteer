@@ -34,7 +34,7 @@ class GoalsController extends Controller
         /* validation */
         $request->validate([
             'name' => 'required|string|min:2|max:255',
-            'goal_amount' => 'nullable|numeric|between:0.01,99999.99',
+            'amount' => 'nullable|numeric|between:0.01,99999.99',
         ]);
         /* authorization */
         $goal = new Goal;
@@ -42,7 +42,7 @@ class GoalsController extends Controller
         $this->authorize('create', $goal);
         /* create new model from request */
         $goal->name = $request->input('name');
-        $goal->goal_amount = $request->input('goal_amount');
+        $goal->amount = $request->input('amount');
         /* save model */
         if($goal->save()) {
             /* return resource */
@@ -76,13 +76,13 @@ class GoalsController extends Controller
         /* validation */
         $request->validate([
             'name' => 'nullable|string|min:2|max:255',
-            'goal_amount' => 'nullable|numeric|between:0.01,99999.99',
+            'amount' => 'nullable|numeric|between:0.01,99999.99',
         ]);
         /* authorization */
         $this->authorize('update', $goal);
         /* create new model from request */
         $goal->name = $request->input('name');
-        $goal->goal_amount = $request->input('goal_amount');
+        $goal->amount = $request->input('amount');
         /* save model */
         if($goal->save()) {
             /* return resource */

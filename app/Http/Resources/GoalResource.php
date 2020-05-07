@@ -20,7 +20,7 @@ class GoalResource extends JsonResource
             'user_id' => $this->user_id,
             'user' => new UserResource($this->whenLoaded('user')),
             'name' => $this->name,
-            'goal_amount' => $this->goal_amount,
+            'amount' => $this->amount,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
