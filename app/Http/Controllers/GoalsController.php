@@ -9,6 +9,16 @@ use Illuminate\Http\Request;
 class GoalsController extends Controller
 {
     /**
+     * Create a new controller instance.
+     *
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth:api');
+    }
+
+    /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
@@ -99,8 +109,11 @@ class GoalsController extends Controller
     public function destroy(Goal $goal)
     {
         /* authorization */
-        $this->authorize('destroy', $goal);
-        /* return resource */
-        return new GoalResource($goal);
+        $this->authorize('delete', $goal);
+        /* delete model */
+        if($goal->delete()) {
+            /* return resource */
+            return new GoalResource($goal);
+        }
     }
 }
