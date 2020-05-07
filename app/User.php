@@ -42,6 +42,10 @@ class User extends Authenticatable
         return $this->hasMany('App\Income');
     }
 
+    public function goals() {
+        return $this->hasMany('App\Goal');
+    }
+
     public function bills() {
         return $this->hasMany('App\Bill');
     }
