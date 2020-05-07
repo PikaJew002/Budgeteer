@@ -3,10 +3,12 @@
        id="item"
        :class="{ 'border-base': (type === 'bills' && (bill_stay_highlighted || bill_highlight))
                                 || (type === 'paychecks' && (paycheck_stay_highlighted || paycheck_highlight))
-                                || (type === 'incomes' && (income_stay_highlighted || income_highlight)),
+                                || (type === 'incomes' && (income_stay_highlighted || income_highlight))
+                                || (type === 'goals' && (goal_stay_highlighted || goal_highlight)),
                  'shadow-lg': (type === 'bills' && (bill_stay_highlighted || bill_highlight))
                               || (type === 'paychecks' && (paycheck_stay_highlighted || paycheck_highlight))
-                              || (type === 'incomes' && (income_stay_highlighted || income_highlight)) }"
+                              || (type === 'incomes' && (income_stay_highlighted || income_highlight))
+                              || (type === 'goals' && (goal_stay_highlighted || goal_highlight)) }"
        @mouseover="onHover(true)"
        @mouseleave="onHover(false)">
     <item-bill v-if="type === 'bills'"
@@ -32,6 +34,12 @@
                   :open="open"
                   :remove="remove"
                   :edit="edit"></item-income>
+     <item-goal v-if="type === 'goals'"
+                :highlight="goal_highlight"
+                :goal="value"
+                :open="open"
+                :remove="remove"
+                :edit="edit"></item-goal>
   </div>
 </template>
 
@@ -50,11 +58,13 @@
   import ItemBill from './bills/ItemBill.vue';
   import ItemPaycheck from './paychecks/ItemPaycheck.vue';
   import ItemIncome from './incomes/ItemIncome.vue';
+  import ItemGoal from './goals/ItemGoal.vue';
   export default {
     components: {
       'item-bill': ItemBill,
       'item-paycheck': ItemPaycheck,
-      'item-income': ItemIncome
+      'item-income': ItemIncome,
+      'item-goal': ItemGoal,
     },
 
     props: {
@@ -91,7 +101,9 @@
         paycheck_highlight: false,
         paycheck_stay_highlighted: false,
         income_highlight: false,
-        income_stay_highlighted: false
+        income_stay_highlighted: false,
+        goal_highlight: false,
+        goal_stay_highlighted: false,
       };
     },
 
@@ -112,6 +124,7 @@
         if(this.type === 'bills') this.bill_highlight = value;
         if(this.type === 'paychecks') this.paycheck_highlight = value;
         if(this.type === 'incomes') this.income_highlight = value;
+        if(this.type === 'goals') this.goal_highlight = value;
       },
     }
   }

@@ -17,7 +17,7 @@
       <hr>
       <collection :items="incomes"
                   type="incomes"
-                  :size="6"></collection>
+                  :size="3"></collection>
     </div>
   </main>
 </template>
@@ -52,7 +52,6 @@
         EventBus.$emit('make-income');
       }
     },
-
     computed: {
       incomes() {
         return this.$store.getters.getIncomes;

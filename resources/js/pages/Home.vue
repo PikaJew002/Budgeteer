@@ -1,7 +1,3 @@
-<style>
-
-</style>
-
 <template>
   <main class="py-4">
     <div id="home" class="container-fluid">

@@ -49,6 +49,9 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="/#/incomes">Incomes</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/#/goals">Goals</a>
+                            </li>
                         @endauth
                     </ul>
 
