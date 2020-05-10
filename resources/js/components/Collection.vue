@@ -1,5 +1,14 @@
 <template>
   <div>
+    <div class="d-none d-sm-flex align-items-center mb-3">
+      <select v-model="deckSize" class="custom-select" style="width: 50px;">
+        <option v-for="n in 4" :value="n" :selected="deckSize === n">{{ n }}</option>
+        <option :value="6" :selected="deckSize === 6">6</option>
+      </select>
+      <div class="ml-2">
+        {{ capitalize(type) }} per row
+      </div>
+    </div>
     <div class="card-deck mb-4" v-for="row in rowsFull">
       <template v-for="col in deckSize">
         <item :value="items[(row - 1)*deckSize + col - 1]"
@@ -15,7 +24,7 @@
       </template>
     </div>
     <div class="row">
-      <div v-if="colsInPartialRow > 0" :class="'col-sm-' + (12/deckSize)*colsInPartialRow">
+      <div v-if="colsInPartialRow > 0" :class="'col-md-' + (12/deckSize)*colsInPartialRow">
         <div class="card-deck mb-4">
           <template v-for="col in colsInPartialRow">
             <item :value="items[rowsFull*deckSize + col - 1]"
@@ -39,69 +48,67 @@
   import Item from './Item.vue';
   export default {
     components: {
-      Item
+      'item': Item,
     },
     props: {
       items: {
         type: Array,
-        required: true
+        required: true,
       },
       type: {
         type: String,
-        required: true
+        required: true,
       },
       month: {
         type: Array,
-        required: false
+        required: false,
       },
       open: {
         type: Boolean,
-        default: false
+        default: false,
       },
       allowOpen: {
         type: Array,
         default: function() {
           return [];
-        }
+        },
       },
       allowOpenIf: {
         type: Array,
         default: function() {
           return [];
-        }
+        },
       },
       allowEdit: {
         type: Array,
         default: function() {
           return [];
-        }
+        },
       },
       allowRemove: {
         type: Array,
         default: function() {
           return [];
-        }
+        },
       },
       remove: {
         type: Boolean,
-        default: false
+        default: false,
       },
       edit: {
         type: Boolean,
-        default: false
+        default: false,
       },
       size: {
         type: Number,
-        default: 3
-      }
+        default: 4, // defaults to 4 items per row
+      },
     },
-
     data() {
       return {
-        deckSize: this.size
+        deckSize: this.size,
       };
     },
-
     methods: {
       getItemIndex(row, col) {
         return (row - 1)*this.deckSize + col - 1;
@@ -144,17 +151,15 @@
       },
       capitalize(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
-      }
+      },
     },
-
     computed: {
       rowsFull() {
         return Math.floor(this.items.length / this.deckSize);
       },
-
       colsInPartialRow() {
         return (this.items.length % this.deckSize);
-      }
-    }
+      },
+    },
   }
 </script>
