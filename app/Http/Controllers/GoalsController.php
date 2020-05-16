@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Goal;
+use App\Contribution;
 use App\Http\Resources\GoalResource;
 use Illuminate\Http\Request;
 
@@ -44,7 +45,12 @@ class GoalsController extends Controller
         /* validation */
         $request->validate([
             'name' => 'required|string|min:2|max:255',
-            'amount' => 'nullable|numeric|between:0.01,99999.99',
+            'amount' => 'required|numeric|between:0.01,99999.99',
+            'initial_amount' => 'nullable|numeric|between:0.01,99999.99',
+            'contributions' => 'array|bail',
+            'contributions.*.amount' => 'required|numeric|between:0.01,99999.99',
+            'contributions.*.start_on' => 'required',
+            'contributions.*.end_on' => 'required|date|after:contributions.*.start_on',
         ]);
         /* authorization */
         $goal = new Goal;
@@ -53,8 +59,18 @@ class GoalsController extends Controller
         /* create new model from request */
         $goal->name = $request->input('name');
         $goal->amount = $request->input('amount');
+        $goal->initial_amount = $request->input('initial_amount');
         /* save model */
         if($goal->save()) {
+            foreach($request->input('contributions') as $contribution) {
+                Contribution::create([
+                  'goal_id' => $goal->id,
+                  'amount' => $contribution['amount'],
+                  'start_on' => $contribution['start_on'],
+                  'end_on' => $contribution['end_on'],
+                ]);
+            }
+            $goal->load('contributions');
             /* return resource */
             return new GoalResource($goal);
         }
@@ -87,12 +103,14 @@ class GoalsController extends Controller
         $request->validate([
             'name' => 'nullable|string|min:2|max:255',
             'amount' => 'nullable|numeric|between:0.01,99999.99',
+            'initial_amount' => 'nullable|numeric|between:0.01,99999.99',
         ]);
         /* authorization */
         $this->authorize('update', $goal);
         /* create new model from request */
         $goal->name = $request->input('name');
         $goal->amount = $request->input('amount');
+        $goal->initial_amount = $request->input('initial_amount');
         /* save model */
         if($goal->save()) {
             /* return resource */
