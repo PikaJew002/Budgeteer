@@ -51,7 +51,7 @@ class GoalsController extends Controller
             'initial_amount' => 'nullable|numeric|between:0.01,99999.99',
             'contributions' => 'bail|array|max:10',
             'contributions.*.amount' => 'required|numeric|between:0.01,99999.99',
-            'contributions.*.start_on' => 'required',
+            'contributions.*.start_on' => 'required|date',
             'contributions.*.end_on' => 'required|date|after:contributions.*.start_on',
         ]);
         /* authorization */
@@ -110,7 +110,7 @@ class GoalsController extends Controller
             'contributions' => 'bail|array|max:10',
             'contributions.*.id' => 'nullable|integer',
             'contributions.*.amount' => 'required|numeric|between:0.01,99999.99',
-            'contributions.*.start_on' => 'required',
+            'contributions.*.start_on' => 'required|date',
             'contributions.*.end_on' => 'required|date|after:contributions.*.start_on',
         ]);
         $goal = Goal::with('contributions')->findOrFail($id);
