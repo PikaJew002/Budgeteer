@@ -66,25 +66,25 @@ export default new VueRouter({
         {
           path: '/',
           name: 'vistor',
-          component: Vue.component('Visitor', require('./pages/Vistor.vue').default)
+          component: Vue.component('Visitor', require('./pages/Vistor.vue').default),
         },
         {
           path: '/home',
           name: 'home',
           component: Vue.component('Home', require('./pages/Home.vue').default),
-          beforeEnter: requireAuth
+          beforeEnter: requireAuth,
         },
         {
           path: '/incomes',
           name: 'incomes',
           component: Vue.component('Incomes', require('./pages/incomes/Incomes.vue').default),
-          beforeEnter: requireAuth
+          beforeEnter: requireAuth,
         },
         {
           path: '/goals',
           name: 'goals',
           component: Vue.component('Goals', require('./pages/goals/Goals.vue').default),
-          beforeEnter: requireAuth
+          beforeEnter: requireAuth,
         },
-    ]
+    ],
 });
