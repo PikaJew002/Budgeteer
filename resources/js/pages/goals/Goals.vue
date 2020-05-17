@@ -49,7 +49,7 @@
       };
     },
     created() {
-      this.$store.dispatch('loadGoals');
+      this.$store.dispatch('loadGoals', { with: ['contributions']});
     },
     methods: {
       makeGoal() {

@@ -47,7 +47,9 @@ export const goals = {
       GoalAPI.postGoal(data)
         .then(res => {
           commit('setAddGoalStatus', 2);
-          dispatch('loadGoals');
+          dispatch('loadGoals', {
+            with: ['contributions'],
+          });
         })
         .catch(err => {
           commit('setAddGoalStatus', 3);
@@ -58,7 +60,9 @@ export const goals = {
       GoalAPI.putGoal(data)
         .then(res => {
           commit('setEditGoalStatus', 2);
-          dispatch('loadGoals');
+          dispatch('loadGoals', {
+            with: ['contributions'],
+          });
         })
         .catch(err => {
           commit('setEditGoalStatus', 3);
@@ -69,7 +73,9 @@ export const goals = {
       GoalAPI.deleteGoal(id)
         .then(res => {
           commit('setDeleteGoalStatus', 2);
-          dispatch('loadGoals');
+          dispatch('loadGoals', {
+            with: ['contributions'],
+          });
         })
         .catch(err => {
           commit('setDeleteGoalStatus', 3);
