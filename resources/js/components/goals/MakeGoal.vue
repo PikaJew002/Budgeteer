@@ -174,6 +174,21 @@
         this.contributionsSpan = [];
         this.showModal = true;
       });
+      EventBus.$on('save-contribution', (arr) => {
+        if(arr[0] == 'make') {
+          let contribution = arr[1];
+          let checkStatus = this.checkOverLapAndAdd(contribution);
+          if(checkStatus[0]) {
+            this.goal.contributions.push(contribution);
+            this.goal.contributions.sort(function(a, b) {
+              return (moment(a.start_on).isBefore(b.start_on, 'month') ? -1 : 1);
+            });
+            EventBus.$emit('close-make-contribution');
+          } else {
+            EventBus.$emit('show-contribution-alert', ['danger', checkStatus[1], 15]);
+          }
+        }
+      });
     },
     beforeDestroy() {
       EventBus.$off('make-goal');
@@ -193,15 +208,6 @@
           }
         }
         this.goal.contributions.splice(index, 1);
-      },
-      onContributionSave(contribution, event) {
-        let checkStatus = this.checkOverLapAndAdd(contribution)
-        if(checkStatus[0]) {
-          this.goal.contributions.push(contribution);
-          this.showMakeContribution = false;
-        } else {
-          EventBus.$emit('show-contribution-alert', ['danger', checkStatus[1], 15]);
-        }
       },
       onSave(goal) {
         if(!this.$v.goal.$invalid) {
