@@ -61,10 +61,7 @@
       }
     },
     computed: {
-      thisMonth() {
-        let monthStr = "" + this.month[1] + "-" + (this.month[0] > 9 ? this.month[0] : "0" + this.month[0]);
-        return monthStr;
-      }
-    }
+
+    },
   }
 </script>
