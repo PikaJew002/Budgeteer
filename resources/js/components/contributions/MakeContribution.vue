@@ -104,6 +104,7 @@
     mixins: [Alert],
     data() {
       return {
+        type: '',
         contribution: {
           amount: null,
           start_on: "",
@@ -130,11 +131,15 @@
       };
     },
     created() {
-      EventBus.$on('make-contribution', () => {
+      EventBus.$on('make-contribution', (type) => {
+        this.type = type;
         this.contribution.amount = null;
         this.contribution.start_on = "";
         this.contribution.end_on = "";
         this.showModal = true;
+      });
+      EventBus.$on('close-make-contribution', () => {
+        this.showModal = false;
       });
       EventBus.$on('show-contribution-alert', (messageArr) => {
         this.showAlert(messageArr[0], messageArr[1], messageArr[2]);
@@ -142,6 +147,7 @@
     },
     beforeDestroy() {
       EventBus.$off('make-contribution');
+      EventBus.$off('close-make-contribution');
       EventBus.$off('show-contribution-alert');
     },
     methods: {
@@ -150,7 +156,7 @@
           let newContribution = cloneDeep(contribution);
           newContribution.monthSpan = this.monthSpan;
           newContribution.diff = Math.ceil(moment(newContribution.end_on).diff(newContribution.start_on, 'months', true));
-          this.$emit('save', newContribution);
+          EventBus.$emit('save-contribution', [this.type, newContribution]);
         }
       },
       formatAmount() {

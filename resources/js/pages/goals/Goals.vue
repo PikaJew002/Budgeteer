@@ -1,6 +1,9 @@
 <template>
   <main class="py-4">
     <div id="goals" class="container-fluid">
+      <make-contribution :show="showMakeContribution"
+                         @open="showMakeContribution = true"
+                         @close="showMakeContribution = false"></make-contribution>
       <make-goal :show="showMake"
                     @open="showMake = true"
                     @close="showMake = false"></make-goal>
@@ -24,6 +27,7 @@
 
 <script>
   import Collection from '../../components/Collection.vue';
+  import MakeContribution from '../../components/contributions/MakeContribution.vue';
   import MakeGoal from '../../components/goals/MakeGoal.vue';
   import ModifyGoal from '../../components/goals/ModifyGoal.vue';
   import DeleteGoal from '../../components/goals/DeleteGoal.vue';
@@ -31,12 +35,14 @@
   export default {
     components: {
       Collection,
+      'make-contribution': MakeContribution,
       'make-goal': MakeGoal,
       'modify-goal': ModifyGoal,
       'delete-goal': DeleteGoal,
     },
     data() {
       return {
+        showMakeContribution: false,
         showMake: false,
         showModify: false,
         showDelete: false,

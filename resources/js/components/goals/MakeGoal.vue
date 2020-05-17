@@ -1,9 +1,5 @@
 <template>
-  <div>
-    <make-contribution :show="showMakeContribution"
-                       @open="showMakeContribution = true"
-                       @close="showMakeContribution = false"
-                       @save="onContributionSave"></make-contribution>
+  <div id="make-goal">
     <b-alert :show="message.countDown"
              dismissible
              :variant="message.type"
@@ -118,7 +114,6 @@
   import { helpers, required, minLength, maxLength } from 'vuelidate/lib/validators';
   import moment from 'moment';
   import { cloneDeep } from 'lodash';
-  import MakeContribution from '../contributions/MakeContribution.vue';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,8}(\.\d{0,2})?$/); // double(10,2)
@@ -128,7 +123,6 @@
       'b-alert': BAlert,
       'b-button': BButton,
       'b-container': BContainer,
-      'make-contribution': MakeContribution,
     },
     props: {
       user: {
@@ -142,7 +136,6 @@
     mixins: [Alert],
     data() {
       return {
-        showMakeContribution: false,
         goal: {
           name: "",
           amount: null,
@@ -187,7 +180,7 @@
     },
     methods: {
       onAddContribution() {
-        EventBus.$emit('make-contribution');
+        EventBus.$emit('make-contribution', 'make');
       },
       onDeleteContribution(index) {
         if(this.goal.contributions.length == 1) {
