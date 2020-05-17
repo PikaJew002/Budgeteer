@@ -28,8 +28,10 @@ class GoalsController extends Controller
     {
         /* authorization */
         $this->authorize('viewAny', Goal::class);
+        /* extract options */
+        $optionsArr = $this->extractOptions($request);
         /* fetch models */
-        $goals = Goal::where('user_id', $request->user()->id)->get();
+        $goals = Goal::where('user_id', $request->user()->id)->with($optionsArr['with'])->get();
         /* return resource collection */
         return GoalResource::collection($goals);
     }
@@ -97,20 +99,53 @@ class GoalsController extends Controller
      * @param  \App\Goal  $goal
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Goal $goal)
+    public function update(Request $request, $id)
     {
         /* validation */
         $request->validate([
+            'id' => 'required|integer',
             'name' => 'nullable|string|min:2|max:255',
             'amount' => 'nullable|numeric|between:0.01,99999.99',
             'initial_amount' => 'nullable|numeric|between:0.01,99999.99',
+            'contributions' => 'array|bail',
+            'contributions.*.id' => 'nullable|integer',
+            'contributions.*.amount' => 'required|numeric|between:0.01,99999.99',
+            'contributions.*.start_on' => 'required',
+            'contributions.*.end_on' => 'required|date|after:contributions.*.start_on',
         ]);
+        $goal = Goal::with('contributions')->findOrFail($id);
+        // the contributions that were present in $goal, but are not present on the $request
+        $diff = collect($goal->contributions->modelKeys())->diff(collect($request->input('contributions'))->pluck('id')->reject(function($value, $key) {
+            return $value == null;
+        }));
+        Contribution::destroy($diff);
         /* authorization */
         $this->authorize('update', $goal);
         /* create new model from request */
         $goal->name = $request->input('name');
         $goal->amount = $request->input('amount');
         $goal->initial_amount = $request->input('initial_amount');
+        foreach($request->input('contributions') as $contribution) {
+            // check if contribution exists
+            if(array_key_exists('id', $contribution) && $goal->contributions->contains($contribution['id'])) {
+                // update if exists
+                Contribution::where('id', $contribution['id'])->where('goal_id', $goal->id)->update([
+                  'amount' => $contribution['amount'],
+                  'start_on' => $contribution['start_on'],
+                  'end_on' => $contribution['end_on'],
+                ]);
+            } else {
+                // or else add it
+                Contribution::create([
+                  'goal_id' => $goal->id,
+                  'amount' => $contribution['amount'],
+                  'start_on' => $contribution['start_on'],
+                  'end_on' => $contribution['end_on'],
+                ]);
+            }
+        }
+        $contributionsInput = collect($request->input('contributions'))->pluck('id');
+        $goal->load('contributions');
         /* save model */
         if($goal->save()) {
             /* return resource */
