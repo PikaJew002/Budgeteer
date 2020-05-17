@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\UserResource;
+use App\Http\Resources\ContributionResource;
 
 class GoalResource extends JsonResource
 {
@@ -19,8 +20,10 @@ class GoalResource extends JsonResource
             'id' => $this->id,
             'user_id' => $this->user_id,
             'user' => new UserResource($this->whenLoaded('user')),
+            'contributions' => ContributionResource::collection($this->whenLoaded('contributions')),
             'name' => $this->name,
             'amount' => $this->amount,
+            'initial_amount' => $this->initial_amount,
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];
