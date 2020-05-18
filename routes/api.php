@@ -42,4 +42,8 @@ Route::post('billpaycheck', ['as' => 'billpaycheck.store', 'uses' => 'BillPayche
 Route::put('billpaycheck', ['as' => 'billpaycheck.update', 'uses' => 'BillPaycheckController@update']);
 Route::delete('billpaycheck/{bill}/{paycheck}', ['as' => 'billpaycheck.destroy', 'uses' => 'BillPaycheckController@destroy']);
 
+Route::post('contributionpaycheck', ['as' => 'contributionpaycheck.store', 'uses' => 'ContributionPaycheckController@store']);
+Route::put('contributionpaycheck', ['as' => 'contributionpaycheck.update', 'uses' => 'ContributionPaycheckController@update']);
+Route::delete('contributionpaycheck/{contribution}/{paycheck}', ['as' => 'contributionpaycheck.destroy', 'uses' => 'ContributionPaycheckController@destroy']);
+
 Route::get('user', ['as' => 'user.loggedin', 'uses' => 'UsersController@loggedin']);
