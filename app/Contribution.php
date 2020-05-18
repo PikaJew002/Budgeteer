@@ -16,4 +16,8 @@ class Contribution extends Model
      public function goal() {
         return $this->belongsTo('App\Goal');
      }
+
+     public function paychecks() {
+        return $this->belongsToMany('App\Paycheck')->withPivot(['amount', 'amount_project', 'due_on', 'paid_on'])->withTimestamps();
+     }
 }
