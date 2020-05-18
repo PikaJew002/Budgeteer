@@ -30,7 +30,7 @@ class BillPolicy
      */
     public function view(User $user, Bill $bill)
     {
-        return $bill->user_id == $user->id;
+        return $user->id == $bill->user_id;
     }
 
     /**
@@ -53,7 +53,7 @@ class BillPolicy
      */
     public function update(User $user, Bill $bill)
     {
-        return $bill->user_id == $user->id;
+        return $user->id == $bill->user_id;
     }
 
     /**
@@ -65,7 +65,7 @@ class BillPolicy
      */
     public function delete(User $user, Bill $bill)
     {
-        return $bill->user_id == $user->id;
+        return $user->id == $bill->user_id;
     }
 
     /**
@@ -106,7 +106,7 @@ class BillPolicy
      */
     public function attachPaycheck(User $user, Bill $bill, Paycheck $paycheck)
     {
-        return $bill->user_id == $user->id && $paycheck->income->user_id == $user->id;
+        return $user->id == $bill->user_id && $user->id == $paycheck->income->user_id;
     }
 
     /**
@@ -120,7 +120,7 @@ class BillPolicy
 
     public function updatePivotPaycheck(User $user, Bill $bill, Paycheck $paycheck)
     {
-        return $bill->user_id == $user->id && $paycheck->income->user_id == $user->id;
+        return $user->id == $bill->user_id && $user->id == $paycheck->income->user_id;
     }
 
     /**
@@ -133,6 +133,6 @@ class BillPolicy
      */
     public function detachPaycheck(User $user, Bill $bill, Paycheck $paycheck)
     {
-        return $bill->user_id == $user->id && $paycheck->income->user_id == $user->id;
+        return $user->id == $bill->user_id && $user->id == $paycheck->income->user_id;
     }
 }

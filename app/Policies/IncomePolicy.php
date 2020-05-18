@@ -78,7 +78,7 @@ class IncomePolicy
      */
     public function restore(User $user, Income $income)
     {
-        return $user->id == $income->user_id;
+        //
     }
 
     /**
@@ -90,6 +90,6 @@ class IncomePolicy
      */
     public function forceDelete(User $user, Income $income)
     {
-        return $user->id == $income->user_id;
+        //
     }
 }

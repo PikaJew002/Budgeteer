@@ -31,7 +31,7 @@ class PaycheckPolicy
      */
     public function view(User $user, Paycheck $paycheck)
     {
-        return $paycheck->income->user_id == $user->id;
+        return $user->id == $paycheck->income->user_id;
     }
 
     /**
@@ -43,7 +43,7 @@ class PaycheckPolicy
      */
     public function create(User $user, Paycheck $paycheck)
     {
-        return $paycheck->income->user_id == $user->id;
+        return $user->id == $paycheck->income->user_id;
     }
 
     /**
@@ -55,8 +55,8 @@ class PaycheckPolicy
      */
     public function update(User $user, Paycheck $paycheck)
     {
-        return $paycheck->income->user_id == $user->id;
         $paycheck->load('income'); // needed in case a new income_id is assigned
+        return $user->id == $paycheck->income->user_id;
     }
 
     /**
@@ -68,8 +68,7 @@ class PaycheckPolicy
      */
     public function delete(User $user, Paycheck $paycheck)
     {
-        $paycheck->load('income');
-        return $paycheck->income->user_id == $user->id;
+        return $user->id == $paycheck->income->user_id;
     }
 
     /**
@@ -110,7 +109,7 @@ class PaycheckPolicy
      */
     public function attachBill(User $user, Paycheck $paycheck, Bill $bill)
     {
-        return $paycheck->income->user_id == $user->id && $bill->user_id == $user->id;
+        return $user->id == $paycheck->income->user_id && $user->id == $bill->user_id;
     }
 
     /**
@@ -124,7 +123,7 @@ class PaycheckPolicy
 
     public function updatePivotBill(User $user, Paycheck $paycheck, Bill $bill)
     {
-        return $paycheck->income->user_id == $user->id && $bill->user_id == $user->id;
+        return $user->id == $paycheck->income->user_id && $user->id == $bill->user_id;
     }
 
     /**
@@ -137,7 +136,7 @@ class PaycheckPolicy
      */
     public function detachBill(User $user, Paycheck $paycheck, Bill $bill)
     {
-        return $paycheck->income->user_id == $user->id && $bill->user_id == $user->id;
+        return $user->id == $paycheck->income->user_id && $user->id == $bill->user_id;
     }
 
     /**
