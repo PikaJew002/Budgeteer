@@ -184,7 +184,7 @@ class PaychecksController extends Controller
     public function show($id)
     {
         /* find model */
-        $paycheck = Paycheck::findOrFail($id);
+        $paycheck = Paycheck::with('income')->findOrFail($id);
         /* authorization */
         $this->authorize('view', $paycheck);
         /* return resource */
@@ -200,13 +200,12 @@ class PaychecksController extends Controller
     public function destroy($id)
     {
         /* find model */
-        $paycheck = Paycheck::with('notifications')->findOrFail($id);
+        $paycheck = Paycheck::with(['income', 'notifications'])->findOrFail($id);
         /* authorization */
         $this->authorize('delete', $paycheck);
         /* check for notifications */
         if($paycheck->notifications->isNotEmpty()) {
             /* if notifications exist, delete them */
-            //dd($paycheck->notifications);
             Notification::destroy($paycheck->notifications->modelKeys());
         }
         /* delete model */

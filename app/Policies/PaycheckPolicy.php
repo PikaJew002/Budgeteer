@@ -31,7 +31,6 @@ class PaycheckPolicy
      */
     public function view(User $user, Paycheck $paycheck)
     {
-        $paycheck->load('income');
         return $paycheck->income->user_id == $user->id;
     }
 
@@ -44,7 +43,6 @@ class PaycheckPolicy
      */
     public function create(User $user, Paycheck $paycheck)
     {
-        $paycheck->load('income');
         return $paycheck->income->user_id == $user->id;
     }
 
@@ -57,8 +55,8 @@ class PaycheckPolicy
      */
     public function update(User $user, Paycheck $paycheck)
     {
-        $paycheck->load('income');
         return $paycheck->income->user_id == $user->id;
+        $paycheck->load('income'); // needed in case a new income_id is assigned
     }
 
     /**
