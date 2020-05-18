@@ -11,7 +11,7 @@ class Bill extends Model
      *
      * @var array
      */
-    protected $casts = ['start_at' => 'date:Y-m-d', 'end_at' => 'date:Y-m-d'];
+    protected $casts = ['start_on' => 'date:Y-m-d', 'end_on' => 'date:Y-m-d'];
 
     public function paychecks() {
         return $this->belongsToMany('App\Paycheck')->withPivot(['amount', 'amount_project', 'due_on', 'paid_on'])->withTimestamps();
