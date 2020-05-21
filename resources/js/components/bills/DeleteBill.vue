@@ -55,7 +55,7 @@
     },
     methods: {
       onDelete() {
-        this.$store.dispatch('deleteBill', this.bill.id);
+        this.$store.dispatch('deleteBill', this.bill);
         this.$emit('close');
       }
     },

@@ -52,7 +52,7 @@
     },
     methods: {
       onDelete() {
-        this.$store.dispatch('deletePaycheck', this.paycheck.id);
+        this.$store.dispatch('deletePaycheck', this.paycheck);
         this.$emit('close');
       }
     },

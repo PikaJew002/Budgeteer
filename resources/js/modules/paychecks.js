@@ -42,43 +42,54 @@ export const paychecks = {
           commit('setPaycheckLoadStatus', 3);
         });
     },
-    addPaycheck({ commit, state, dispatch }, data) {
+    addPaycheck({ commit, state, dispatch }, paycheck) {
       commit('setAddPaycheckStatus', 1);
-      PaycheckAPI.postPaycheck(data)
+      dispatch('addIncomePaycheck', paycheck);
+      PaycheckAPI.postPaycheck(paycheck)
         .then(res => {
           commit('setAddPaycheckStatus', 2);
-          dispatch('loadIncomes', {
-            with: ['paychecks.bills']
-          });
         })
         .catch(err => {
           commit('setAddPaycheckStatus', 3);
         });
     },
-    editPaycheck({ commit, state, dispatch }, data) {
+    editPaycheck({ commit, state, dispatch }, paycheck) {
       commit('setEditPaycheckStatus', 1);
-      PaycheckAPI.putPaycheck(data)
+      for(let i in paycheck.bills) {
+        dispatch('editBillPaycheck', {
+          bill: paycheck.bills[i],
+          paycheck: paycheck,
+        });
+      }
+      for(let j in paycheck.contributions) {
+        // TODO add|update module/goals.js
+        //dispatch('editGoalContributionPaycheck', paycheck.contributions[j], paycheck);
+      }
+      dispatch('editIncomePaycheck', paycheck);
+      PaycheckAPI.putPaycheck(paycheck)
         .then(res => {
           commit('setEditPaycheckStatus', 2);
-          dispatch('loadIncomes', {
-            with: ['paychecks.bills']
-          });
         })
         .catch(err => {
           commit('setEditPaycheckStatus', 3);
         });
     },
-    deletePaycheck({ commit, state, dispatch }, id) {
+    deletePaycheck({ commit, state, dispatch }, paycheck) {
       commit('setDeletePaycheckStatus', 1);
-      PaycheckAPI.deletePaycheck(id)
+      for(let i in paycheck.bills) {
+        dispatch('deleteBillPaycheck', {
+          bill: paycheck.bills[i],
+          paycheck: paycheck,
+        });
+      }
+      for(let j in paycheck.contributions) {
+        // TODO add|update module/goals.js
+        //dispatch('deleteGoalContributionPaycheck', paycheck.contributions[j], paycheck);
+      }
+      dispatch('deleteIncomePaycheck', paycheck);
+      PaycheckAPI.deletePaycheck(paycheck.id)
         .then(res => {
           commit('setDeletePaycheckStatus', 2);
-          dispatch('loadIncomes', {
-            with: ['paychecks.bills']
-          });
-          dispatch('loadBills', {
-            with: ['paychecks']
-          });
         })
         .catch(err => {
           commit('setDeletePaycheckStatus', 3);
@@ -130,5 +141,5 @@ export const paychecks = {
     getDeletePaycheckStatus(state) {
       return state.deletePaycheckStatus;
     },
-  }
+  },
 }

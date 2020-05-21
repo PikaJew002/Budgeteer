@@ -48,7 +48,7 @@
     },
     methods: {
       onDelete() {
-        this.$store.dispatch('deleteIncome', this.income.id);
+        this.$store.dispatch('deleteIncome', this.income);
         this.$emit('close');
       }
     },

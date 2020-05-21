@@ -250,9 +250,17 @@
       onSave() {
         if(!this.$v.pair.$invalid) {
           if(this.isUpdate) {
-            this.$store.dispatch('updateBillPaycheck', this.pair);
+            this.$store.dispatch('modifyBillPaycheck', {
+              bill_paycheck: this.pair,
+              bill: this.bill,
+              paycheck: this.paycheck
+            });
           } else {
-            this.$store.dispatch('pairBillPaycheck', this.pair);
+            this.$store.dispatch('attachBillPaycheck', {
+              bill_paycheck: this.pair,
+              bill: this.bill,
+              paycheck: this.paycheck,
+            });
           }
           this.showModal = false;
           this.isUpdate = false;
@@ -263,9 +271,10 @@
         this.isUpdate = false;
       },
       onDeletePair() {
-        this.$store.dispatch('deleteBillPaycheck', {
-          bill_id: this.pair.bill_id,
-          paycheck_id: this.pair.paycheck_id
+        this.$store.dispatch('detachBillPaycheck', {
+          bill_paycheck: this.pair,
+          bill: this.bill,
+          paycheck: this.paycheck,
         });
         this.showModal = false;
         this.isUpdate = false;
