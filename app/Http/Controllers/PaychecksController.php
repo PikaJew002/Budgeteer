@@ -102,7 +102,7 @@ class PaychecksController extends Controller
             'amount' => 'nullable|numeric|between:0.01,99999.99',
             'amount_project' => 'nullable|numeric|between:0.01,99999.99',
             'notify_when_paid' => 'nullable|boolean',
-            'paid_on' => 'nullable|date'
+            'paid_on' => 'nullable|date',
         ]);
         /* find model */
         $paycheck = Paycheck::with(['income', 'notifications'])->findOrFail($request->input('id'));
@@ -123,13 +123,13 @@ class PaychecksController extends Controller
                     if(new DateTime($request->input('paid_on')) >= $nowDay) {
                         $paycheck->notify_when_paid = true;
                         /* make new notification */
-                        $notification = new Notification;
-                        $notification->user_id = $paycheck->income->user_id;
-                        $notification->notifiable_id = $paycheck->id;
-                        $notification->notifiable_type = "paychecks";
-                        $notification->type = "PaycheckPaid";
-                        $notification->notified_on = $request->input('paid_on');
-                        $notification->save();
+                        Notification::create([
+                          'user_id' => $paycheck->income->user_id,
+                          'notifiable_id' => $paycheck->id,
+                          'notifiable_type' => "paychecks",
+                          'type' => "PaycheckPaid",
+                          'notified_on' => $request->input('paid_on'),
+                        ]);
                     }
                 }
             } // does not want to add a notification, do nothing, continue
@@ -155,13 +155,13 @@ class PaychecksController extends Controller
                     if($request->input('paid_on') != $paycheck->paid_on && new DateTime($request->input('paid_on')) >= $nowDay) { // new paid_on is today or after
                         $paycheck->notified_at = null;
                         /* make new notification */
-                        $notification = new Notification;
-                        $notification->user_id = $paycheck->income->user_id;
-                        $notification->notifiable_id = $paycheck->id;
-                        $notification->notifiable_type = "paychecks";
-                        $notification->type = "PaycheckPaid";
-                        $notification->notified_on = $request->input('paid_on');
-                        $notification->save();
+                        Notification::create([
+                          'user_id' => $paycheck->income->user_id,
+                          'notifiable_id' => $paycheck->id,
+                          'notifiable_type' => "paychecks",
+                          'type' => "PaycheckPaid",
+                          'notified_on' => $request->input('paid_on'),
+                        ]);
                     }
                 }
             }
