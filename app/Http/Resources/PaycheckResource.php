@@ -33,16 +33,16 @@ class PaycheckResource extends JsonResource
             'pivot_paid_on' => $this->whenPivotLoaded('bill_paycheck', function() {
                 return $this->pivot->paid_on;
             }),
-            'pivot_amount' => $this->whenPivotLoaded('contribution_paycheck', function() {
+            'contribution_amount' => $this->whenPivotLoaded('contribution_paycheck', function() {
                 return $this->pivot->amount;
             }),
-            'pivot_amount_project' => $this->whenPivotLoaded('contribution_paycheck', function() {
+            'contribution_amount_project' => $this->whenPivotLoaded('contribution_paycheck', function() {
                 return $this->pivot->amount_project;
             }),
-            'pivot_due_on' => $this->whenPivotLoaded('contribution_paycheck', function() {
+            'contribution_due_on' => $this->whenPivotLoaded('contribution_paycheck', function() {
                 return $this->pivot->due_on;
             }),
-            'pivot_paid_on' => $this->whenPivotLoaded('contribution_paycheck', function() {
+            'contribution_paid_on' => $this->whenPivotLoaded('contribution_paycheck', function() {
                 return $this->pivot->paid_on;
             }),
             'amount' => $this->amount,
