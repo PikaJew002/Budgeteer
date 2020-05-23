@@ -24,26 +24,36 @@ export default {
   /*
     GET     /api/goal/{goal}
     @param id int
+    @param options {object}
+      can contain with [array]
     @return Promise
   */
-  getGoal: function(id) {
-    return axios.get(BUDGETEER_CONFIG.API_URL + '/goal/' + id);
+  getGoal: function(id, options = {}) {
+    let optionsStr = '?';
+    if(options.hasOwnProperty('with') && options.with.length != 0) {
+      optionsStr += (optionsStr == '?' ? 'with=' + options.with[0] : '&with=' + options.with[0]);
+      for(let i in options.with) {
+        if(i == 0) continue;
+        optionsStr += ':' + options.with[i];
+      }
+    }
+    return axios.get(BUDGETEER_CONFIG.API_URL + '/goal/' + id + (optionsStr == '?' ? '' : optionsStr));
   },
   /*
     POST     /api/goal
-    @param data object
+    @param goal object
     @return Promise
   */
-  postGoal: function(data) {
-    return axios.post(BUDGETEER_CONFIG.API_URL + '/goal', data);
+  postGoal: function(goal) {
+    return axios.post(BUDGETEER_CONFIG.API_URL + '/goal', goal);
   },
   /*
     PUT     /api/goal/{goal}
     @param data object
     @return Promise
   */
-  putGoal: function(data) {
-    return axios.put(BUDGETEER_CONFIG.API_URL + '/goal/' + data.id, data);
+  putGoal: function(goal) {
+    return axios.put(BUDGETEER_CONFIG.API_URL + '/goal', goal);
   },
   /*
     DELETE  /api/goal/{goal}
