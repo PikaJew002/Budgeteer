@@ -161,10 +161,10 @@ export const bills = {
         if(state.bills[i].id == data.bill.id) {
           for(let j in state.bills[i].paychecks) {
             if(state.bills[i].paychecks[j].id == data.paycheck.id) {
-              state.bills[i].paychecks[j].amount = data.paycheck.amount;
-              state.bills[i].paychecks[j].amount_project = data.paycheck.amount_project;
-              state.bills[i].paychecks[j].notify_when_paid = data.paycheck.notify_when_paid
-              state.bills[i].paychecks[j].paid_on = data.paycheck.paid_on;
+              Vue.set(state.bills[i].paychecks[j], 'amount', data.paycheck.amount);
+              Vue.set(state.bills[i].paychecks[j], 'amount_project', data.paycheck.amount_project);
+              Vue.set(state.bills[i].paychecks[j], 'notify_when_paid', data.paycheck.notify_when_paid);
+              Vue.set(state.bills[i].paychecks[j], 'paid_on', data.paycheck.paid_on);
               return;
             }
           }
