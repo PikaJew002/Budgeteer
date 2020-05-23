@@ -32,10 +32,10 @@
 
     created() {
       this.$store.dispatch('loadBills', {
-        with: ['paychecks']
+        with: ['paychecks'],
       });
       this.$store.dispatch('loadIncomes', {
-        with: ['paychecks.bills']
+        with: ['paychecks.bills'],
       });
       this.$store.dispatch('loadGoals', {
         with: ['contributions.paychecks'],
