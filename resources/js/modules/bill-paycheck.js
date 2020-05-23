@@ -1,8 +1,8 @@
 /*
 |-------------------------------------------------------------------------------
-| VUEX modules/incomes.js
+| VUEX modules/bill-paycheck.js
 |-------------------------------------------------------------------------------
-| The Vuex data store for the incomes
+| The Vuex data store for the bill-paycheck associations
 */
 
 import BillPaycheckAPI from '../api/bill-paycheck.js';
