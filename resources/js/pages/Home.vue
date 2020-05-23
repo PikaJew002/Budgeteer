@@ -37,6 +37,9 @@
       this.$store.dispatch('loadIncomes', {
         with: ['paychecks.bills']
       });
+      this.$store.dispatch('loadGoals', {
+        with: ['contributions.paychecks'],
+      });
       EventBus.$on('bill-pair-start', id => this.disableSelector = true);
       EventBus.$on('paycheck-pair-start', id => this.disableSelector = true);
       EventBus.$on('bill-pair-end', id => this.disableSelector = false);
