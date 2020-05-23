@@ -79,8 +79,10 @@ export const incomes = {
           });
         }
         for(let k in income.paychecks[i].contributions) {
-          // TODO
-          //dispatch('deleteGoalContributionPaycheck', income.paychecks[i].contributions[j].id, income.paychecks[i]);
+          dispatch('deleteGoalContributionPaycheck', {
+            contribution: income.paychecks[i].contributions[j],
+            paycheck: income.paychecks[i],
+          });
         }
       }
       commit('removeIncome', income);
@@ -113,6 +115,18 @@ export const incomes = {
     deleteIncomePaycheckBill({ commit, state }, data) {
       commit('removeIncomePaycheckBill', data);
     },
+    addIncomePaycheckContribution({ commit, state }, data) {
+      commit('insertIncomePaycheckContribution', data);
+    },
+    editIncomePaycheckContribution({ commit, state }, data) {
+      commit('updateIncomePaycheckContribution', data);
+    },
+    editIncomePaycheckContributionPivot({ commit, state }, data) {
+      commit('updateIncomePaycheckContributionPivot', data);
+    },
+    deleteIncomePaycheckContribution({ commit, state }, data) {
+      commit('removeIncomePaycheckContribution', data);
+    }
   },
   mutations: {
     setIncomesLoadStatus(state, status) {
@@ -263,6 +277,80 @@ export const incomes = {
         }
       }
     },
+    insertIncomePaycheckContribution(state, data) {
+      let contributionClone = cloneDeep(data.contribution);
+      for(let i in state.incomes) {
+        if(state.incomes[i].id == data.paycheck.income_id) {
+          for(let j in state.incomes[i].paychecks) {
+            if(state.incomes[i].paychecks[j].id == data.paycheck.id) {
+              for(let k in state.incomes[i].paychecks[j].contributions) {
+                if(state.incomes[i].paychecks[j].contributions[k].id == data.contribution.id) {
+                  contributionClone['pivot_amount'] = data.contribution_paycheck.amount;
+                  contributionClone['pivot_amount_project'] = data.contribution_paycheck.amount_project;
+                  contributionClone['pivot_due_on'] = data.contribution_paycheck.due_on;
+                  contributionClone['pivot_paid_on'] = data.contribution_paycheck.paid_on;
+                  state.incomes[i].paychecks[j].contributions.push(contributionClone);
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    updateIncomePaycheckContribution(state, data) {
+      for(let i in state.incomes) {
+        if(state.incomes[i].id == data.paycheck.income_id) {
+          for(let j in state.incomes[i].paychecks) {
+            if(state.incomes[i].paychecks[j].id == data.paycheck.id) {
+              for(let k in state.incomes[i].paychecks[j].contributions) {
+                if(state.incomes[i].paychecks[j].contributions[k].id == data.contribution.id) {
+                  Vue.set(state.incomes[i].paychecks[j].contributions[k], 'amount', data.contribution.amount);
+                  Vue.set(state.incomes[i].paychecks[j].contributions[k], 'start_on', data.contribution.start_on);
+                  Vue.set(state.incomes[i].paychecks[j].contributions[k], 'end_on', data.contribution.end_on);
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    updateIncomePaycheckContributionPivot(state, data) {
+      for(let i in state.incomes) {
+        if(state.incomes[i].id == data.paycheck.income_id) {
+          for(let j in state.incomes[i].paychecks) {
+            if(state.incomes[i].paychecks[j].id == data.paycheck.id) {
+              for(let k in state.incomes[i].paychecks[j].contributions) {
+                if(state.incomes[i].paychecks[j].contributions[k].id == data.contribution.id) {
+                  Vue.set(state.incomes[i].paychecks[j].contributions[k], 'pivot_amount', data.contribution_paycheck.amount);
+                  Vue.set(state.incomes[i].paychecks[j].contributions[k], 'pivot_amount_project', data.contribution_paycheck.amount_project);
+                  Vue.set(state.incomes[i].paychecks[j].contributions[k], 'pivot_due_on', data.contribution_paycheck.due_on);
+                  Vue.set(state.incomes[i].paychecks[j].contributions[k], 'pivot_paid_on', data.contribution_paycheck.paid_on);
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    removeIncomePaycheckContribution(state, data) {
+      for(let i in state.incomes) {
+        if(state.incomes[i].id == data.paycheck.income_id) {
+          for(let j in state.incomes[i].paychecks) {
+            if(state.incomes[i].paychecks[j].id == data.paycheck.id) {
+              for(let k in state.incomes[i].paychecks[j].contributions) {
+                if(state.incomes[i].paychecks[j].contributions[k].id == data.contribution.id) {
+                  state.incomes[i].paychecks[j].contributions.splice(k, 1);
+                  return;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   },
   getters: {
     getIncomesLoadStatus(state) {

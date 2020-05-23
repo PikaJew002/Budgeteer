@@ -62,8 +62,10 @@ export const paychecks = {
         });
       }
       for(let j in paycheck.contributions) {
-        // TODO add|update module/goals.js
-        //dispatch('editGoalContributionPaycheck', paycheck.contributions[j], paycheck);
+        dispatch('editGoalContributionPaycheck', {
+          contribution: paycheck.contributions[j],
+          paycheck: paycheck,
+        });
       }
       dispatch('editIncomePaycheck', paycheck);
       PaycheckAPI.putPaycheck(paycheck)
@@ -83,8 +85,10 @@ export const paychecks = {
         });
       }
       for(let j in paycheck.contributions) {
-        // TODO add|update module/goals.js
-        //dispatch('deleteGoalContributionPaycheck', paycheck.contributions[j], paycheck);
+        dispatch('deleteGoalContributionPaycheck', {
+          contribution: paycheck.contributions[j],
+          paycheck: paycheck,
+        });
       }
       dispatch('deleteIncomePaycheck', paycheck);
       PaycheckAPI.deletePaycheck(paycheck.id)
