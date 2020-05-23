@@ -36,6 +36,8 @@ class ContributionResource extends JsonResource
             'amount' => $this->amount,
             'start_on' => $this->start_on,
             'end_on' => $this->end_on,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }
