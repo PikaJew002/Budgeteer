@@ -40,8 +40,8 @@ class ContributionPaycheckController extends Controller
             'paid_on' => 'nullable|date',
         ]);
         /* find models */
-        $contribution = Contribution::findOrFail($request->input('contribution_id'));
-        $paycheck = Paycheck::with('income', 'contributions')->findOrFail($request->input('paycheck_id'));
+        $contribution = Contribution::with('goal')->findOrFail($request->input('contribution_id'));
+        $paycheck = Paycheck::with(['income', 'contributions'])->findOrFail($request->input('paycheck_id'));
         /* authorization */
         $this->authorize('attachContribution', [$paycheck, $contribution]);
         /* save new association from request */
