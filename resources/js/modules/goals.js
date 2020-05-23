@@ -20,9 +20,9 @@ export const goals = {
     deleteGoalStatus: 0,
   },
   actions: {
-    loadGoals({ commit }, data) {
+    loadGoals({ commit }, options) {
       commit('setGoalsLoadStatus', 1);
-      GoalAPI.getGoals(data)
+      GoalAPI.getGoals(options)
         .then(res => {
           commit('setGoals', res.data.data);
           commit('setGoalsLoadStatus', 2);
@@ -32,9 +32,9 @@ export const goals = {
           commit('setGoalsLoadStatus', 3);
         });
     },
-    loadGoal({ commit }, data) {
+    loadGoal({ commit }, goal) {
       commit('setGoalLoadStatus', 1);
-      GoalAPI.getGoal(data.id)
+      GoalAPI.getGoal(goal.id)
         .then(res => {
           commit('setGoal', res.data.data);
           commit('setGoalLoadStatus', 2);
@@ -44,10 +44,10 @@ export const goals = {
           commit('setGoalLoadStatus', 3);
         });
     },
-    addGoal({ commit, state, dispatch }, data) {
+    addGoal({ commit, state, dispatch }, goal) {
       commit('setAddGoalStatus', 1);
-      GoalAPI.postGoal(data)
       commit('insertGoal', goal);
+      GoalAPI.postGoal(goal)
         .then(res => {
           commit('setAddGoalStatus', 2);
         })
@@ -55,10 +55,10 @@ export const goals = {
           commit('setAddGoalStatus', 3);
         });
     },
-    editGoal({ commit, state, dispatch }, data) {
+    editGoal({ commit, state, dispatch }, goal) {
       commit('setEditGoalStatus', 1);
-      GoalAPI.putGoal(data)
       commit('updateGoal', goal);
+      GoalAPI.putGoal(goal)
         .then(res => {
           commit('setEditGoalStatus', 2);
         })
@@ -66,9 +66,8 @@ export const goals = {
           commit('setEditGoalStatus', 3);
         });
     },
-    deleteGoal({ commit, state, dispatch }, id) {
+    deleteGoal({ commit, state, dispatch }, goal) {
       commit('setDeleteGoalStatus', 1);
-      GoalAPI.deleteGoal(id)
       for(let i in goal.contributions) {
         for(let j in goal.contributions[i].paychecks) {
           dispatch('deleteIncomePaycheckContribution', {
@@ -78,6 +77,7 @@ export const goals = {
         }
       }
       commit('removeGoal', goal);
+      GoalAPI.deleteGoal(goal.id)
         .then(res => {
           commit('setDeleteGoalStatus', 2);
         })
