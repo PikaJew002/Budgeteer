@@ -15,6 +15,7 @@ Vue.use( Vuex )
 import { goals } from './modules/goals.js'
 import { incomes } from './modules/incomes.js'
 import { paychecks } from './modules/paychecks.js'
+import { contribution_paycheck } from './modules/contribution-paycheck.js'
 import { bills } from './modules/bills.js'
 import { bill_paycheck } from './modules/bill-paycheck.js'
 import { users } from './modules/users.js'
@@ -27,6 +28,7 @@ export default new Vuex.Store({
       goals,
       incomes,
       paychecks,
+      contribution_paycheck,
       bills,
       bill_paycheck,
       users,
