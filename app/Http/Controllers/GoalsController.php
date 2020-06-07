@@ -6,6 +6,7 @@ use App\Goal;
 use App\Contribution;
 use App\Http\Resources\GoalResource;
 use Illuminate\Http\Request;
+use DateTime;
 
 class GoalsController extends Controller
 {
@@ -51,6 +52,7 @@ class GoalsController extends Controller
             'initial_amount' => 'nullable|numeric|between:0.01,99999.99',
             'contributions' => 'bail|array|max:10',
             'contributions.*.amount' => 'required|numeric|between:0.01,99999.99',
+            'contributions.*.day_due_on' => 'nullable|integer|between:1,31',
             'contributions.*.start_on' => 'required|date',
             'contributions.*.end_on' => 'required|date|after:contributions.*.start_on',
         ]);
@@ -68,6 +70,7 @@ class GoalsController extends Controller
                 Contribution::create([
                   'goal_id' => $goal->id,
                   'amount' => $contribution['amount'],
+                  'day_due_on' => $contribution['day_due_on'],
                   'start_on' => $contribution['start_on'],
                   'end_on' => $contribution['end_on'],
                 ]);
@@ -110,6 +113,7 @@ class GoalsController extends Controller
             'contributions' => 'bail|array|max:10',
             'contributions.*.id' => 'nullable|integer',
             'contributions.*.amount' => 'required|numeric|between:0.01,99999.99',
+            'contributions.*.day_due_on' => 'nullable|integer|between:1,31',
             'contributions.*.start_on' => 'required|date',
             'contributions.*.end_on' => 'required|date|after:contributions.*.start_on',
         ]);
@@ -129,16 +133,27 @@ class GoalsController extends Controller
             // check if contribution exists
             if(array_key_exists('id', $contribution) && $goal->contributions->contains($contribution['id'])) {
                 // update if exists
-                Contribution::where('id', $contribution['id'])->where('goal_id', $goal->id)->update([
-                  'amount' => $contribution['amount'],
-                  'start_on' => $contribution['start_on'],
-                  'end_on' => $contribution['end_on'],
-                ]);
+                $oldContribution = Contribution::with('paychecks')->findOrFail($contribution['id']);
+                $oldContribution->amount = $contribution['amount'];
+                $oldContribution->day_due_on = $contribution['day_due_on'];
+                $oldContribution->start_on = $contribution['start_on'];
+                $oldContribution->end_on = $contribution['end_on'];
+                $paychecksToRemove = [];
+                $oldContributionStartOn = new DateTime((new DateTime($oldContribution->start_on))->format('Y-m')."-01");
+                $oldContributionEndOn = new DateTime((new DateTime($oldContribution->end_on))->format('Y-m-t'));
+                foreach($oldContribution->paychecks as $paycheck) {
+                  if($oldContributionStartOn > new DateTime($paycheck->paid_on) || $oldContributionEndOn < new DateTime($paycheck->paid_on)) {
+                    $paychecksToRemove[] = $paycheck->id;
+                  }
+                }
+                $oldContribution->paychecks()->detach($paychecksToRemove);
+                $oldContribution->save();
             } else {
                 // or else add it
                 Contribution::create([
                   'goal_id' => $goal->id,
                   'amount' => $contribution['amount'],
+                  'day_due_on' => $contribution['day_due_on'],
                   'start_on' => $contribution['start_on'],
                   'end_on' => $contribution['end_on'],
                 ]);
