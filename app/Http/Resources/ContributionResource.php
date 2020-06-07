@@ -21,7 +21,7 @@ class ContributionResource extends JsonResource
             'goal_id' => $this->goal_id,
             'goal' => new GoalResource($this->whenLoaded('goal')),
             'paychecks' => PaycheckResource::collection($this->whenLoaded('paychecks')),
-            'pivot_amount' => ($this->whenPivotLoaded('contribution_paycheck', function() {
+            'pivot_amount' => $this->whenPivotLoaded('contribution_paycheck', function() {
                 return $this->pivot->amount;
             }),
             'pivot_amount_project' => $this->whenPivotLoaded('contribution_paycheck', function() {
