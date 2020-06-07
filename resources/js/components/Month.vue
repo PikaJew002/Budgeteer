@@ -9,11 +9,19 @@
           </div>
           <hr>
           <collection :items="billsMonthSorted"
-                      type="bills"
+                      type="bill"
                       :month="[month, year]"
-                      :size="1"
-                      @open-item="itemSelected"
-                      @bill-pair-start=""></collection>
+                      :size="1"></collection>
+        </div>
+      </div>
+      <div class="card" v-if="contributionsMonth.length > 0">
+        <div class="card-body">
+          Contributions
+          <hr>
+          <collection :items="contributionsMonth"
+                      type="contribution"
+                      :month="[month, year]"
+                      :size="1"></collection>
         </div>
       </div>
       <div class="card">
@@ -23,10 +31,8 @@
           </div>
           <hr>
           <collection :items="paychecksMonthSorted"
-                      type="paychecks"
-                      :size="1"
-                      @open-item="itemSelected"
-                      @paycheck-pair-start=""></collection>
+                      type="paycheck"
+                      :size="1"></collection>
         </div>
       </div>
     </div>

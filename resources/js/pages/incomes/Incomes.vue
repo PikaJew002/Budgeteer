@@ -16,7 +16,7 @@
       </div>
       <hr>
       <collection :items="incomes"
-                  type="incomes"
+                  type="income"
                   :size="3"></collection>
     </div>
   </main>
