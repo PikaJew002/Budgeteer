@@ -6,7 +6,7 @@
     <make-paycheck :show="paycheck.showMake" @open="paycheck.showMake = true" @close="paycheck.showMake = false"></make-paycheck>
     <modify-paycheck :show="paycheck.showModify" @open="paycheck.showModify = true" @close="paycheck.showModify = false"></modify-paycheck>
     <delete-paycheck :show="paycheck.showDelete" @open="paycheck.showDelete = true" @close="paycheck.showDelete = false"></delete-paycheck>
-    <pair-bill-paycheck :show="showPair" @open="showPair = true" @close="showPair = false"></pair-bill-paycheck>
+    <pair-paycheck :show="showPair" @open="showPair = true" @close="showPair = false"></pair-paycheck>
     <div class="row">
       <div class="col-sm-1">
         <button type="button" class="btn btn-secondary btn-lg btn-block h-100 d-inline-block" @click="monthDown()">❮</button>
@@ -52,7 +52,7 @@
   import MakePaycheck from './paychecks/MakePaycheck.vue';
   import ModifyPaycheck from './paychecks/ModifyPaycheck.vue';
   import DeletePaycheck from './paychecks/DeletePaycheck.vue';
-  import PairBillPaycheck from './paychecks/PairBillPaycheck.vue';
+  import PairPaycheck from './paychecks/PairPaycheck.vue';
   import { cloneDeep } from 'lodash';
   import moment from 'moment';
   export default {
@@ -64,7 +64,7 @@
       'make-paycheck': MakePaycheck,
       'modify-paycheck': ModifyPaycheck,
       'delete-paycheck': DeletePaycheck,
-      'pair-bill-paycheck': PairBillPaycheck
+      'pair-paycheck': PairPaycheck,
     },
     props: {
       totalMonths: {
