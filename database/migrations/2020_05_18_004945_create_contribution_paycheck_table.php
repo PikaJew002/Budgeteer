@@ -16,6 +16,8 @@ class CreateContributionPaycheckTable extends Migration
         Schema::create('contribution_paycheck', function (Blueprint $table) {
             $table->unsignedBigInteger('contribution_id');
             $table->unsignedBigInteger('paycheck_id');
+            $table->double('amount', 8, 2)->nullable();
+            $table->double('amount_project', 8, 2)->nullable();
             $table->date('due_on');
             $table->date('paid_on')->nullable();
             $table->timestamps();

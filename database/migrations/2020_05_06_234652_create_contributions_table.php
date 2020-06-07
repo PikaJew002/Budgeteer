@@ -17,6 +17,7 @@ class CreateContributionsTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('goal_id');
             $table->double('amount', 8, 2);
+            $table->integer('day_due_on')->nullable();
             $table->date('start_on');
             $table->date('end_on');
             $table->timestamps();
