@@ -5,6 +5,7 @@ namespace App\Policies;
 use App\User;
 use App\Paycheck;
 use App\Bill;
+use App\Contribution;
 use Illuminate\Auth\Access\HandlesAuthorization;
 
 class PaycheckPolicy
