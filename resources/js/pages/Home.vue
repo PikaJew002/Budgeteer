@@ -20,16 +20,14 @@
   import moment from 'moment';
   export default {
     components: {
-      Calendar
+      Calendar,
     },
-
     data() {
       return {
         incomesSelected: 0,
-        disableSelector: false
+        disableSelector: false,
       };
     },
-
     created() {
       this.$store.dispatch('loadBills', {
         with: ['paychecks'],
@@ -45,7 +43,6 @@
       EventBus.$on('bill-pair-end', id => this.disableSelector = false);
       EventBus.$on('paycheck-pair-end', id => this.disableSelector = false);
     },
-
     computed: {
       /**
         Gets the user
@@ -79,7 +76,7 @@
           if(this.incomesSelected == 0) return true;
           return income.id == this.incomesSelected;
         });
-      }
-    }
+      },
+    },
   }
 </script>

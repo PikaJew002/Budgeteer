@@ -117,16 +117,16 @@
     components: {
       'b-modal': BModal,
       'b-alert': BAlert,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       user: {
-        type: Object
+        type: Object,
       },
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     mixins: [Alert],
     data() {
@@ -137,7 +137,8 @@
           day_due_on: null,
           start_on: "",
           end_on: ""
-        }
+          start_on: null,
+        },
       };
     },
     validations() {
@@ -146,26 +147,26 @@
           name: {
             required,
             minLength: minLength(2),
-            maxLength: maxLength(50)
+            maxLength: maxLength(50),
           },
           amount: {
             required,
-            validDecimal
+            validDecimal,
           },
           day_due_on: {
             integer,
             minValue: minValue(1),
-            maxValue: maxValue(31)
+            maxValue: maxValue(31),
           },
           start_on: {
-            required
+            required,
           },
           end_on: {
             required,
-            minDate: (end_on) => (end_on == "" || moment(end_on).isAfter(this.bill.start_on))
-          }
-        }
-      }
+            minDate: (end_on) => (end_on == "" || moment(end_on).isAfter(this.bill.start_on)),
+          },
+        },
+      };
     },
     created() {
       EventBus.$on('make-bill', start_on => {
@@ -188,7 +189,7 @@
         if(Number(this.bill.amount).toFixed(2) != "NaN") {
           this.bill.amount = Number(this.bill.amount).toFixed(2);
         }
-      }
+      },
     },
     computed: {
       showModal: {
@@ -202,7 +203,7 @@
             this.$emit('close');
           }
         }
-      }
-    }
+      },
+    },
   };
 </script>

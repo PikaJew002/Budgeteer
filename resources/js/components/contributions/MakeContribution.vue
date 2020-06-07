@@ -125,7 +125,7 @@
           },
           end_on: {
             required,
-            minDate: (end_on) => (end_on == "" || moment(end_on).isAfter(this.contribution.start_on))
+            minDate: (end_on) => (end_on == "" || moment(end_on).isAfter(this.contribution.start_on)),
           },
         },
       };
@@ -176,7 +176,7 @@
           } else {
             this.$emit('close');
           }
-        },
+        }
       },
       monthSpan() {
         if(!this.$v.contribution.$invalid) {
@@ -198,7 +198,6 @@
         }
         return "";
       },
-
     },
   };
 </script>

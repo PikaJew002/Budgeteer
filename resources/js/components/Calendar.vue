@@ -71,42 +71,42 @@
         type: Number,
         default: function() {
           return 3;
-        }
+        },
       },
       incomes: {
         type: Number,
-        required: true
+        required: true,
       },
       paychecks: {
         type: Array,
         default: function() {
           return [];
-        }
+        },
       },
       bills: {
         type: Array,
         default: function() {
           return [];
-        }
-      }
+        },
+      },
     },
     data() {
       return {
         month: {
-          months: []
+          months: [],
         },
         nowMonth: [],
         bill: {
           showMake: false,
           showModify: false,
-          showDelete: false
+          showDelete: false,
         },
         paycheck: {
           showMake: false,
           showModify: false,
-          showDelete: false
+          showDelete: false,
         },
-        showPair: false
+        showPair: false,
       };
     },
     created() {
@@ -123,7 +123,6 @@
         if(returnMonth[0] > 11) return [returnMonth[0] - 12, returnMonth[1] + 1];
         return returnMonth;
       },
-
       monthUp() {
         let newMonths = cloneDeep(this.month.months);
         for(let i = 0; i < newMonths.length - 1; i++) {
@@ -136,7 +135,6 @@
         }
         this.month.months = newMonths;
       },
-
       monthDown() {
         let newMonths = cloneDeep(this.month.months);
         for(let i = newMonths.length - 1; i > 0; i--) {
@@ -148,12 +146,12 @@
           newMonths[0] = [newMonths[0][0] - 1, newMonths[0][1]];
         }
         this.month.months = newMonths;
-      }
+      },
     },
     computed: {
       selectedMonth() {
         return (this.totalMonths - 1) / 2;
-      }
-    }
+      },
+    },
   }
 </script>

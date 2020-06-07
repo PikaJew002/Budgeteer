@@ -31,37 +31,29 @@
     props: {
       goal: {
         type: Object,
-        required: true
+        required: true,
       },
       highlight: {
         type: Boolean,
-        required: true
+        required: true,
       },
       open: {
         type: Boolean,
-        default: false
+        default: false,
       },
       remove: {
         type: Boolean,
-        default: false
+        default: false,
       },
       edit: {
         type: Boolean,
-        default: false
-      }
-    },
-    data() {
-      return {
-
-      };
+        default: false,
+      },
     },
     methods: {
       onModify() {
         EventBus.$emit('modify-goal', this.goal);
-      }
-    },
-    computed: {
-
+      },
     },
   }
 </script>

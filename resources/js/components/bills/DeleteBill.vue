@@ -21,13 +21,13 @@
   export default {
     components: {
       'b-modal': BModal,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     data() {
       return {
@@ -39,7 +39,7 @@
           day_due_on: 0,
           start_on: "",
           end_on: ""
-        }
+        },
       };
     },
     created() {
@@ -57,7 +57,7 @@
       onDelete() {
         this.$store.dispatch('deleteBill', this.bill);
         this.$emit('close');
-      }
+      },
     },
     computed: {
       showModal: {
@@ -71,7 +71,7 @@
             this.$emit('close');
           }
         }
-      }
-    }
+      },
+    },
   }
 </script>

@@ -21,13 +21,13 @@
   export default {
     components: {
       'b-modal': BModal,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     data() {
       return {
@@ -37,7 +37,7 @@
           amount: 0,
           amount_project: 0,
           paid_on: "",
-        }
+        },
       };
     },
     created() {
@@ -54,7 +54,7 @@
       onDelete() {
         this.$store.dispatch('deletePaycheck', this.paycheck);
         this.$emit('close');
-      }
+      },
     },
     computed: {
       showModal: {
@@ -68,7 +68,7 @@
             this.$emit('close');
           }
         }
-      }
-    }
+      },
+    },
   }
 </script>

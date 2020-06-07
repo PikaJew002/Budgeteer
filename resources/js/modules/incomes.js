@@ -20,7 +20,7 @@ export const incomes = {
     addIncomeErr: "",
     editIncomeStatus: 0,
     editIncomeErr: "",
-    deleteIncomeStatus: 0
+    deleteIncomeStatus: 0,
   },
   actions: {
     loadIncomes({ commit }, options) {
@@ -126,7 +126,7 @@ export const incomes = {
     },
     deleteIncomePaycheckContribution({ commit, state }, data) {
       commit('removeIncomePaycheckContribution', data);
-    }
+    },
   },
   mutations: {
     setIncomesLoadStatus(state, status) {
@@ -350,7 +350,7 @@ export const incomes = {
           }
         }
       }
-    }
+    },
   },
   getters: {
     getIncomesLoadStatus(state) {
@@ -373,6 +373,6 @@ export const incomes = {
     },
     getDeleteIncomeStatus(state) {
       return state.deleteIncomeStatus;
-    }
-  }
+    },
+  },
 }

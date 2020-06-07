@@ -21,13 +21,13 @@
   export default {
     components: {
       'b-modal': BModal,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     data() {
       return {
@@ -35,7 +35,7 @@
           id: 0,
           user_id: 0,
           name: ""
-        }
+        },
       };
     },
     created() {
@@ -50,7 +50,7 @@
       onDelete() {
         this.$store.dispatch('deleteIncome', this.income);
         this.$emit('close');
-      }
+      },
     },
     computed: {
       showModal: {
@@ -64,7 +64,7 @@
             this.$emit('close');
           }
         }
-      }
-    }
+      },
+    },
   }
 </script>

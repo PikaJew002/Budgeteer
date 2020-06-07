@@ -110,16 +110,16 @@
     components: {
       'b-modal': BModal,
       'b-alert': BAlert,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       user: {
-        type: Object
+        type: Object,
       },
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     mixins: [Alert],
     data() {
@@ -131,7 +131,7 @@
           day_due_on: null,
           start_on: "",
           end_on: ""
-        }
+        },
       };
     },
     validations: {
@@ -174,7 +174,7 @@
       onDelete(bill) {
         EventBus.$emit('delete-bill', bill);
         this.$emit('close');
-      }
+      },
     },
     computed: {
       showModal: {

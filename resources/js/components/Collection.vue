@@ -39,69 +39,67 @@
   import Item from './Item.vue';
   export default {
     components: {
-      Item
+      Item,
     },
     props: {
       items: {
         type: Array,
-        required: true
+        required: true,
       },
       type: {
         type: String,
-        required: true
+        required: true,
       },
       month: {
         type: Array,
-        required: false
+        required: false,
       },
       open: {
         type: Boolean,
-        default: false
+        default: false,
       },
       allowOpen: {
         type: Array,
         default: function() {
           return [];
-        }
+        },
       },
       allowOpenIf: {
         type: Array,
         default: function() {
           return [];
-        }
+        },
       },
       allowEdit: {
         type: Array,
         default: function() {
           return [];
-        }
+        },
       },
       allowRemove: {
         type: Array,
         default: function() {
           return [];
-        }
+        },
       },
       remove: {
         type: Boolean,
-        default: false
+        default: false,
       },
       edit: {
         type: Boolean,
-        default: false
+        default: false,
       },
       size: {
         type: Number,
-        default: 3
-      }
+        default: 3,
+      },
     },
-
     data() {
       return {
-        deckSize: this.size
+        deckSize: this.size,
       };
     },
-
     methods: {
       getItemIndex(row, col) {
         return (row - 1)*this.deckSize + col - 1;
@@ -144,17 +142,15 @@
       },
       capitalize(str) {
         return str.charAt(0).toUpperCase() + str.slice(1);
-      }
+      },
     },
-
     computed: {
       rowsFull() {
         return Math.floor(this.items.length / this.deckSize);
       },
-
       colsInPartialRow() {
         return (this.items.length % this.deckSize);
-      }
-    }
+      },
+    },
   }
 </script>

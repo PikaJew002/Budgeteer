@@ -33,7 +33,7 @@
       Collection,
       'make-income': MakeIncome,
       'modify-income': ModifyIncome,
-      'delete-income': DeleteIncome
+      'delete-income': DeleteIncome,
     },
     data() {
       return {
@@ -50,12 +50,12 @@
     methods: {
       makeIncome() {
         EventBus.$emit('make-income');
-      }
+      },
     },
     computed: {
       incomes() {
         return this.$store.getters.getIncomes;
-      }
-    }
+      },
+    },
   }
 </script>

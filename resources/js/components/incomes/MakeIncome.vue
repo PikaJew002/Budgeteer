@@ -47,23 +47,23 @@
     components: {
       'b-modal': BModal,
       'b-alert': BAlert,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       user: {
-        type: Object
+        type: Object,
       },
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     mixins: [Alert],
     data() {
       return {
         income: {
-          name: ""
-        }
+          name: "",
+        },
       };
     },
     validations: {
@@ -71,9 +71,9 @@
         name: {
           required,
           minLength: minLength(2),
-          maxLength: maxLength(50)
-        }
-      }
+          maxLength: maxLength(50),
+        },
+      },
     },
     created() {
       EventBus.$on('make-income', () => {
@@ -90,7 +90,7 @@
           this.$store.dispatch('addIncome', income);
           this.$emit('close');
         }
-      }
+      },
     },
     computed: {
       showModal: {
@@ -104,7 +104,7 @@
             this.$emit('close');
           }
         }
-      }
-    }
+      },
+    },
   };
 </script>

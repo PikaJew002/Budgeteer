@@ -54,7 +54,7 @@
     methods: {
       makeGoal() {
         EventBus.$emit('make-goal');
-      }
+      },
     },
     computed: {
       goals() {

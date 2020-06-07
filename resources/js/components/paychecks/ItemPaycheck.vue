@@ -81,24 +81,24 @@
     props: {
       paycheck: {
         type: Object,
-        required: true
+        required: true,
       },
       highlight: {
         type: Boolean,
-        required: true
+        required: true,
       },
       open: {
         type: Boolean,
-        default: false
+        default: false,
       },
       remove: {
         type: Boolean,
-        default: false
+        default: false,
       },
       edit: {
         type: Boolean,
-        default: false
-      }
+        default: false,
+      },
     },
     created() {
       EventBus.$on('bill-pair-start', arr => {
@@ -154,7 +154,7 @@
       },
       getMonthShort(date) {
         return moment(date).format('MMM');
-      }
+      },
     },
     computed: {
       leftOver() {
@@ -188,6 +188,6 @@
       incomesLoadStatus() {
         return this.$store.getters.getIncomesLoadStatus;
       },
-    }
+    },
   }
 </script>

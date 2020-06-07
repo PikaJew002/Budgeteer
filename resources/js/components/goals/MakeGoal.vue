@@ -131,7 +131,7 @@
       show: {
         type: Boolean,
         required: true,
-      }
+      },
     },
     mixins: [Alert],
     data() {

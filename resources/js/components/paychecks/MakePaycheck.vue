@@ -99,16 +99,16 @@
     components: {
       'b-modal': BModal,
       'b-alert': BAlert,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       user: {
-        type: Object
+        type: Object,
       },
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     mixins: [Alert],
     data() {
@@ -120,7 +120,7 @@
           amount: null,
           notify_when_paid: false,
           paid_on: ""
-        }
+        },
       };
     },
     validations: {
@@ -144,7 +144,7 @@
         paid_on: {
           required
         }
-      }
+      };
     },
     created() {
       EventBus.$on('make-paycheck', arr => {
@@ -187,7 +187,7 @@
         if(this.paycheck.notify_when_paid && !this.isNotifiable) {
           this.paycheck.notify_when_paid = false;
         }
-      }
+      },
     },
     computed: {
       showModal: {
@@ -217,6 +217,6 @@
       incomesLoadStatus() {
         return this.$store.getters.getIncomesLoadStatus;
       }
-    }
+    },
   };
 </script>
