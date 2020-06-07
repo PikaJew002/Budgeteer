@@ -99,7 +99,7 @@ class GoalsController extends Controller
      * @param  \App\Goal  $goal
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request)
     {
         /* validation */
         $request->validate([
@@ -113,7 +113,7 @@ class GoalsController extends Controller
             'contributions.*.start_on' => 'required|date',
             'contributions.*.end_on' => 'required|date|after:contributions.*.start_on',
         ]);
-        $goal = Goal::with('contributions')->findOrFail($id);
+        $goal = Goal::with('contributions')->findOrFail($request->input('id'));
         // the contributions that were present in $goal, but are not present on the $request
         $diff = collect($goal->contributions->modelKeys())->diff(collect($request->input('contributions'))->pluck('id')->reject(function($value, $key) {
             return $value == null;
