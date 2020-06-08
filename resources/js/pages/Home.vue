@@ -44,9 +44,16 @@
           with: ['contributions.paychecks'],
         });
       }
+      EventBus.$on('paycheck-pairable-pair-start', id => this.disableSelector = true);
       EventBus.$on('paycheck-pair-start', id => this.disableSelector = true);
-      EventBus.$on('bill-pair-end', id => this.disableSelector = false);
+      EventBus.$on('paycheck-pairable-pair-end', id => this.disableSelector = false);
       EventBus.$on('paycheck-pair-end', id => this.disableSelector = false);
+    },
+    beforeDestroy() {
+      EventBus.$off('paycheck-pairable-pair-start');
+      EventBus.$off('paycheck-pair-start');
+      EventBus.$off('paycheck-pairable-pair-end');
+      EventBus.$off('paycheck-pair-end');
     },
     computed: {
       /**
