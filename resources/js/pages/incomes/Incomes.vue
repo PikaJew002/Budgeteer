@@ -43,9 +43,11 @@
       }
     },
     created() {
-      this.$store.dispatch('loadIncomes', {
-        with: ['paychecks']
-      });
+      if(this.incomesLoadStatus < 2) {
+        this.$store.dispatch('loadIncomes', {
+          with: ['paychecks.bills', 'paychecks.contributions'],
+        });
+      }
     },
     methods: {
       makeIncome() {
@@ -54,6 +56,9 @@
     },
     computed: {
       incomes() {
+        return this.$store.getters.getIncomes;
+      },
+      incomesLoadStatus() {
         return this.$store.getters.getIncomes;
       },
     },

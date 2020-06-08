@@ -29,44 +29,40 @@
       };
     },
     created() {
-      this.$store.dispatch('loadBills', {
-        with: ['paychecks'],
-      });
-      this.$store.dispatch('loadIncomes', {
-        with: ['paychecks.bills'],
-      });
-      this.$store.dispatch('loadGoals', {
-        with: ['contributions.paychecks'],
-      });
-      EventBus.$on('bill-pair-start', id => this.disableSelector = true);
+      if(this.billsLoadStatus < 2) {
+        this.$store.dispatch('loadBills', {
+          with: ['paychecks'],
+        });
+      }
+      if(this.incomesLoadStatus < 2) {
+        this.$store.dispatch('loadIncomes', {
+          with: ['paychecks.bills', 'paychecks.contributions'],
+        });
+      }
+      if(this.goalsLoadStatus < 2) {
+        this.$store.dispatch('loadGoals', {
+          with: ['contributions.paychecks'],
+        });
+      }
       EventBus.$on('paycheck-pair-start', id => this.disableSelector = true);
       EventBus.$on('bill-pair-end', id => this.disableSelector = false);
       EventBus.$on('paycheck-pair-end', id => this.disableSelector = false);
     },
     computed: {
       /**
-        Gets the user
-        */
-      user() {
-        return this.$store.getters.getUser;
-      },
-      /**
-        Gets the user load status
-        */
-      userLoadStatus() {
-        return this.$store.getters.getUserLoadStatus();
-      },
-      /**
         Gets the incomes
         */
       incomes() {
         return this.$store.getters.getIncomes;
       },
-      /**
-        Gets the incomes load status
-        */
       incomesLoadStatus() {
         return this.$store.getters.getIncomesLoadStatus;
+      },
+      billsLoadStatus() {
+        return this.$store.getters.getBillsLoadStatus;
+      },
+      goalsLoadStatus() {
+        return this.$store.getters.getGoalsLoadStatus;
       },
       /**
         Gets currently selected incomes

@@ -49,7 +49,16 @@
       };
     },
     created() {
-      this.$store.dispatch('loadGoals', { with: ['contributions']});
+      if(this.goalsLoadStatus < 2) {
+        this.$store.dispatch('loadGoals', {
+          with: ['contributions.paychecks'],
+        });
+      }
+      if(this.goalsLoadStatus < 2) {
+        this.$store.dispatch('loadIncomes', {
+          with: ['paychecks.bills', 'paychecks.contributions'],
+        });
+      }
     },
     methods: {
       makeGoal() {
@@ -59,6 +68,12 @@
     computed: {
       goals() {
         return this.$store.getters.getGoals;
+      },
+      goalsLoadStatus() {
+        return this.$store.getters.getGoalsLoadStatus;
+      },
+      incomesLoadStatus() {
+        return this.$store.getters.getIncomesLoadStatus;
       },
     },
   }
