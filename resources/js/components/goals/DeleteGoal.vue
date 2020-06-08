@@ -32,8 +32,8 @@
     data() {
       return {
         goal: {
-          id: 0,
           user_id: 0,
+          id: null,
           name: "",
           amount: null,
         },

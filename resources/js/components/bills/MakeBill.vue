@@ -133,11 +133,10 @@
       return {
         bill: {
           name: "",
-          amount: "",
+          amount: null,
           day_due_on: null,
-          start_on: "",
-          end_on: ""
           start_on: null,
+          end_on: null,
         },
       };
     },
@@ -181,6 +180,9 @@
     methods: {
       onSave(bill) {
         if(!this.$v.bill.$invalid) {
+          if(this.bill.day_due_on == "") {
+            this.bill.day_due_on = null;
+          }
           this.$store.dispatch('addBill', bill);
           this.$emit('close');
         }

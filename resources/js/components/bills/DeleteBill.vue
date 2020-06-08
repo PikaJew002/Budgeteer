@@ -32,13 +32,12 @@
     data() {
       return {
         bill: {
-          id: 0,
-          user_id: 0,
+          id: null,
           name: "",
-          amount: 0,
-          day_due_on: 0,
-          start_on: "",
-          end_on: ""
+          amount: null,
+          day_due_on: null,
+          start_on: null,
+          end_on: null,
         },
       };
     },

@@ -32,9 +32,9 @@
     data() {
       return {
         income: {
-          id: 0,
           user_id: 0,
-          name: ""
+          id: null,
+          name: "",
         },
       };
     },

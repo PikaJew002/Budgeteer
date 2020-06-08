@@ -125,12 +125,12 @@
     data() {
       return {
         bill: {
-          id: 0,
+          id: null,
           name: "",
           amount: null,
           day_due_on: null,
-          start_on: "",
-          end_on: ""
+          start_on: null,
+          end_on: null,
         },
       };
     },
@@ -168,6 +168,9 @@
     },
     methods: {
       onSave(bill) {
+        if(this.bill.day_due_on == "") {
+          this.bill.day_due_on = null;
+        }
         this.$store.dispatch('editBill', bill);
         this.$emit('close');
       },

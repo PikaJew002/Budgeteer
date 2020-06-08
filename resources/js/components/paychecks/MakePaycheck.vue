@@ -115,11 +115,11 @@
       return {
         projected: false,
         paycheck: {
-          income_id: 0,
+          income_id: null,
           amount_project: null,
           amount: null,
           notify_when_paid: false,
-          paid_on: ""
+          paid_on: null,
         },
       };
     },

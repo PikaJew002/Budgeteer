@@ -104,11 +104,11 @@
     mixins: [Alert],
     data() {
       return {
-        type: '',
+        type: "",
         contribution: {
           amount: null,
-          start_on: "",
-          end_on: "",
+          start_on: null,
+          end_on: null,
         },
       };
     },
@@ -134,8 +134,8 @@
       EventBus.$on('make-contribution', (type) => {
         this.type = type;
         this.contribution.amount = null;
-        this.contribution.start_on = "";
-        this.contribution.end_on = "";
+        this.contribution.start_on = null;
+        this.contribution.end_on = null;
         this.showModal = true;
       });
       EventBus.$on('close-make-contribution', () => {

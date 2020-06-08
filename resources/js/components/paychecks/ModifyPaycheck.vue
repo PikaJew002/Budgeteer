@@ -123,13 +123,13 @@
       return {
         projected: false,
         paycheck: {
-          id: 0,
-          income_id: 0,
+          id: null,
+          income_id: null,
           amount_project: null,
           amount: null,
           notified_at: null,
           notify_when_paid: false,
-          paid_on: ""
+          paid_on: null,
         },
       };
     },

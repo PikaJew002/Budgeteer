@@ -139,7 +139,7 @@
     data() {
       return {
         goal: {
-          id: 0,
+          id: null,
           name: "",
           amount: null,
           initial_amount: null,
