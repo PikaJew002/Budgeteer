@@ -26,7 +26,7 @@ export default {
     @param paycheck_id int
     @return Promise
   */
-  deleteContributionPaycheck: function(contribution_id, paycheck_id) {
-    return axios.delete(BUDGETEER_CONFIG.API_URL + '/contributionpaycheck/' + contribution_id + '/' + paycheck_id);
+  deleteContributionPaycheck: function(contribution_paycheck) {
+    return axios.delete(BUDGETEER_CONFIG.API_URL + '/contributionpaycheck/' + contribution_paycheck.contribution_id + '/' + contribution_paycheck.paycheck_id);
   },
 }
