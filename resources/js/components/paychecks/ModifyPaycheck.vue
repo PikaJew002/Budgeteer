@@ -157,27 +157,33 @@
       };
     },
     created() {
-      EventBus.$on('modify-paycheck', obj => {
-        this.paycheck.id = obj.id;
-        this.paycheck.income_id = obj.income_id;
-        if(obj.amount == null) {
-          this.paycheck.amount_project = ""+obj.amount_project;
+      EventBus.$on('modify-paycheck', paycheck => {
+        this.paycheck.id = paycheck.id;
+        this.paycheck.income_id = paycheck.income_id;
+        if(paycheck.amount == null) {
+          this.paycheck.amount_project = ""+paycheck.amount_project;
           this.paycheck.amount = null;
           this.projected = true;
         } else {
-          this.paycheck.amount = ""+obj.amount;
+          this.paycheck.amount = ""+paycheck.amount;
           this.paycheck.amount_project = null;
           this.projected = false;
         }
-        this.paycheck.notified_at = obj.notified_at;
-        this.paycheck.notify_when_paid = obj.notify_when_paid;
-        this.paycheck.paid_on = obj.paid_on;
+        this.paycheck.notified_at = paycheck.notified_at;
+        this.paycheck.notify_when_paid = paycheck.notify_when_paid;
+        this.paycheck.paid_on = paycheck.paid_on;
         this.showModal = true;
       });
     },
     methods: {
       onSave(paycheck) {
         if(!this.$v.paycheck.$invalid) {
+          if(this.paycheck.amount == "") {
+            this.paycheck.amount = null;
+          }
+          if(this.paycheck.amount_project == "") {
+            this.paycheck.amount_project = null;
+          }
           this.$store.dispatch('editPaycheck', paycheck);
           this.$emit('close');
         }
