@@ -159,11 +159,11 @@
           amount: {
             required,
             validDecimal,
-            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)), // allows null and ""
+            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)),
           },
           initial_amount: {
             validDecimal,
-            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)), // allows null and ""
+            notZero: (initial_amount) => ((initial_amount == "" || initial_amount == null) || (Number(initial_amount) > 0)),
           },
         },
       };

@@ -160,6 +160,12 @@
     methods: {
       onSave(paycheck) {
         if(!this.$v.paycheck.$invalid) {
+          if(this.paycheck.amount == "") {
+            this.paycheck.amount = null;
+          }
+          if(this.paycheck.amount_project == "") {
+            this.paycheck.amount_project = null;
+          }
           this.$store.dispatch('addPaycheck', paycheck);
           this.$emit('close');
         }
