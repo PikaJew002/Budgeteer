@@ -49,6 +49,9 @@
             <div v-if="!$v.paycheck.amount.validDecimal || !$v.paycheck.amount_project.validDecimal" class="invalid-feedback d-block">
               Amount must be a valid decimal ($xxxx.xx)
             </div>
+            <div v-if="($v.paycheck.amount.validDecimal && !$v.paycheck.amount.notZero) || ($v.paycheck.amount_project.validDecimal && !$v.paycheck.amount_project.notZero)" class="invalid-feedback d-block">
+              Amount must be greater than zero (0)
+            </div>
           </div>
         </div>
         <div class="row">
@@ -72,7 +75,7 @@
                   v-model.date="paycheck.paid_on"
                   @change="onPaidOnChange()">
           <div v-if="!$v.paycheck.paid_on.required" class="invalid-feedback">
-            A valid date is required
+            Paid On is required (valid date)
           </div>
         </div>
       </form>
@@ -123,27 +126,31 @@
         },
       };
     },
-    validations: {
-      paycheck: {
-        income_id: {
-          required,
-          minValue: minValue(1)
+    validations() {
+      return {
+        paycheck: {
+          income_id: {
+            required,
+            minValue: minValue(1),
+          },
+          amount_project: {
+            required: requiredIf(function() {
+              return !this.paycheck.amount;
+            }),
+            validDecimal,
+            notZero: (amount_project) => ((amount_project == "" || amount_project == null) || (Number(amount_project) > 0)),
+          },
+          amount: {
+            required: requiredIf(function() {
+              return !this.paycheck.amount_project;
+            }),
+            validDecimal,
+            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)),
+          },
+          paid_on: {
+            required,
+          },
         },
-        amount_project: {
-          required: requiredIf(function() {
-            return !this.paycheck.amount;
-          }),
-          validDecimal
-        },
-        amount: {
-          required: requiredIf(function() {
-            return !this.paycheck.amount_project;
-          }),
-          validDecimal
-        },
-        paid_on: {
-          required
-        }
       };
     },
     created() {
@@ -171,12 +178,12 @@
         }
       },
       formatAmount() {
-        if(Number(this.paycheck.amount).toFixed(2) != "NaN") {
+        if(Number(this.paycheck.amount).toFixed(2) != "NaN" && this.paycheck.amount != "" && this.paycheck.amount != null) {
           this.paycheck.amount = Number(this.paycheck.amount).toFixed(2);
         }
       },
       formatAmountProject() {
-        if(Number(this.paycheck.amount_project).toFixed(2) != "NaN") {
+        if(Number(this.paycheck.amount_project).toFixed(2) != "NaN" && this.paycheck.amount_project != "" && this.paycheck.amount_project != null) {
           this.paycheck.amount_project = Number(this.paycheck.amount_project).toFixed(2);
         }
       },
@@ -217,12 +224,6 @@
       incomes() {
         return this.$store.getters.getIncomes;
       },
-      /**
-        Gets the incomes load status
-        */
-      incomesLoadStatus() {
-        return this.$store.getters.getIncomesLoadStatus;
-      }
     },
   };
 </script>
