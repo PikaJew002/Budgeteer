@@ -17,9 +17,7 @@ export const incomes = {
     income: {},
     incomeLoadStatus: 0,
     addIncomeStatus: 0,
-    addIncomeErr: "",
     editIncomeStatus: 0,
-    editIncomeErr: "",
     deleteIncomeStatus: 0,
   },
   actions: {
@@ -47,18 +45,18 @@ export const incomes = {
           commit('setIncomeLoadStatus', 3);
         });
     },
-    addIncome({ commit, state, dispatch }, income) {
+    addIncome({ commit }, income) {
       commit('setAddIncomeStatus', 1);
-      commit('insertIncome', income);
       IncomeAPI.postIncome(income)
         .then(res => {
+          commit('insertIncome', res.data.data);
           commit('setAddIncomeStatus', 2);
         })
         .catch(err => {
           commit('setAddIncomeStatus', 3);
         });
     },
-    editIncome({ commit, state, dispatch }, income) {
+    editIncome({ commit }, income) {
       commit('setEditIncomeStatus', 1);
       commit('updateIncome', income);
       IncomeAPI.putIncome(income)
@@ -69,7 +67,7 @@ export const incomes = {
           commit('setEditIncomeStatus', 3);
         });
     },
-    deleteIncome({ commit, state, dispatch }, income) {
+    deleteIncome({ commit, dispatch }, income) {
       commit('setDeleteIncomeStatus', 1);
       for(let i in income.paychecks) {
         for(let j in income.paychecks[i].bills) {
@@ -94,37 +92,37 @@ export const incomes = {
           commit('setDeleteIncomeStatus', 3);
         });
     },
-    addIncomePaycheck({ commit, state }, paycheck) {
+    addIncomePaycheck({ commit }, paycheck) {
       commit('insertIncomePaycheck', paycheck);
     },
-    editIncomePaycheck({ commit, state }, paycheck) {
+    editIncomePaycheck({ commit }, paycheck) {
       commit('updateIncomePaycheck', paycheck);
     },
-    deleteIncomePaycheck({ commit, state }, paycheck) {
+    deleteIncomePaycheck({ commit }, paycheck) {
       commit('removeIncomePaycheck', paycheck);
     },
-    addIncomePaycheckBill({ commit, state }, data) {
+    addIncomePaycheckBill({ commit }, data) {
       commit('insertIncomePaycheckBill', data);
     },
-    editIncomePaycheckBill({ commit, state }, data) {
+    editIncomePaycheckBill({ commit }, data) {
       commit('updateIncomePaycheckBill', data);
     },
-    editIncomePaycheckBillPivot({ commit, state }, data) {
+    editIncomePaycheckBillPivot({ commit }, data) {
       commit('updateIncomePaycheckBillPivot', data);
     },
-    deleteIncomePaycheckBill({ commit, state }, data) {
+    deleteIncomePaycheckBill({ commit }, data) {
       commit('removeIncomePaycheckBill', data);
     },
-    addIncomePaycheckContribution({ commit, state }, data) {
+    addIncomePaycheckContribution({ commit }, data) {
       commit('insertIncomePaycheckContribution', data);
     },
-    editIncomePaycheckContribution({ commit, state }, data) {
+    editIncomePaycheckContribution({ commit }, data) {
       commit('updateIncomePaycheckContribution', data);
     },
-    editIncomePaycheckContributionPivot({ commit, state }, data) {
+    editIncomePaycheckContributionPivot({ commit }, data) {
       commit('updateIncomePaycheckContributionPivot', data);
     },
-    deleteIncomePaycheckContribution({ commit, state }, data) {
+    deleteIncomePaycheckContribution({ commit }, data) {
       commit('removeIncomePaycheckContribution', data);
     },
   },
@@ -155,8 +153,8 @@ export const incomes = {
     },
     updateIncome(state, income) {
       for(let i in state.incomes) {
-        if(state.incomes[i].id == income) {
-          Vue.set(state.incomes, i, income);
+        if(state.incomes[i].id == income.id) {
+          Vue.set(state.incomes[i], 'name', income.name);
           return;
         }
       }
@@ -172,12 +170,11 @@ export const incomes = {
     insertIncomePaycheck(state, paycheck) {
       for(let i in state.incomes) {
         if(state.incomes[i].id == paycheck.income_id) {
-          for(let j in state.incomes[i].paychecks) {
-            if(state.incomes[i].paychecks[j].id == paycheck.id) {
-              state.incomes[i].paychecks.push(paycheck);
-              return;
-            }
+          if(!state.incomes[i].hasOwnProperty('paychecks')) {
+            Vue.set(state.incomes[i], 'paychecks', []);
           }
+          state.incomes[i].paychecks.push(paycheck);
+          return;
         }
       }
     },
@@ -186,7 +183,10 @@ export const incomes = {
         if(state.incomes[i].id == paycheck.income_id) {
           for(let j in state.incomes[i].paychecks) {
             if(state.incomes[i].paychecks[j].id == paycheck.id) {
-              Vue.set(state.incomes[i].paychecks, j, paycheck);
+              Vue.set(state.incomes[i].paychecks[j], 'amount', paycheck.amount);
+              Vue.set(state.incomes[i].paychecks[j], 'amount_project', paycheck.amount_project);
+              Vue.set(state.incomes[i].paychecks[j], 'notify_when_paid', paycheck.notify_when_paid);
+              Vue.set(state.incomes[i].paychecks[j], 'paid_on', paycheck.paid_on);
               return;
             }
           }
@@ -215,6 +215,9 @@ export const incomes = {
               billClone['pivot_amount_project'] = data.bill_paycheck.amount_project;
               billClone['pivot_due_on'] = data.bill_paycheck.due_on;
               billClone['pivot_paid_on'] = data.bill_paycheck.paid_on;
+              if(!state.incomes[i].paychecks[j].hasOwnProperty('bills')) {
+                Vue.set(state.incomes[i].paychecks[j], 'bills', []);
+              }
               state.incomes[i].paychecks[j].bills.push(billClone);
               return;
             }
@@ -283,16 +286,15 @@ export const incomes = {
         if(state.incomes[i].id == data.paycheck.income_id) {
           for(let j in state.incomes[i].paychecks) {
             if(state.incomes[i].paychecks[j].id == data.paycheck.id) {
-              for(let k in state.incomes[i].paychecks[j].contributions) {
-                if(state.incomes[i].paychecks[j].contributions[k].id == data.contribution.id) {
-                  contributionClone['pivot_amount'] = data.contribution_paycheck.amount;
-                  contributionClone['pivot_amount_project'] = data.contribution_paycheck.amount_project;
-                  contributionClone['pivot_due_on'] = data.contribution_paycheck.due_on;
-                  contributionClone['pivot_paid_on'] = data.contribution_paycheck.paid_on;
-                  state.incomes[i].paychecks[j].contributions.push(contributionClone);
-                  return;
-                }
+              contributionClone['pivot_amount'] = data.contribution_paycheck.amount;
+              contributionClone['pivot_amount_project'] = data.contribution_paycheck.amount_project;
+              contributionClone['pivot_due_on'] = data.contribution_paycheck.due_on;
+              contributionClone['pivot_paid_on'] = data.contribution_paycheck.paid_on;
+              if(!state.incomes[i].paychecks[j].hasOwnProperty('contributions')) {
+                Vue.set(state.incomes[i].paychecks[j], 'contributions', []);
               }
+              state.incomes[i].paychecks[j].contributions.push(contributionClone);
+              return;
             }
           }
         }
@@ -306,6 +308,7 @@ export const incomes = {
               for(let k in state.incomes[i].paychecks[j].contributions) {
                 if(state.incomes[i].paychecks[j].contributions[k].id == data.contribution.id) {
                   Vue.set(state.incomes[i].paychecks[j].contributions[k], 'amount', data.contribution.amount);
+                  Vue.set(state.incomes[i].paychecks[j].contributions[k], 'day_due_on', data.contribution.day_due_on);
                   Vue.set(state.incomes[i].paychecks[j].contributions[k], 'start_on', data.contribution.start_on);
                   Vue.set(state.incomes[i].paychecks[j].contributions[k], 'end_on', data.contribution.end_on);
                   return;

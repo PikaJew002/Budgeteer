@@ -45,7 +45,7 @@ export const bills = {
         });
 
     },
-    addBill({ commit, state, dispatch }, bill) {
+    addBill({ commit }, bill) {
       commit('setAddBillStatus', 1);
       commit('insertBill', bill);
       BillAPI.postBill(bill)
@@ -130,7 +130,11 @@ export const bills = {
     updateBill(state, bill) {
       for(let i in state.bills) {
         if(state.bills[i].id == bill.id) {
-          Vue.set(state.bills, i, bill);
+          Vue.set(state.bills[i], 'name', bill.name);
+          Vue.set(state.bills[i], 'amount', bill.amount);
+          Vue.set(state.bills[i], 'day_due_on', bill.day_due_on);
+          Vue.set(state.bills[i], 'start_on', bill.start_on);
+          Vue.set(state.bills[i], 'end_on', bill.end_on);
           return;
         }
       }
@@ -147,10 +151,13 @@ export const bills = {
       let paycheckClone = cloneDeep(data.paycheck);
       for(let i in state.bills) {
         if(state.bills[i].id == data.bill.id) {
-          paycheckClone['pivot_amount'] = data.bill_paycheck.amount;
-          paycheckClone['pivot_amount_project'] = data.bill_paycheck.amount_project;
-          paycheckClone['pivot_due_on'] = data.bill_paycheck.due_on;
-          paycheckClone['pivot_paid_on'] = data.bill_paycheck.paid_on;
+          paycheckClone['bill_amount'] = data.bill_paycheck.amount;
+          paycheckClone['bill_amount_project'] = data.bill_paycheck.amount_project;
+          paycheckClone['bill_due_on'] = data.bill_paycheck.due_on;
+          paycheckClone['bill_paid_on'] = data.bill_paycheck.paid_on;
+          if(!state.bills[i].hasOwnProperty('paychecks')) {
+            Vue.set(state.bills[i], 'paychecks', []);
+          }
           state.bills[i].paychecks.push(paycheckClone);
           return;
         }
@@ -176,10 +183,10 @@ export const bills = {
         if(state.bills[i].id == data.bill.id) {
           for(let j in state.bills[i].paychecks) {
             if(state.bills[i].paychecks[j].id == data.paycheck.id) {
-              Vue.set(state.bills[i].paychecks[j], 'pivot_amount', data.bill_paycheck.amount);
-              Vue.set(state.bills[i].paychecks[j], 'pivot_amount_project', data.bill_paycheck.amount_project);
-              Vue.set(state.bills[i].paychecks[j], 'pivot_due_on', data.bill_paycheck.due_on);
-              Vue.set(state.bills[i].paychecks[j], 'pivot_paid_on', data.bill_paycheck.paid_on);
+              Vue.set(state.bills[i].paychecks[j], 'bill_amount', data.bill_paycheck.amount);
+              Vue.set(state.bills[i].paychecks[j], 'bill_amount_project', data.bill_paycheck.amount_project);
+              Vue.set(state.bills[i].paychecks[j], 'bill_due_on', data.bill_paycheck.due_on);
+              Vue.set(state.bills[i].paychecks[j], 'bill_paid_on', data.bill_paycheck.paid_on);
               return;
             }
           }

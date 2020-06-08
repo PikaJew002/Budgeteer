@@ -44,29 +44,85 @@ export const goals = {
           commit('setGoalLoadStatus', 3);
         });
     },
-    addGoal({ commit, state, dispatch }, goal) {
+    addGoal({ commit }, goal) {
       commit('setAddGoalStatus', 1);
-      commit('insertGoal', goal);
       GoalAPI.postGoal(goal)
         .then(res => {
+          commit('insertGoal', res.data.data);
           commit('setAddGoalStatus', 2);
         })
         .catch(err => {
           commit('setAddGoalStatus', 3);
         });
     },
-    editGoal({ commit, state, dispatch }, goal) {
+    editGoal({ commit, state, dispatch }, data) {
       commit('setEditGoalStatus', 1);
-      commit('updateGoal', goal);
-      GoalAPI.putGoal(goal)
+      for(let i in data.contributionsDeleted) {
+        if(data.contributionsDeleted[i].hasOwnProperty('id')) {
+          if(data.contributionsDeleted[i].hasOwnProperty('paychecks')) {
+            for(let j in data.contributionsDeleted[i].paychecks) {
+              dispatch('deleteIncomePaycheckContribution', {
+                paycheck: data.contributionsDeleted[i].paychecks[j],
+                contribution: data.contributionsDeleted[i],
+              });
+            }
+          }
+          commit('removeGoalContribution', data.contributionsDeleted[i]);
+        }
+      }
+      for(let k in data.paychecksDeleted) {
+        for(let l in data.goal.contributions) {
+          if(data.goal.contributions[l].hasOwnProperty('paychecks')) {
+            for(let m in data.goal.contributions[l].paychecks) {
+              if(data.goal.contributions[l].paychecks[m].id == data.paychecksDeleted[k].id) {
+                dispatch('deleteIncomePaycheckContribution', {
+                  paycheck: data.paychecksDeleted[k],
+                  contribution: data.goal.contributions[l],
+                });
+                commit('removeGoalContributionPaycheck', {
+                  contribution: data.goal.contributions[l],
+                  paycheck: data.paychecksDeleted[k],
+                });
+              }
+            }
+          }
+        }
+      }
+      commit('updateGoal', data.goal);
+      GoalAPI.putGoal(data.goal)
         .then(res => {
+          // update or insert contributions found in the resonse goal
+          for(let i in res.data.data.contributions) {
+            for(let j in state.goals) {
+              if(state.goals[j].id == res.data.data.id) {
+                var found = false;
+                for(let k in state.goals[j].contributions) {
+                  if(res.data.data.contributions[i].id == state.goals[j].contributions[k].id) {
+                    found = true;
+                    for(let l in res.data.data.contributions[i].paychecks) {
+                      dispatch('editIncomePaycheckContribution', {
+                        paycheck: res.data.data.contributions[i].paychecks[l],
+                        contribution: res.data.data.contributions[i],
+                      });
+                    }
+                    commit('updateGoalContribution', res.data.data.contributions[i]);
+                    break;
+                  }
+                }
+                if(!found) {
+                  commit('insertGoalContribution', res.data.data.contributions[i]);
+                }
+                break;
+              }
+            }
+          }
           commit('setEditGoalStatus', 2);
         })
         .catch(err => {
           commit('setEditGoalStatus', 3);
         });
     },
-    deleteGoal({ commit, state, dispatch }, goal) {
+    deleteGoal({ commit, dispatch }, goal) {
       commit('setDeleteGoalStatus', 1);
       for(let i in goal.contributions) {
         for(let j in goal.contributions[i].paychecks) {
@@ -85,19 +141,22 @@ export const goals = {
           commit('setDeleteGoalStatus', 3);
         });
     },
-    editGoalContribution({ commit, state }, data) {
-      commit('updateGoalContribution', data);
+    addGoalContribution({ commit }, contribution) {
+      commit('insertGoalContribution', contribution);
     },
-    addGoalContributionPaycheck({ commit, state }, data) {
+    editGoalContribution({ commit }, contribution) {
+      commit('updateGoalContribution', contribution);
+    },
+    addGoalContributionPaycheck({ commit }, data) {
       commit('insertGoalContributionPaycheck', data);
     },
-    editGoalContributionPaycheck({ commit, state }, data) {
+    editGoalContributionPaycheck({ commit }, data) {
       commit('updateGoalContributionPaycheck', data);
     },
-    editGoalContributionPaycheckPivot({ commit, state }, data) {
+    editGoalContributionPaycheckPivot({ commit }, data) {
       commit('updateGoalContributionPaycheckPivot', data);
     },
-    deleteGoalContributionPaycheck({ commit, state }, data) {
+    deleteGoalContributionPaycheck({ commit }, data) {
       commit('removeGoalContributionPaycheck', data);
     },
   },
@@ -129,7 +188,9 @@ export const goals = {
     updateGoal(state, goal) {
       for(let i in state.goals) {
         if(state.goals[i].id == goal.id) {
-          Vue.set(state.goals, i, goal);
+          Vue.set(state.goals[i], 'name', goal.name);
+          Vue.set(state.goals[i], 'amount', goal.amount);
+          Vue.set(state.goals[i], 'initial_amount ', goal.initial_amount);
           return;
         }
       }
@@ -142,12 +203,38 @@ export const goals = {
         }
       }
     },
-    updateGoalContribution(state, data) {
+    insertGoalContribution(state, contribution) {
       for(let i in state.goals) {
-        if(state.goals[i].id == data.goal.id) {
+        if(state.goals[i].id == contribution.goal_id) {
+          if(!state.goals[i].hasOwnProperty('contributions')) {
+            Vue.set(state.goals[i], 'contributions', []);
+          }
+          state.goals[i].contributions.push(contribution);
+          return;
+        }
+      }
+    },
+    updateGoalContribution(state, contribution) {
+      for(let i in state.goals) {
+        if(state.goals[i].id == contribution.goal_id) {
           for(let j in state.goals[i].contributions) {
-            if(state.goals[i].contributions[j].id == data.contribution.id) {
-              Vue.set(state.goals[i].contributions, i, data.contribution);
+            if(state.goals[i].contributions[j].id == contribution.id) {
+              Vue.set(state.goals[i].contributions[j], 'amount', contribution.amount);
+              Vue.set(state.goals[i].contributions[j], 'day_due_on', contribution.day_due_on);
+              Vue.set(state.goals[i].contributions[j], 'start_on', contribution.start_on);
+              Vue.set(state.goals[i].contributions[j], 'end_on', contribution.end_on);
+              return;
+            }
+          }
+        }
+      }
+    },
+    removeGoalContribution(state, contribution) {
+      for(let i in state.goals) {
+        if(state.goals[i].id == contribution.goal_id) {
+          for(let j in state.goals[i].contributions) {
+            if(state.goals[i].contributions[j].id == contribution.id) {
+              state.goals[i].contributions.splice(j, 1);
               return;
             }
           }
@@ -160,10 +247,13 @@ export const goals = {
         if(state.goals[i].id == data.contribution.goal_id) {
           for(let j in state.goals[i].contributions) {
             if(state.goals[i].contributions[j].id == data.contribution.id) {
-              paycheckClone['pivot_amount'] = data.contribution_paycheck.amount;
-              paycheckClone['pivot_amount_project'] = data.contribution_paycheck.amount_project;
-              paycheckClone['pivot_due_on'] = data.contribution_paycheck.due_on;
-              paycheckClone['pivot_paid_on'] = data.contribution_paycheck.paid_on;
+              paycheckClone['contribution_amount'] = data.contribution_paycheck.amount;
+              paycheckClone['contribution_amount_project'] = data.contribution_paycheck.amount_project;
+              paycheckClone['contribution_due_on'] = data.contribution_paycheck.due_on;
+              paycheckClone['contribution_paid_on'] = data.contribution_paycheck.paid_on;
+              if(!state.goals[i].contributions[j].hasOwnProperty('paychecks')) {
+                Vue.set(state.goals[i].contributions[j], 'paychecks', []);
+              }
               state.goals[i].contributions[j].paychecks.push(paycheckClone);
               return;
             }
@@ -197,10 +287,10 @@ export const goals = {
             if(state.goals[i].contributions[j].id == data.contribution.id) {
               for(let k in state.goals[i].contributions[j].paychecks) {
                 if(state.goals[i].contributions[j].paychecks[k].id == data.paycheck.id) {
-                  Vue.set(state.goals[i].contributions[j].paychecks[k], 'pivot_amount', data.contribution_paycheck.amount);
-                  Vue.set(state.goals[i].contributions[j].paychecks[k], 'pivot_amount_project', data.contribution_paycheck.amount_project);
-                  Vue.set(state.goals[i].contributions[j].paychecks[k], 'pivot_due_on', data.contribution_paycheck.due_on);
-                  Vue.set(state.goals[i].contributions[j].paychecks[k], 'pivot_paid_on', data.contribution_paycheck.paid_on);
+                  Vue.set(state.goals[i].contributions[j].paychecks[k], 'contribution_amount', data.contribution_paycheck.amount);
+                  Vue.set(state.goals[i].contributions[j].paychecks[k], 'contribution_amount_project', data.contribution_paycheck.amount_project);
+                  Vue.set(state.goals[i].contributions[j].paychecks[k], 'contribution_due_on', data.contribution_paycheck.due_on);
+                  Vue.set(state.goals[i].contributions[j].paychecks[k], 'contribution_paid_on', data.contribution_paycheck.paid_on);
                   return;
                 }
               }
