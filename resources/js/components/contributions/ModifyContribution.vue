@@ -1,6 +1,6 @@
 <template>
   <div>
-    <b-modal v-model="showModal" ref="make-contribution-modal" id="make-contribution-modal" title="Make Goal Contribution" centered no-close-on-backdrop>
+    <b-modal v-model="showModal" ref="modify-contribution-modal" id="modify-contribution-modal" title="Modify Goal Contribution" centered no-close-on-backdrop>
       <b-alert :show="message.countDown"
                dismissible
                :variant="message.type"
@@ -131,13 +131,18 @@
       return {
         type: "",
         contribution: {
+          id: null,
           goal_id: null,
           amount: null,
           day_due_on: null,
+          diff: null,
+          monthSpan: null,
           start_on: null,
           end_on: null,
+          paychecks: [],
         },
         contributions: [],
+        paychecksDeleted: [],
       };
     },
     validations() {
@@ -156,7 +161,7 @@
           start_on: {
             required,
             noOverlap: (start_on) => this.noOverlap(start_on),
-            noInterlap: (start_on) => this.noInterlap(start_on, this.contribution.start_on),
+            noInterlap: (start_on) => this.noInterlap(start_on, this.contribution.end_on),
           },
           end_on: {
             required,
@@ -168,37 +173,100 @@
       };
     },
     created() {
-      EventBus.$on('make-contribution', (data) => {
+      EventBus.$on('modify-contribution', (data) => {
         this.type = data.type;
-        this.contribution.amount = null;
-        this.contribution.day_due_on = null;
-        this.contribution.start_on = null;
-        this.contribution.end_on = null;
+        this.index = data.index;
+        if(data.contributions[this.index].hasOwnProperty('id')) {
+          this.contribution.id = data.contributions[this.index].id;
+        }
+        if(data.contributions[this.index].hasOwnProperty('goal_id')) {
+          this.contribution.goal_id = data.contributions[this.index].goal_id;
+        }
+        this.contribution.amount = data.contributions[this.index].amount;
+        this.contribution.day_due_on = data.contributions[this.index].day_due_on;
+        this.contribution.diff = data.contributions[this.index].diff;
+        if(data.contributions[this.index].monthSpan.length > 1) {
+          this.contribution.monthSpan = [];
+          this.contribution.monthSpan.push(data.contributions[this.index].monthSpan[0]);
+          this.contribution.monthSpan.push(data.contributions[this.index].monthSpan[1]);
+        } else {
+          this.contribution.monthSpan = [];
+          this.contribution.monthSpan.push(data.contributions[this.index].monthSpan[0]);
+        }
+        this.contribution.monthSpan = data.contributions[this.index].monthSpan;
+        this.contribution.start_on = data.contributions[this.index].start_on;
+        this.contribution.end_on = data.contributions[this.index].end_on;
+        this.contribution.paychecks = [];
+        if(data.contributions[this.index].hasOwnProperty('paychecks')) {
+          for(let i in data.contributions[this.index].paychecks) {
+            this.contribution.paychecks.push(data.contributions[this.index].paychecks[i]);
+          }
+        }
+        if(data.hasOwnProperty('paychecks')) {
+          this.paychecksDeleted = [];
+          for(let i in data.paychecks) {
+            this.paychecksDeleted.push(data.paychecks[i]);
+          }
+        }
         this.contributions = [];
         for(let j in data.contributions) {
           this.contributions.push(data.contributions[j]);
         }
         this.showModal = true;
       });
+      EventBus.$on('save-modify-contribution-confirm-save', (data) => {
+        this.onSaveConfirm(data.paychecksToRemove);
+      });
     },
     beforeDestroy() {
-      EventBus.$off('make-contribution');
+      EventBus.$off('modify-contribution');
+      EventBus.$off('save-modify-contribution-confirm-save');
     },
     methods: {
       onSave(contribution) {
         if(!this.$v.contribution.$invalid) {
-          if(this.contribution.day_due_on == "") {
-            this.contribution.day_due_on = null;
+          if(this.type == 'modify-goal') {
+            let paychecksToRemove = [];
+            for(let i in contribution.paychecks) {
+              if(!moment(contribution.paychecks[i].paid_on).isBetween(contribution.start_on, contribution.end_on, 'month', '[]')) {
+                var found = false;
+                for(let j in this.paychecksDeleted) {
+                  if(contribution.paychecks[i].id == this.paychecksDeleted[j].id) {
+                    found = true;
+                    break;
+                  }
+                }
+                if(!found) {
+                  paychecksToRemove.push(contribution.paychecks[i]);
+                }
+              }
+            }
+            if(paychecksToRemove.length > 0) {
+              EventBus.$emit('save-modify-contribution-confirm', {
+                paychecksToRemove: paychecksToRemove,
+                index: this.index,
+                contribution: contribution,
+              });
+              return;
+            }
           }
-          let newContribution = cloneDeep(contribution);
-          newContribution.monthSpan = this.monthSpan;
-          newContribution.diff = Math.ceil(moment(newContribution.end_on).diff(newContribution.start_on, 'months', true));
-          EventBus.$emit('save-make-contribution', {
-            type: this.type,
-            contribution: newContribution,
-          });
-          this.showModal = false;
+          this.onSaveConfirm([]);
         }
+      },
+      onSaveConfirm(paychecksToRemove) {
+        if(this.contribution.day_due_on == "") {
+          this.contribution.day_due_on = null;
+        }
+        let newContribution = cloneDeep(this.contribution);
+        newContribution.monthSpan = this.monthSpan;
+        newContribution.diff = Math.ceil(moment(newContribution.end_on).diff(newContribution.start_on, 'months', true));
+        EventBus.$emit('save-modify-contribution', {
+          type: this.type,
+          index: this.index,
+          contribution: newContribution,
+          paychecksToRemove: paychecksToRemove,
+        });
+        this.showModal = false;
       },
       formatAmount() {
         if(Number(this.contribution.amount).toFixed(2) != "NaN" && this.contribution.amount != "" && this.contribution.amount != null) {
@@ -207,6 +275,9 @@
       },
       noOverlap(any_on) {
         for(let i in this.contributions) {
+          if(this.contributions[i].monthSpan[0] == this.contribution.monthSpan[0]) {
+            continue;
+          }
           if(moment(any_on).isBetween(this.contributions[i].start_on, this.contributions[i].end_on, 'month', "[]")) {
             return false;
           }
@@ -215,6 +286,9 @@
       },
       noInterlap(start_on, end_on) {
         for(let i in this.contributions) {
+          if(this.contributions[i].monthSpan[0] == this.contribution.monthSpan[0]) {
+            continue;
+          }
           if(moment(this.contributions[i].start_on).isBetween(start_on, end_on, 'month', "[]")
           || moment(this.contributions[i].end_on).isBetween(start_on, end_on, 'month', "[]")) {
             return false;
@@ -237,7 +311,7 @@
         }
       },
       monthSpan() {
-        if(!this.$v.contribution.start_on.$invalid && !this.$v.contribution.start_on.$pending && !this.$v.contribution.end_on.$invalid && !this.$v.contribution.end_on.$pending) {
+        if(!this.$v.contribution.$invalid) {
           if(moment(this.contribution.start_on).isSame(this.contribution.end_on, 'month')) {
             return [moment(this.contribution.start_on).format('MMM YYYY')];
           } else {

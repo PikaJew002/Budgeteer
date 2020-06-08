@@ -83,7 +83,8 @@
               <h6 class="card-title">{{ contribution.monthSpan[0] + (contribution.monthSpan.length > 1 ? " - " + contribution.monthSpan[1] : "") }}</h6>
               <h6 v-if="contribution.diff > 1" class="card-subtitle mb-2 text-muted">${{ contribution.amount }} x {{ contribution.diff }} months = ${{ (contribution.diff*Number(contribution.amount)).toFixed(2) }}</h6>
               <h6 v-else class="card-subtitle mb-2 text-muted">${{ contribution.amount }} x 1 month</h6>
-              <button class="btn btn-outline-sub1 btn-sm" @click="onDeleteContribution(index)">Delete</button>
+              <button class="btn btn-outline-sub1 btn-sm" @click.prevent="onEditContribution(index)">Edit</button>
+              <button class="btn btn-outline-sub1 btn-sm" @click.prevent="onDeleteContribution(index)">Delete</button>
             </div>
           </div>
           <hr v-if="goal.contributions.length > 0">
@@ -145,7 +146,8 @@
           initial_amount: null,
           contributions: [],
         },
-        contributionsSpan: [],
+        contributionsDeleted: [],
+        paychecksDeleted: [],
       };
     },
     validations() {
@@ -169,15 +171,14 @@
       };
     },
     created() {
-      EventBus.$on('modify-goal', obj => {
-        this.goal.id = obj.id;
-        this.goal.name = obj.name;
-        this.goal.amount = obj.amount;
-        this.goal.initial_amount = obj.initial_amount;
-        this.contributionsSpan = [];
+      EventBus.$on('modify-goal', goal => {
+        this.goal.id = goal.id;
+        this.goal.name = goal.name;
+        this.goal.amount = goal.amount;
+        this.goal.initial_amount = goal.initial_amount;
         this.goal.contributions = [];
-        for(let i in obj.contributions) {
-          let contribution = cloneDeep(obj.contributions[i]);
+        for(let i in goal.contributions) {
+          let contribution = cloneDeep(goal.contributions[i]);
           if(moment(contribution.start_on).isSame(contribution.end_on, 'month')) {
             contribution.monthSpan = [moment(contribution.start_on).format('MMM YYYY')];
           } else {
@@ -189,57 +190,123 @@
         this.goal.contributions.sort(function(a, b) {
           return (moment(a.start_on).isBefore(b.start_on, 'month') ? -1 : 1);
         });
-        if(this.goal.contributions.length > 0) {
-          this.contributionsSpan.push(this.goal.contributions[0].start_on);
-          this.contributionsSpan.push(this.goal.contributions[this.goal.contributions.length - 1].end_on);
-        }
+        this.contributionsDeleted = [];
+        this.paychecksDeleted = [];
         this.showModal = true;
       });
-      EventBus.$on('save-contribution', (arr) => {
-        if(arr[0] == 'modify') {
-          let contribution = arr[1];
-          let checkStatus = this.checkOverLapAndAdd(contribution);
-          if(checkStatus[0]) {
-            this.goal.contributions.push(contribution);
-            this.goal.contributions.sort(function(a, b) {
-              return (moment(a.start_on).isBefore(b.start_on, 'month') ? -1 : 1);
-            });
-            EventBus.$emit('close-make-contribution');
-          } else {
-            EventBus.$emit('show-contribution-alert', ['danger', checkStatus[1], 15]);
-          }
+      EventBus.$on('delete-goal-confirm', () => {
+        this.$emit('close');
+      });
+      EventBus.$on('delete-contribution-confirm', (data) => {
+        this.contributionsDeleted.push(data.contribution);
+        this.goal.contributions.splice(data.index, 1);
+      });
+      EventBus.$on('save-make-contribution', (data) => {
+        if(data.type != 'modify-goal') {
+          return;
         }
+        if(data.contribution.goal_id == null) {
+          data.contribution.goal_id = this.goal.id;
+        }
+        this.onSaveContribution(data.contribution);
+      });
+      EventBus.$on('save-modify-contribution', (data) => {
+        if(data.type != 'modify-goal') {
+          return;
+        }
+        for(let i in data.paychecksToRemove) {
+          this.paychecksDeleted.push(data.paychecksToRemove[i]);
+        }
+        this.goal.contributions.splice(data.index, 1);
+        this.onSaveContribution(data.contribution);
+      });
+      EventBus.$on('save-modify-goal-confirm', () => {
+        this.onSaveConfirm("from inside save-modify-goal-confirm");
       });
     },
     beforeDestroy() {
       EventBus.$off('modify-goal');
-      EventBus.$off('save-contribution');
+      EventBus.$off('delete-goal-confirm');
+      EventBus.$off('delete-contribution-confirm');
+      EventBus.$off('save-make-contribution');
+      EventBus.$off('save-modify-contribution');
     },
     methods: {
       onAddContribution() {
-        EventBus.$emit('make-contribution', 'modify');
+        EventBus.$emit('make-contribution', {
+          type: 'modify-goal',
+          contributions: this.goal.contributions,
+        });
       },
       onDeleteContribution(index) {
-        if(this.goal.contributions.length == 1) {
-          this.contributionsSpan = [];
+        if(this.goal.contributions[index].hasOwnProperty('paychecks') && this.goal.contributions[index].paychecks.length > 0) {
+          EventBus.$emit('delete-contribution', {
+            index: index,
+            contribution: this.goal.contributions[index],
+          });
         } else {
-          if(this.contributionsSpan[0] == this.goal.contributions[index].start_on) {
-            this.contributionsSpan[0] = this.goal.contributions[index + 1].start_on;
-          } else if(this.contributionsSpan[1] == this.goal.contributions[index].end_on) {
-            this.contributionsSpan[1] = this.goal.contributions[index - 1].end_on;
+          if(this.goal.contributions[index].hasOwnProperty('id')) {
+            this.contributionsDeleted.push(this.goal.contributions[index]);
           }
+          this.goal.contributions.splice(index, 1);
         }
-        this.goal.contributions.splice(index, 1);
+      },
+      onEditContribution(index) {
+        EventBus.$emit('modify-contribution', {
+          type: 'modify-goal',
+          contributions: this.goal.contributions,
+          index: index,
+          paychecks: this.paychecksDeleted,
+        });
       },
       onSave(goal) {
         if(!this.$v.goal.$invalid) {
-          this.$store.dispatch('editGoal', goal);
-          this.$emit('close');
+          if(this.contributionsDeleted.length > 0) {
+            for(let i in this.contributionsDeleted) {
+              if(this.contributionsDeleted[i].hasOwnProperty('paychecks') && this.contributionsDeleted[i].paychecks.length > 0) {
+                EventBus.$emit('save-modify-goal', {
+                  goal: this.goal,
+                  paychecksDeleted: this.paychecksDeleted,
+                  contributionsDeleted: this.contributionsDeleted,
+                });
+                return;
+              }
+            }
+          }
+          if(this.paychecksDeleted.length > 0) {
+            EventBus.$emit('save-modify-goal', {
+              goal: this.goal,
+              paychecksDeleted: this.paychecksDeleted,
+              contributionsDeleted: this.contributionsDeleted,
+            });
+            return;
+          }
+          this.onSaveConfirm("from inside onSave");
         }
       },
-      onDelete(goal) {
-        EventBus.$emit('delete-goal', goal);
+      onSaveConfirm(message) {
+        this.$store.dispatch('editGoal', {
+          goal: this.goal,
+          paychecksDeleted: this.paychecksDeleted,
+          contributionsDeleted: this.contributionsDeleted,
+        });
         this.$emit('close');
+        return;
+      },
+      onSaveContribution(contribution) {
+        for(let i in this.goal.contributions) {
+          if(moment(contribution.start_on).isBefore(this.goal.contributions[i].start_on, 'month')) {
+            this.goal.contributions.splice(i, 0, contribution);
+            return;
+          }
+        }
+        this.goal.contributions.push(contribution);
+      },
+      onDelete(goal) {
+        EventBus.$emit('delete-goal', {
+          goal: goal,
+          contributionsDeleted: this.contributionsDeleted,
+        });
       },
       formatInitialAmount() {
         if(Number(this.goal.initial_amount).toFixed(2) != "NaN" && this.goal.initial_amount != "" && this.goal.initial_amount != null) {
@@ -250,32 +317,6 @@
         if(Number(this.goal.amount).toFixed(2) != "NaN" && this.goal.amount != "" && this.goal.amount != null) {
           this.goal.amount = Number(this.goal.amount).toFixed(2);
         }
-      },
-      checkOverLapAndAdd(contribution) {
-        if(this.contributionsSpan.length == 0) {
-          this.contributionsSpan[0] = contribution.start_on;
-          this.contributionsSpan[1] = contribution.end_on;
-          return [true, ''];
-        }
-        if(this.contributionsSpan.length == 2) {
-          if(moment(contribution.start_on).isBetween(this.contributionsSpan[0], this.contributionsSpan[1], 'month', "[]")) {
-            return [false, '\'Start On\' overlaps with other scheduled contributions!'];
-          }
-          if(moment(contribution.end_on).isBetween(this.contributionsSpan[0], this.contributionsSpan[1], 'month', "[]")) {
-            return [false, '\'End On\' overlaps with other scheduled contributions!'];
-          }
-          if(moment(contribution.start_on).isBefore(this.contributionsSpan[0], 'month') && moment(contribution.end_on).isBefore(this.contributionsSpan[0], 'month')) {
-            // is before contributionsSpan, update lower boundry with contribution.start_on
-            this.contributionsSpan[0] = contribution.start_on;
-            return [true, ''];
-          }
-          if(moment(contribution.end_on).isAfter(this.contributionsSpan[1], 'month') && moment(contribution.start_on).isAfter(this.contributionsSpan[1], 'month')) {
-            // is after contributionsSpan, update upper boundry with contribution.end_on
-            this.contributionsSpan[1] = contribution.end_on;
-            return [true, ''];
-          }
-        }
-        return [false, 'Something went wrong... reload the page and try again.'];
       },
     },
     computed: {

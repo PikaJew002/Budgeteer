@@ -4,7 +4,7 @@
       <h5 class="card-title">
         {{ goal.name }}
       </h5>
-      <h6 v-if="goal.amount != null" class="card-subtitle mb-2 text-muted">
+      <h6 class="card-subtitle mb-2 text-muted">
         ${{ Number(goal.amount).toFixed(2) }}
       </h6>
     </div>
