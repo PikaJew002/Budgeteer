@@ -1,6 +1,6 @@
 <template>
   <div class="card-body">
-    <template v-if="!billsMode">
+    <template v-if="!billsAndContributionsMode">
       <div class="d-flex justify-content-between">
         <h5>{{ income.name }}</h5>
         <h5>{{ paycheck_paid_on }}</h5>
@@ -10,10 +10,10 @@
         <h5>${{ leftOver }}</h5>
       </div>
       <div v-if="highlight && !receivingPair" class="d-flex justify-content-between mt-2">
-        <button v-if="paycheck.bills.length > 0"
+        <button v-if="paycheck.bills.length > 0 || paycheck.contributions.length > 0"
                 type="button"
                 class="btn btn-outline-base btn-sm"
-                @click="billsMode = true">Bills</button>
+                @click="billsAndContributionsMode = true">Bills/Contributions</button>
         <button v-else
                 type="button"
                 class="btn btn-outline-base btn-sm"
@@ -44,10 +44,24 @@
         </span>
         <button type="button"
                 class="btn btn-outline-base btn-sm"
-                @click="onPairUpdate(bill)">Update</button>
+                @click="onPairUpdateBill(bill)">Update</button>
+      </div>
+      <div v-for="contribution in paycheck.contributions" class="d-flex justify-content-between mb-2">
+        <span>
+          {{ getContributionGoal(contribution).name }}
+        </span>
+        <span>
+          {{ getMonthShort(contribution.pivot_due_on) }}
+        </span>
+        <span>
+          {{ " $" + (contribution.pivot_amount ? contribution.pivot_amount : contribution.pivot_amount_project) }}
+        </span>
+        <button type="button"
+                class="btn btn-outline-base btn-sm"
+                @click="onPairUpdateContribution(contribution)">Update</button>
       </div>
       <div v-if="highlight && !receivingPair" class="d-flex justify-content-between mt-2">
-        <button type="button" class="btn btn-outline-base btn-sm" @click="billsMode = false">Paycheck</button>
+        <button type="button" class="btn btn-outline-base btn-sm" @click="billsAndContributionsMode = false">Paycheck</button>
         <button type="button" class="btn btn-outline-base btn-sm" @click="onPair()">Pair</button>
       </div>
       <div v-if="receivingPair && !canStopPair" class="text-center mt-2">
@@ -101,9 +115,9 @@
       },
     },
     created() {
-      EventBus.$on('bill-pair-start', arr => {
+      EventBus.$on('paycheck-pairable-pair-start', arr => {
         this.receivingPair = true;
-        this.$emit('paycheck-stay-highlighted', true);
+        this.$emit('paycheck-stay-highlighted', [true, 'paycheck']);
       });
       EventBus.$on('paycheck-pair-start', obj => {
         if(obj.id == this.paycheck.id) {
@@ -112,14 +126,14 @@
       });
       EventBus.$on('paycheck-pair-end', obj => {
         this.receivingPair = false;
-        this.$emit('paycheck-stay-highlighted', false);
+        this.$emit('paycheck-stay-highlighted', [false, 'paycheck']);
       });
-      EventBus.$on('bill-pair-end', arr => {
+      EventBus.$on('paycheck-pairable-pair-end', arr => {
         if(this.receivingPair) {
           this.receivingPair = false;
           this.canStopPair = false;
-          this.$emit('paycheck-stay-highlighted', false);
-          this.billsMode = false;
+          this.$emit('paycheck-stay-highlighted', [false, 'paycheck']);
+          this.billsAndContributionsMode = false;
         }
       })
     },
@@ -127,21 +141,24 @@
       return {
         receivingPair: false,
         canStopPair: false,
-        billsMode: false
+        billsAndContributionsMode: false,
       };
     },
     methods: {
       onModify() {
         EventBus.$emit('modify-paycheck', this.paycheck);
       },
-      onPairUpdate(bill) {
-        EventBus.$emit('pair-update', [bill, this.paycheck, 'bill']);
+      onPairUpdateBill(bill) {
+        EventBus.$emit('pair-update', [bill, this.paycheck, 'bill', 'bill']);
+      },
+      onPairUpdateContribution(contribution) {
+        EventBus.$emit('pair-update', [contribution, this.paycheck, 'contribution', 'contribution']);
       },
       onPair() {
         if(!this.receivingPair) {
           // case: the paycheck is selected first
           this.receivingPair = true;
-          this.$emit('paycheck-stay-highlighted', true);
+          this.$emit('paycheck-stay-highlighted', [true, 'paycheck']);
           EventBus.$emit('paycheck-pair-start', this.paycheck);
         } else {
           // case: the paycheck is selected last
@@ -150,20 +167,30 @@
       },
       onStopPair() {
         this.canStopPair = false;
-        EventBus.$emit('bill-pair-end', null);
+        EventBus.$emit('paycheck-pairable-pair-end', null);
       },
       getMonthShort(date) {
         return moment(date).format('MMM');
       },
+      getContributionGoal(contribution) {
+        for(let i in this.goals) {
+          if(this.goals[i].id == contribution.goal_id) {
+            return this.goals[i];
+          }
+        }
+      },
+      moment(args) {
+        return moment(args);
+      },
     },
     computed: {
       leftOver() {
-        let total = this.paycheck.amount;
-        if(total == null || total == 0) {
-          total = this.paycheck.amount_project;
-        }
+        let total = ((this.paycheck.amount == null || this.paycheck.amount == 0) ? this.paycheck.amount_project : this.paycheck.amount);
         for(let i in this.paycheck.bills) {
           total = total - (this.paycheck.bills[i].pivot_amount == null ? this.paycheck.bills[i].pivot_amount_project : this.paycheck.bills[i].pivot_amount);
+        }
+        for(let i in this.paycheck.contributions) {
+          total = total - (this.paycheck.contributions[i].pivot_amount == null ? this.paycheck.contributions[i].pivot_amount_project : this.paycheck.contributions[i].pivot_amount);
         }
         return Math.round(total * 100)/100;
       },
@@ -182,11 +209,8 @@
         }
         return {};
       },
-      /**
-        Gets the incomes load status
-        */
-      incomesLoadStatus() {
-        return this.$store.getters.getIncomesLoadStatus;
+      goals() {
+        return this.$store.getters.getGoals;
       },
     },
   }
