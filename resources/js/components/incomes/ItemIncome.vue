@@ -11,16 +11,6 @@
   </div>
 </template>
 
-<style>
-  .elips {
-    transform: rotate(-90deg);
-  }
-  .elips:after {
-    content: '\2807';
-    font-size: 15px;
-  }
-</style>
-
 <script>
   import { EventBus } from '../../event-bus.js';
   import moment from 'moment';
@@ -52,11 +42,5 @@
         EventBus.$emit('modify-income', this.income);
       },
     },
-    computed: {
-      thisMonth() {
-        let monthStr = "" + this.month[1] + "-" + (this.month[0] > 9 ? this.month[0] : "0" + this.month[0]);
-        return monthStr;
-      }
-    }
   }
 </script>

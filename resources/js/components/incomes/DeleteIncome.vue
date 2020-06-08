@@ -32,7 +32,6 @@
     data() {
       return {
         income: {
-          user_id: 0,
           id: null,
           name: "",
         },
@@ -41,7 +40,6 @@
     created() {
       EventBus.$on('delete-income', obj => {
         this.income.id = obj.id;
-        this.income.user_id = obj.user_id;
         this.income.name = obj.name;
         this.showModal = true;
       });
