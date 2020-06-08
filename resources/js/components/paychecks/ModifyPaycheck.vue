@@ -16,7 +16,8 @@
                   :class="{ 'is-invalid': $v.paycheck.income_id.$invalid && !$v.paycheck.income_id.$pending,
                             'is-valid': !$v.paycheck.income_id.$invalid && !$v.paycheck.income_id.$pending }"
                   v-model.number="paycheck.income_id"
-                  id="income_id">
+                  id="income_id"
+                  disabled>
             <option :value="0">Please Select a Source of Income</option>
             <option v-for="income in incomes" :key="income.id" :value="income.id">
               {{ income.name }}
