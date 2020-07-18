@@ -8,7 +8,7 @@
              @dismiss-count-down="countDownChanged">
       {{message.message}}
     </b-alert>
-    <b-modal v-model="showModal" ref="make-goal-modal" id="make-goal-modal" title="Make Goal" size="lg" centered no-close-on-backdrop>
+    <b-modal v-model="showModal" ref="make-goal-modal" id="make-goal-modal" title="Make Goal" centered no-close-on-backdrop>
       <form @submit.prevent="onSave(goal)">
         <div class="row">
           <div class="col form-group">
@@ -71,7 +71,8 @@
           </div>
         </div>
         <div class="d-flex justify-content-between align-items-center">
-          <h6>Contributions</h6><button type="button" class="btn btn-outline-base" @click="onAddContribution()">+</button>
+          <h6>Contributions</h6>
+          <button type="button" class="btn btn-outline-base" @click="onAddContribution()">+</button>
         </div>
         <hr v-if="goal.contributions.length > 0">
         <div class="d-flex flex-row flex-nowrap overflow-auto">
@@ -87,13 +88,39 @@
           </div>
         </div>
         <hr v-if="goal.contributions.length > 0">
-        <template v-if="goal.amount != null && goal.amount != ''">
-          <span v-if="goal.contributions.length > 0 && (goal.initial_amount == null || goal.initial_amount == '') ">
-            ${{ contributionsTotal }} / ${{ goal.amount }} = {{ ((Number(contributionsTotal) / Number(goal.amount))*100).toFixed(2) }}%
-          </span>
-          <span v-if="goal.contributions.length > 0 && (goal.initial_amount != null && goal.initial_amount != '') ">
-            ${{ goal.initial_amount }} + ${{ contributionsTotal }} / ${{ goal.amount }} = {{ (((Number(contributionsTotal) + Number(goal.initial_amount)) / Number(goal.amount))*100).toFixed(2) }}%
-          </span>
+        <template v-if="goalAmount > 0 && (contributionsTotal > 0 || goalInitialAmount > 0)">
+          <b-progress :max="goalAmount" height="2rem" class="mb-1">
+            <b-progress-bar :value="goal.initial_amount" v-if="goalInitialAmount > 0"></b-progress-bar>
+            <template v-for="(contribution, index) in goal.contributions">
+              <b-progress-bar :value="getContributionTotal(contribution)" :variant="legend_key[index % 6]"></b-progress-bar>
+            </template>
+          </b-progress>
+          <template v-if="goalInitialAmount > 0">
+            <h5 class="text-center">
+              <span class="badge badge-primary">Initial Amount</span>
+            </h5>
+            <div class="text-center">
+              ${{ goal.initial_amount }} ({{ ((goalInitialAmount / goalAmount)*100).toFixed(2) }}%)
+            </div>
+          </template>
+          <template v-for="(contribution, index) in goal.contributions">
+            <h5 class="text-center">
+              <span :class="'badge badge-'+legend_key[index % 6]" class="text-wrap">
+                {{ contribution.monthSpan[0] + (contribution.monthSpan.length > 1 ? " - " + contribution.monthSpan[1] : "") }}
+              </span>
+            </h5>
+            <div class="text-center">
+              ${{ getContributionTotal(contribution).toFixed(2) }}
+            </div>
+          </template>
+          <template v-if="contributionsTotal > 0 || goalInitialAmount > 0">
+            <h5 class="text-center">
+              <span class="badge badge-base">Goal</span>
+            </h5>
+            <div class="text-center">
+              ${{ (contributionsTotal + goalInitialAmount).toFixed(2) }} ({{ (((contributionsTotal + goalInitialAmount) / goalAmount)*100).toFixed(2) }}%)
+            </div>
+          </template>
         </template>
       </form>
       <template slot="modal-footer">
@@ -109,7 +136,7 @@
 </template>
 
 <script>
-  import { BModal, BAlert, BButton } from 'bootstrap-vue';
+  import { BModal, BAlert, BButton, BProgress, BProgressBar } from 'bootstrap-vue';
   import { helpers, required, minLength, maxLength } from 'vuelidate/lib/validators';
   import moment from 'moment';
   import { cloneDeep } from 'lodash';
@@ -121,6 +148,8 @@
       'b-modal': BModal,
       'b-alert': BAlert,
       'b-button': BButton,
+      'b-progress': BProgress,
+      'b-progress-bar': BProgressBar,
     },
     props: {
       user: {
@@ -140,6 +169,14 @@
           initial_amount: null,
           contributions: [],
         },
+        legend_key: [
+          'success',
+          'danger',
+          'warning',
+          'info',
+          'secondary',
+          'sub1',
+        ],
       };
     },
     validations() {
@@ -237,6 +274,9 @@
           this.goal.initial_amount = Number(this.goal.initial_amount).toFixed(2);
         }
       },
+      getContributionTotal(contribution) {
+        return Number(contribution.amount)*contribution.diff;
+      },
     },
     computed: {
       showModal: {
@@ -251,12 +291,24 @@
           }
         }
       },
+      goalAmount() {
+        if(this.goal.amount == '' || this.goal.amount == null) {
+          return 0;
+        }
+        return Number(this.goal.amount);
+      },
+      goalInitialAmount() {
+        if(this.goal.initial_amount == '' || this.goal.initial_amount == null) {
+          return 0;
+        }
+        return Number(this.goal.initial_amount);
+      },
       contributionsTotal() {
         let total = 0;
         for(let i in this.goal.contributions) {
           total += (Number(this.goal.contributions[i].amount)*this.goal.contributions[i].diff);
         }
-        return total.toFixed(2);
+        return total;
       },
     },
   };

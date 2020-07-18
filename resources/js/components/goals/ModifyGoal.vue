@@ -88,13 +88,59 @@
             </div>
           </div>
           <hr v-if="goal.contributions.length > 0">
-          <template v-if="goal.amount != null && goal.amount != ''">
-            <span v-if="goal.contributions.length > 0 && (goal.initial_amount == null || goal.initial_amount == '') ">
-              ${{ contributionsTotal }} / ${{ goal.amount }} = {{ ((Number(contributionsTotal) / Number(goal.amount))*100).toFixed(2) }}%
-            </span>
-            <span v-if="goal.contributions.length > 0 && (goal.initial_amount != null && goal.initial_amount != '') ">
-              ${{ goal.initial_amount }} + ${{ contributionsTotal }} / ${{ goal.amount }} = {{ (((Number(contributionsTotal) + Number(goal.initial_amount)) / Number(goal.amount))*100).toFixed(2) }}%
-            </span>
+          <template v-if="goalAmount > 0 && (contributionsTotal > 0 || goalInitialAmount > 0)">
+            <b-progress :max="goalAmount" height="2rem" class="mb-1">
+              <b-progress-bar :value="goal.initial_amount" v-if="goalInitialAmount > 0"></b-progress-bar>
+              <template v-for="(contribution, index) in goal.contributions">
+                <b-progress-bar :value="getContributionPaycheckPaidTotal(contribution)" striped :variant="legend_key[index % 6]"></b-progress-bar>
+                <b-progress-bar :value="getContributionTotal(contribution) - getContributionPaycheckPaidTotal(contribution)" :variant="legend_key[index % 6]"></b-progress-bar>
+              </template>
+            </b-progress>
+            <template v-if="goalInitialAmount > 0">
+              <h5 class="text-center">
+                <span class="badge badge-primary">Initial Amount</span>
+              </h5>
+              <div class="d-flex justify-content-between">
+                <div>
+                  ${{ goal.initial_amount }}
+                </div>
+                <div>
+                  {{ ((goalInitialAmount / goalAmount)*100).toFixed(2) }}%
+                </div>
+              </div>
+            </template>
+            <template v-for="(contribution, index) in goal.contributions">
+              <h5 class="text-center">
+                <span :class="'badge badge-'+legend_key[index % 6]" class="text-wrap">
+                  {{ contribution.monthSpan[0] + (contribution.monthSpan.length > 1 ? " - " + contribution.monthSpan[1] : "") }}
+                </span>
+              </h5>
+              <div class="d-flex justify-content-between">
+                <div>
+                  Scheduled<br>
+                  ${{ getContributionTotal(contribution).toFixed(2) }}
+                </div>
+                <div>
+                  Paid<br>
+                  ${{ getContributionPaycheckPaidTotal(contribution).toFixed(2)}} ({{ ((getContributionPaycheckPaidTotal(contribution) / getContributionTotal(contribution))*100).toFixed(2) }}%)
+                </div>
+              </div>
+            </template>
+            <template v-if="contributionsTotal > 0 || goalInitialAmount > 0">
+              <h5 class="text-center">
+                <span class="badge badge-base">Goal</span>
+              </h5>
+              <div class="d-flex justify-content-between">
+                <div>
+                  Scheduled<br>
+                  ${{ (contributionsTotal + goalInitialAmount).toFixed(2) }} ({{ (((contributionsTotal + goalInitialAmount) / goalAmount)*100).toFixed(2) }}%)
+                </div>
+                <div>
+                  Paid<br>
+                  ${{ (paychecksPaidTotal).toFixed(2) }} ({{ ((paychecksPaidTotal / goalAmount)*100).toFixed(2) }}%)
+                </div>
+              </div>
+            </template>
           </template>
         </form>
       </div>
@@ -114,7 +160,7 @@
 </template>
 
 <script>
-  import { BModal, BAlert, BButton } from 'bootstrap-vue';
+  import { BModal, BAlert, BButton, BProgress, BProgressBar } from 'bootstrap-vue';
   import { helpers, required, minLength, maxLength } from 'vuelidate/lib/validators';
   import moment from 'moment';
   import { cloneDeep } from 'lodash';
@@ -126,6 +172,8 @@
       'b-modal': BModal,
       'b-alert': BAlert,
       'b-button': BButton,
+      'b-progress': BProgress,
+      'b-progress-bar': BProgressBar,
     },
     props: {
       user: {
@@ -148,6 +196,14 @@
         },
         contributionsDeleted: [],
         paychecksDeleted: [],
+        legend_key: [
+          'success',
+          'danger',
+          'warning',
+          'info',
+          'secondary',
+          'sub1',
+        ],
       };
     },
     validations() {
@@ -221,7 +277,7 @@
         this.onSaveContribution(data.contribution);
       });
       EventBus.$on('save-modify-goal-confirm', () => {
-        this.onSaveConfirm("from inside save-modify-goal-confirm");
+        this.onSaveConfirm();
       });
     },
     beforeDestroy() {
@@ -281,10 +337,10 @@
             });
             return;
           }
-          this.onSaveConfirm("from inside onSave");
+          this.onSaveConfirm();
         }
       },
-      onSaveConfirm(message) {
+      onSaveConfirm() {
         this.$store.dispatch('editGoal', {
           goal: this.goal,
           paychecksDeleted: this.paychecksDeleted,
@@ -309,14 +365,29 @@
         });
       },
       formatInitialAmount() {
-        if(Number(this.goal.initial_amount).toFixed(2) != "NaN" && this.goal.initial_amount != "" && this.goal.initial_amount != null) {
+        if(Number(this.goal.initial_amount).toFixed(2) != "NaN" && this.goal.initial_amount != '' && this.goal.initial_amount != null) {
           this.goal.initial_amount = Number(this.goal.initial_amount).toFixed(2);
         }
       },
       formatAmount() {
-        if(Number(this.goal.amount).toFixed(2) != "NaN" && this.goal.amount != "" && this.goal.amount != null) {
+        if(Number(this.goal.amount).toFixed(2) != "NaN" && this.goal.amount != '' && this.goal.amount != null) {
           this.goal.amount = Number(this.goal.amount).toFixed(2);
         }
+      },
+      getContributionTotal(contribution) {
+        return Number(contribution.amount)*contribution.diff;
+      },
+      getContributionPaycheckPaidTotal(contribution) {
+        if(!contribution.hasOwnProperty('paychecks')) {
+          return 0;
+        }
+        let total = 0;
+        for(let i in contribution.paychecks) {
+          if(contribution.paychecks[i].contribution_paid_on != null) {
+            total += (contribution.paychecks[i].contribution_amount == null ? contribution.paychecks[i].contribution_amount_project : contribution.paychecks[i].contribution_amount);
+          }
+        }
+        return total;
       },
     },
     computed: {
@@ -332,12 +403,38 @@
           }
         }
       },
+      goalAmount() {
+        if(this.goal.amount == '' || this.goal.amount == null) {
+          return 0;
+        }
+        return Number(this.goal.amount);
+      },
+      goalInitialAmount() {
+        if(this.goal.initial_amount == '' || this.goal.initial_amount == null) {
+          return 0;
+        }
+        return Number(this.goal.initial_amount);
+      },
       contributionsTotal() {
         let total = 0;
         for(let i in this.goal.contributions) {
-          total += (Number(this.goal.contributions[i].amount)*this.goal.contributions[i].diff);
+          total += Number(this.goal.contributions[i].amount)*this.goal.contributions[i].diff;
         }
-        return total.toFixed(2);
+        return total;
+      },
+      paychecksPaidTotal() {
+        let total = 0;
+        for(let i in this.goal.contributions) {
+          if(!this.goal.contributions[i].hasOwnProperty('paychecks')) {
+            continue;
+          }
+          for(let j in this.goal.contributions[i].paychecks) {
+            if(this.goal.contributions[i].paychecks[j].contribution_paid_on != null) {
+              total += (this.goal.contributions[i].paychecks[j].contribution_amount == null ? this.goal.contributions[i].paychecks[j].contribution_amount_project : this.goal.contributions[i].paychecks[j].contribution_amount);
+            }
+          }
+        }
+        return total;
       },
     },
   };
