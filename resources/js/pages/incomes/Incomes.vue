@@ -10,17 +10,28 @@
       <delete-income :show="showDelete"
                     @open="showDelete = true"
                     @close="showDelete = false"></delete-income>
-      <div class="d-flex justify-content-between">
-        <h3>Sources of Income</h3>
-        <button type="button" class="btn btn-outline-base" @click="makeIncome()">+</button>
+        <div class="card-header d-flex justify-content-between bg-smokewhite-100">
+          <h3>Sources of Income</h3>
+          <button type="button" class="btn btn-outline-base" @click="makeIncome()">+</button>
+        </div>
+        <div class="card-body bg-white-50">
+          <collection :items="incomes"
+                      type="income"
+                      :size="3"></collection>
+        </div>
       </div>
-      <hr>
-      <collection :items="incomes"
-                  type="income"
-                  :size="3"></collection>
     </div>
   </main>
 </template>
+
+<style>
+  .bg-white-50 {
+    background: rgb(255, 255, 255, 0.75);
+  }
+  .bg-smokewhite-100 {
+    background: rgb(247, 247, 247, 1);
+  }
+</style>
 
 <script>
   import Collection from '../../components/Collection.vue';
