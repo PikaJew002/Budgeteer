@@ -100,5 +100,9 @@
         return this.$store.getters.getIncomesLoadStatus;
       },
     },
+    beforeRouteLeave(to, from, next) {
+      window.$('.collapse').collapse('hide');
+      next();
+    },
   }
 </script>

@@ -62,5 +62,9 @@
         return this.$store.getters.getIncomes;
       },
     },
+    beforeRouteLeave(to, from, next) {
+      window.$('.collapse').collapse('hide');
+      next();
+    },
   }
 </script>

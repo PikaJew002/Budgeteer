@@ -44,6 +44,9 @@
 
 <script>
   export default {
-
+    beforeRouteLeave(to, from, next) {
+      window.$('.collapse').collapse('hide');
+      next();
+    },
   }
 </script>
