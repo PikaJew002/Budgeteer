@@ -41,6 +41,12 @@
             <div v-if="!$v.bill.amount.required" class="invalid-feedback">
               Amount is required
             </div>
+            <div v-if="!$v.bill.amount.validDecimal" class="invalid-feedback d-block">
+              Amount must be a valid decimal ($xxxx.xx)
+            </div>
+            <div v-if="$v.bill.amount.validDecimal && !$v.bill.amount.notZero" class="invalid-feedback d-block">
+              Amount must be greater than zero (0)
+            </div>
           </div>
           <div class="col form-group">
             <label for="day_due_on">Day Due: </label>
@@ -52,7 +58,7 @@
                     placeholder="Day Due"
                     v-model.number="bill.day_due_on">
             <div v-if="!$v.bill.day_due_on.integer || !$v.bill.day_due_on.minValue || !$v.bill.day_due_on.maxValue" class="invalid-feedback">
-              Amount must be a valid integer day (1-31)
+              Day Due On must be a valid integer day (1-31)
             </div>
           </div>
         </div>
@@ -67,7 +73,7 @@
                     placeholder="mm/dd/yyyy"
                     v-model="bill.start_on">
             <div v-if="!$v.bill.start_on.required" class="invalid-feedback">
-              Start On Date is required
+              Start On is required (valid date)
             </div>
           </div>
           <div class="col form-group">
@@ -80,7 +86,10 @@
                     placeholder="mm/dd/yyyy"
                     v-model="bill.end_on">
             <div v-if="!$v.bill.end_on.required" class="invalid-feedback">
-              End On Date is required
+              End On is required (valid date)
+            </div>
+            <div v-if="!$v.bill.end_on.minDate" class="invalid-feedback">
+              End On Date must be after the Start On Date
             </div>
           </div>
         </div>
@@ -102,58 +111,65 @@
 
 <script>
   import { BModal, BAlert, BButton } from 'bootstrap-vue';
-  import { required, minValue, maxValue, integer } from 'vuelidate/lib/validators';
+  import { helpers, required, minValue, maxValue, integer } from 'vuelidate/lib/validators';
   import { cloneDeep } from 'lodash';
+  import moment from 'moment';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
   export default {
     components: {
       'b-modal': BModal,
       'b-alert': BAlert,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       user: {
-        type: Object
+        type: Object,
       },
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     mixins: [Alert],
     data() {
       return {
         bill: {
-          id: 0,
+          id: null,
           name: "",
           amount: null,
           day_due_on: null,
-          start_on: "",
-          end_on: ""
-        }
+          start_on: null,
+          end_on: null,
+        },
       };
     },
-    validations: {
-      bill: {
-        name: {
-          required
+    validations() {
+      return {
+        bill: {
+          name: {
+            required,
+          },
+          amount: {
+            required,
+            validDecimal,
+            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)),
+          },
+          day_due_on: {
+            integer,
+            minValue: minValue(1),
+            maxValue: maxValue(31),
+          },
+          start_on: {
+            required,
+          },
+          end_on: {
+            required,
+            minDate: (end_on) => (end_on == "" || moment(end_on).isAfter(this.bill.start_on)),
+          },
         },
-        amount: {
-          required
-        },
-        day_due_on: {
-          integer,
-          minValue: minValue(1),
-          maxValue: maxValue(31)
-        },
-        start_on: {
-          required
-        },
-        end_on: {
-          required
-        }
-      }
+      };
     },
     created() {
       EventBus.$on('modify-bill', obj => {
@@ -168,13 +184,16 @@
     },
     methods: {
       onSave(bill) {
+        if(this.bill.day_due_on == "") {
+          this.bill.day_due_on = null;
+        }
         this.$store.dispatch('editBill', bill);
         this.$emit('close');
       },
       onDelete(bill) {
         EventBus.$emit('delete-bill', bill);
         this.$emit('close');
-      }
+      },
     },
     computed: {
       showModal: {
@@ -189,18 +208,6 @@
           }
         }
       },
-      /**
-        Gets the incomes
-        */
-      incomes() {
-        return this.$store.getters.getIncomes;
-      },
-      /**
-        Gets the incomes load status
-        */
-      incomesLoadStatus() {
-        return this.$store.getters.getIncomesLoadStatus;
-      }
     }
   };
 </script>

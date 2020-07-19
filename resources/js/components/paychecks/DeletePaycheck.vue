@@ -21,23 +21,23 @@
   export default {
     components: {
       'b-modal': BModal,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     data() {
       return {
         paycheck: {
-          id: 0,
-          income_id: 0,
-          amount: 0,
-          amount_project: 0,
-          paid_on: "",
-        }
+          id: null,
+          income_id: null,
+          amount: null,
+          amount_project: null,
+          paid_on: null,
+        },
       };
     },
     created() {
@@ -52,9 +52,9 @@
     },
     methods: {
       onDelete() {
-        this.$store.dispatch('deletePaycheck', this.paycheck.id);
+        this.$store.dispatch('deletePaycheck', this.paycheck);
         this.$emit('close');
-      }
+      },
     },
     computed: {
       showModal: {
@@ -68,7 +68,7 @@
             this.$emit('close');
           }
         }
-      }
-    }
+      },
+    },
   }
 </script>

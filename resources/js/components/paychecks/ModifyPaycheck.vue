@@ -16,7 +16,8 @@
                   :class="{ 'is-invalid': $v.paycheck.income_id.$invalid && !$v.paycheck.income_id.$pending,
                             'is-valid': !$v.paycheck.income_id.$invalid && !$v.paycheck.income_id.$pending }"
                   v-model.number="paycheck.income_id"
-                  id="income_id">
+                  id="income_id"
+                  disabled>
             <option :value="0">Please Select a Source of Income</option>
             <option v-for="income in incomes" :key="income.id" :value="income.id">
               {{ income.name }}
@@ -49,6 +50,9 @@
             <div v-if="!$v.paycheck.amount.validDecimal || !$v.paycheck.amount_project.validDecimal" class="invalid-feedback d-block">
               Amount must be a valid decimal ($xxxx.xx)
             </div>
+            <div v-if="($v.paycheck.amount.validDecimal && !$v.paycheck.amount.notZero) || ($v.paycheck.amount_project.validDecimal && !$v.paycheck.amount_project.notZero)" class="invalid-feedback d-block">
+              Amount must be greater than zero (0.00)
+            </div>
           </div>
         </div>
         <div class="row">
@@ -77,7 +81,7 @@
                   v-model.date="paycheck.paid_on"
                   @change="onPaidOnChange()">
           <div v-if="!$v.paycheck.paid_on.required" class="invalid-feedback">
-            A valid date is required
+            Paid On is required (valid date)
           </div>
         </div>
       </form>
@@ -107,77 +111,87 @@
     components: {
       'b-modal': BModal,
       'b-alert': BAlert,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       user: {
-        type: Object
+        type: Object,
       },
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     mixins: [Alert],
     data() {
       return {
         projected: false,
         paycheck: {
-          id: 0,
-          income_id: 0,
+          id: null,
+          income_id: null,
           amount_project: null,
           amount: null,
           notified_at: null,
           notify_when_paid: false,
-          paid_on: ""
-        }
+          paid_on: null,
+        },
       };
     },
-    validations: {
-      paycheck: {
-        income_id: {
-          required,
-          minValue: minValue(1)
+    validations() {
+      return {
+        paycheck: {
+          income_id: {
+            required,
+            minValue: minValue(1),
+          },
+          amount_project: {
+            required: requiredIf(function() {
+              return !this.paycheck.amount;
+            }),
+            validDecimal,
+            notZero: (amount_project) => ((amount_project == "" || amount_project == null) || (Number(amount_project) > 0)),
+          },
+          amount: {
+            required: requiredIf(function() {
+              return !this.paycheck.amount_project;
+            }),
+            validDecimal,
+            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)),
+          },
+          paid_on: {
+            required,
+          },
         },
-        amount_project: {
-          required: requiredIf(function() {
-            return !this.paycheck.amount;
-          }),
-          validDecimal
-        },
-        amount: {
-          required: requiredIf(function() {
-            return !this.paycheck.amount_project;
-          }),
-          validDecimal
-        },
-        paid_on: {
-          required
-        }
-      }
+      };
     },
     created() {
-      EventBus.$on('modify-paycheck', obj => {
-        this.paycheck.id = obj.id;
-        this.paycheck.income_id = obj.income_id;
-        if(obj.amount == null) {
-          this.paycheck.amount_project = ""+obj.amount_project;
+      EventBus.$on('modify-paycheck', paycheck => {
+        this.paycheck.id = paycheck.id;
+        this.paycheck.income_id = paycheck.income_id;
+        if(paycheck.amount == null) {
+          this.paycheck.amount_project = ""+paycheck.amount_project;
           this.paycheck.amount = null;
           this.projected = true;
         } else {
-          this.paycheck.amount = ""+obj.amount;
+          this.paycheck.amount = ""+paycheck.amount;
           this.paycheck.amount_project = null;
           this.projected = false;
         }
-        this.paycheck.notified_at = obj.notified_at;
-        this.paycheck.notify_when_paid = obj.notify_when_paid;
-        this.paycheck.paid_on = obj.paid_on;
+        this.paycheck.notified_at = paycheck.notified_at;
+        this.paycheck.notify_when_paid = paycheck.notify_when_paid;
+        this.paycheck.paid_on = paycheck.paid_on;
         this.showModal = true;
       });
     },
     methods: {
       onSave(paycheck) {
         if(!this.$v.paycheck.$invalid) {
+          if(this.paycheck.amount == "") {
+            this.paycheck.amount = null;
+          }
+          if(this.paycheck.amount_project == "") {
+            this.paycheck.amount_project = null;
+          }
           this.$store.dispatch('editPaycheck', paycheck);
           this.$emit('close');
         }
@@ -187,12 +201,12 @@
         this.$emit('close');
       },
       formatAmount() {
-        if(Number(this.paycheck.amount).toFixed(2) != "NaN") {
+        if(Number(this.paycheck.amount).toFixed(2) != "NaN" && this.paycheck.amount != "" && this.paycheck.amount != null) {
           this.paycheck.amount = Number(this.paycheck.amount).toFixed(2);
         }
       },
       formatAmountProject() {
-        if(Number(this.paycheck.amount_project).toFixed(2) != "NaN") {
+        if(Number(this.paycheck.amount_project).toFixed(2) != "NaN" && this.paycheck.amount_project != "" && this.paycheck.amount_project != null) {
           this.paycheck.amount_project = Number(this.paycheck.amount_project).toFixed(2);
         }
       },
@@ -209,7 +223,7 @@
         if(this.paycheck.notify_when_paid && !this.isNotifiable) {
           this.paycheck.notify_when_paid = false;
         }
-      }
+      },
     },
     computed: {
       showModal: {
@@ -233,12 +247,6 @@
       incomes() {
         return this.$store.getters.getIncomes;
       },
-      /**
-        Gets the incomes load status
-        */
-      incomesLoadStatus() {
-        return this.$store.getters.getIncomesLoadStatus;
-      }
-    }
+    },
   };
 </script>

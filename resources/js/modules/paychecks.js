@@ -16,9 +16,6 @@ export const paychecks = {
     addPaycheckStatus: 0,
     editPaycheckStatus: 0,
     deletePaycheckStatus: 0,
-    pairBillPaycheckStatus: 0,
-    updateBillPaycheckStatus: 0,
-    deleteBillPaycheckStatus: 0
   },
   actions: {
     loadPaychecks({ commit }, data) {
@@ -45,96 +42,63 @@ export const paychecks = {
           commit('setPaycheckLoadStatus', 3);
         });
     },
-    addPaycheck({ commit, state, dispatch }, data) {
+    addPaycheck({ commit, state, dispatch }, paycheck) {
       commit('setAddPaycheckStatus', 1);
-      PaycheckAPI.postPaycheck(data)
+      dispatch('addIncomePaycheck', paycheck);
+      PaycheckAPI.postPaycheck(paycheck)
         .then(res => {
           commit('setAddPaycheckStatus', 2);
-          dispatch('loadIncomes', {
-            with: ['paychecks.bills']
-          });
         })
         .catch(err => {
           commit('setAddPaycheckStatus', 3);
         });
     },
-    editPaycheck({ commit, state, dispatch }, data) {
+    editPaycheck({ commit, state, dispatch }, paycheck) {
       commit('setEditPaycheckStatus', 1);
-      PaycheckAPI.putPaycheck(data)
+      for(let i in paycheck.bills) {
+        dispatch('editBillPaycheck', {
+          bill: paycheck.bills[i],
+          paycheck: paycheck,
+        });
+      }
+      for(let j in paycheck.contributions) {
+        dispatch('editGoalContributionPaycheck', {
+          contribution: paycheck.contributions[j],
+          paycheck: paycheck,
+        });
+      }
+      dispatch('editIncomePaycheck', paycheck);
+      PaycheckAPI.putPaycheck(paycheck)
         .then(res => {
           commit('setEditPaycheckStatus', 2);
-          dispatch('loadIncomes', {
-            with: ['paychecks.bills']
-          });
         })
         .catch(err => {
           commit('setEditPaycheckStatus', 3);
         });
     },
-    deletePaycheck({ commit, state, dispatch }, id) {
+    deletePaycheck({ commit, state, dispatch }, paycheck) {
       commit('setDeletePaycheckStatus', 1);
-      PaycheckAPI.deletePaycheck(id)
+      for(let i in paycheck.bills) {
+        dispatch('deleteBillPaycheck', {
+          bill: paycheck.bills[i],
+          paycheck: paycheck,
+        });
+      }
+      for(let j in paycheck.contributions) {
+        dispatch('deleteGoalContributionPaycheck', {
+          contribution: paycheck.contributions[j],
+          paycheck: paycheck,
+        });
+      }
+      dispatch('deleteIncomePaycheck', paycheck);
+      PaycheckAPI.deletePaycheck(paycheck.id)
         .then(res => {
           commit('setDeletePaycheckStatus', 2);
-          dispatch('loadIncomes', {
-            with: ['paychecks.bills']
-          });
-          dispatch('loadBills', {
-            with: ['paychecks']
-          });
         })
         .catch(err => {
           commit('setDeletePaycheckStatus', 3);
         });
     },
-    pairBillPaycheck({ commit, state, dispatch }, data) {
-      commit('setPairBillPaycheckStatus', 1);
-      PaycheckAPI.postBillPaycheck(data)
-        .then(res => {
-          commit('setPairBillPaycheckStatus', 2);
-          dispatch('loadIncomes', {
-            with: ['paychecks.bills']
-          });
-          dispatch('loadBills', {
-            with: ['paychecks']
-          });
-        })
-        .catch(err => {
-          commit('setPairBillPaycheckStatus', 3);
-        });
-    },
-    updateBillPaycheck({ commit, state, dispatch }, data) {
-      commit('setUpdateBillPaycheckStatus', 1);
-      PaycheckAPI.putBillPaycheck(data)
-        .then(res => {
-          commit('setUpdateBillPaycheckStatus', 2);
-          dispatch('loadIncomes', {
-            with: ['paychecks.bills']
-          });
-          dispatch('loadBills', {
-            with: ['paychecks']
-          });
-        })
-        .catch(err => {
-          commit('setUpdateBillPaycheckStatus', 3);
-        });
-    },
-    deleteBillPaycheck({ commit, state, dispatch }, data) {
-      commit('setDeleteBillPaycheckStatus', 1);
-      PaycheckAPI.deleteBillPaycheck(data.bill_id, data.paycheck_id)
-        .then(res => {
-          commit('setDeleteBillPaycheckStatus', 2);
-          dispatch('loadIncomes', {
-            with: ['paychecks.bills']
-          });
-          dispatch('loadBills', {
-            with: ['paychecks']
-          });
-        })
-        .catch(err => {
-          commit('setDeleteBillPaycheckStatus', 3);
-        });
-    }
   },
   mutations: {
     setPaychecksLoadStatus(state, status) {
@@ -158,15 +122,6 @@ export const paychecks = {
     setDeletePaycheckStatus(state, status) {
       state.deletePaycheckStatus = status;
     },
-    setPairBillPaycheckStatus(state, status) {
-      state.pairBillPaycheckStatus = status;
-    },
-    setUpdateBillPaycheckStatus(state, status) {
-      state.updateBillPaycheckStatus = status;
-    },
-    setDeleteBillPaycheckStatus(state, status) {
-      state.deleteBillPaycheckStatus = status;
-    }
   },
   getters: {
     getPaychecksLoadStatus(state) {
@@ -190,14 +145,5 @@ export const paychecks = {
     getDeletePaycheckStatus(state) {
       return state.deletePaycheckStatus;
     },
-    getPairBillPaycheckStatus(state) {
-      return state.pairBillPaycheckStatus;
-    },
-    getUpdateBillPaycheckStatus(state) {
-      return state.updateBillPaycheckStatus;
-    },
-    getDeleteBillPaycheckStatus(state) {
-      return state.deleteBillPaycheckStatus;
-    }
-  }
+  },
 }

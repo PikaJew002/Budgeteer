@@ -24,7 +24,7 @@ class IncomeResource extends JsonResource
             'paychecks' => PaycheckResource::collection($this->whenLoaded('paychecks')),
             'name' => $this->name,
             'created_at' => $this->created_at,
-            'updated_at' => $this->updated_at
+            'updated_at' => $this->updated_at,
         ];
     }
 }

@@ -15,7 +15,8 @@ export default {
       this.message.countDown = time;
     },
 
-    showAlert(type, message) {
+    showAlert(type, message, time = 2) {
+      this.time = time;
       this.message.type = type;
       this.message.message = message;
       this.message.countDown = this.message.time;

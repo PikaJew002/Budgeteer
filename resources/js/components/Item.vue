@@ -1,37 +1,48 @@
 <template>
   <div class="card"
        id="item"
-       :class="{ 'border-base': (type === 'bills' && (bill_stay_highlighted || bill_highlight))
-                                || (type === 'paychecks' && (paycheck_stay_highlighted || paycheck_highlight))
-                                || (type === 'incomes' && (income_stay_highlighted || income_highlight)),
-                 'shadow-lg': (type === 'bills' && (bill_stay_highlighted || bill_highlight))
-                              || (type === 'paychecks' && (paycheck_stay_highlighted || paycheck_highlight))
-                              || (type === 'incomes' && (income_stay_highlighted || income_highlight)) }"
+       :class="{ 'border-base': shouldHighlight, 'shadow-lg': shouldHighlight, }"
        @mouseover="onHover(true)"
        @mouseleave="onHover(false)">
-    <item-bill v-if="type === 'bills'"
+    <item-bill v-if="type === 'bill'"
                :bill="value"
                :month="month"
-               :highlight="bill_highlight"
+               :highlight="objHighlight.highlight"
                :open="open"
                :remove="remove"
                :edit="edit"
-               @bill-highlight="onBillHighlight"
-               @bill-stay-highlighted="onBillStayHighlighted"></item-bill>
-     <item-paycheck v-if="type === 'paychecks'"
-                    :highlight="paycheck_highlight"
+               @bill-highlight="onHighlight"
+               @bill-stay-highlighted="onStayHighlighted">
+    </item-bill>
+    <item-contribution v-if="type === 'contribution'"
+                       :contribution="value"
+                       :month="month"
+                       :highlight="objHighlight.highlight"
+                       :open="open"
+                       :remove="remove"
+                       :edit="edit"
+                       @contribution-highlight="onHighlight"
+                       @contribution-stay-highlighted="onStayHighlighted"></item-contribution>
+     <item-paycheck v-if="type === 'paycheck'"
+                    :highlight="objHighlight.highlight"
                     :paycheck="value"
                     :open="open"
                     :remove="remove"
                     :edit="edit"
-                    @paycheck-highlight="onPaycheckHighlight"
-                    @paycheck-stay-highlighted="onPaycheckStayHighlighted"></item-paycheck>
-     <item-income v-if="type === 'incomes'"
-                  :highlight="income_highlight"
+                    @paycheck-highlight="onHighlight"
+                    @paycheck-stay-highlighted="onStayHighlighted"></item-paycheck>
+     <item-income v-if="type === 'income'"
+                  :highlight="objHighlight.highlight"
                   :income="value"
                   :open="open"
                   :remove="remove"
                   :edit="edit"></item-income>
+     <item-goal v-if="type === 'goal'"
+                :highlight="objHighlight.highlight"
+                :goal="value"
+                :open="open"
+                :remove="remove"
+                :edit="edit"></item-goal>
   </div>
 </template>
 
@@ -50,69 +61,84 @@
   import ItemBill from './bills/ItemBill.vue';
   import ItemPaycheck from './paychecks/ItemPaycheck.vue';
   import ItemIncome from './incomes/ItemIncome.vue';
+  import ItemGoal from './goals/ItemGoal.vue';
+  import ItemContribution from './contributions/ItemContribution.vue';
   export default {
     components: {
       'item-bill': ItemBill,
       'item-paycheck': ItemPaycheck,
-      'item-income': ItemIncome
+      'item-income': ItemIncome,
+      'item-goal': ItemGoal,
+      'item-contribution': ItemContribution,
     },
-
     props: {
       value: {
         type: Object,
-        required: true
+        required: true,
       },
       type: {
         type: String,
-        required: true
+        required: true,
       },
       month: {
         type: Array,
-        required: false
+        required: false,
       },
       open: {
         type: Boolean,
-        default: false
+        default: false,
       },
       remove: {
         type: Boolean,
-        default: false
+        default: false,
       },
       edit: {
         type: Boolean,
-        default: false
-      }
+        default: false,
+      },
     },
-
     data() {
       return {
-        bill_highlight: false,
-        bill_stay_highlighted: false,
-        paycheck_highlight: false,
-        paycheck_stay_highlighted: false,
-        income_highlight: false,
-        income_stay_highlighted: false
+        bill: {
+          highlight: false,
+          stayHighlighted: false,
+        },
+        paycheck: {
+          highlight: false,
+          stayHighlighted: false,
+        },
+        contribution: {
+          highlight: false,
+          stayHighlighted: false,
+        },
+        income: {
+          highlight: false,
+          stayHighlighted: false,
+        },
+        goal: {
+          highlight: false,
+          stayHighlighted: false,
+        },
       };
     },
-
     methods: {
-      onBillHighlight(value, event) {
-        this.bill_highlight = value;
+      onHighlight(value, event) {
+        this[value[1]].highlight = value[0];
       },
-      onBillStayHighlighted(value, event) {
-        this.bill_stay_highlighted = value;
-      },
-      onPaycheckHighlight(value, event) {
-        this.paycheck_highlight = value;
-      },
-      onPaycheckStayHighlighted(value, event) {
-        this.paycheck_stay_highlighted = value;
+      onStayHighlighted(value, event) {
+        this[value[1]].stayHighlighted = value[0];
       },
       onHover(value) {
-        if(this.type === 'bills') this.bill_highlight = value;
-        if(this.type === 'paychecks') this.paycheck_highlight = value;
-        if(this.type === 'incomes') this.income_highlight = value;
+        this[this.type].highlight = value;
       },
-    }
+    },
+    computed: {
+      shouldHighlight() {
+        return this[this.type].highlight || this[this.type].stayHighlighted;
+      },
+      objHighlight() {
+        return this[this.type];
+      },
+    },
   }
 </script>

@@ -24,26 +24,36 @@ export default {
   /*
     GET     /api/income/{id}
     @param id int
+    @param options {object}
+      can contain with [array]
     @return Promise
   */
-  getIncome: function(id) {
-    return axios.get(BUDGETEER_CONFIG.API_URL + '/income/' + id);
+  getIncome: function(id, options = {}) {
+    let optionsStr = '?';
+    if(options.hasOwnProperty('with') && options.with.length != 0) {
+      optionsStr += (optionsStr == '?' ? 'with=' + options.with[0] : '&with=' + options.with[0]);
+      for(let i in options.with) {
+        if(i == 0) continue;
+        optionsStr += ':' + options.with[i];
+      }
+    }
+    return axios.get(BUDGETEER_CONFIG.API_URL + '/income/' + id + (optionsStr == '?' ? '' : optionsStr));
   },
   /*
     POST     /api/income
-    @param data object
+    @param income object
     @return Promise
   */
-  postIncome: function(data) {
-    return axios.post(BUDGETEER_CONFIG.API_URL + '/income', data);
+  postIncome: function(income) {
+    return axios.post(BUDGETEER_CONFIG.API_URL + '/income', income);
   },
   /*
     PUT     /api/income
-    @param data object
+    @param income object
     @return Promise
   */
-  putIncome: function(data) {
-    return axios.put(BUDGETEER_CONFIG.API_URL + '/income', data);
+  putIncome: function(income) {
+    return axios.put(BUDGETEER_CONFIG.API_URL + '/income', income);
   },
   /*
     DELETE  /api/income

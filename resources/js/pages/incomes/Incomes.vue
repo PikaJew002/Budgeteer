@@ -16,8 +16,8 @@
       </div>
       <hr>
       <collection :items="incomes"
-                  type="incomes"
-                  :size="6"></collection>
+                  type="income"
+                  :size="3"></collection>
     </div>
   </main>
 </template>
@@ -33,7 +33,7 @@
       Collection,
       'make-income': MakeIncome,
       'modify-income': ModifyIncome,
-      'delete-income': DeleteIncome
+      'delete-income': DeleteIncome,
     },
     data() {
       return {
@@ -43,20 +43,24 @@
       }
     },
     created() {
-      this.$store.dispatch('loadIncomes', {
-        with: ['paychecks']
-      });
+      if(this.incomesLoadStatus < 2) {
+        this.$store.dispatch('loadIncomes', {
+          with: ['paychecks.bills', 'paychecks.contributions'],
+        });
+      }
     },
     methods: {
       makeIncome() {
         EventBus.$emit('make-income');
-      }
+      },
     },
-
     computed: {
       incomes() {
         return this.$store.getters.getIncomes;
-      }
-    }
+      },
+      incomesLoadStatus() {
+        return this.$store.getters.getIncomes;
+      },
+    },
   }
 </script>

@@ -21,25 +21,24 @@
   export default {
     components: {
       'b-modal': BModal,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     data() {
       return {
         bill: {
-          id: 0,
-          user_id: 0,
+          id: null,
           name: "",
-          amount: 0,
-          day_due_on: 0,
-          start_on: "",
-          end_on: ""
-        }
+          amount: null,
+          day_due_on: null,
+          start_on: null,
+          end_on: null,
+        },
       };
     },
     created() {
@@ -55,9 +54,9 @@
     },
     methods: {
       onDelete() {
-        this.$store.dispatch('deleteBill', this.bill.id);
+        this.$store.dispatch('deleteBill', this.bill);
         this.$emit('close');
-      }
+      },
     },
     computed: {
       showModal: {
@@ -71,7 +70,7 @@
             this.$emit('close');
           }
         }
-      }
-    }
+      },
+    },
   }
 </script>

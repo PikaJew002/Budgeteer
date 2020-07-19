@@ -31,26 +31,36 @@ export default {
   /*
     GET     /api/bill/{id}
     @param id int
+    @param options {object}
+      can contain with [array]
     @return Promise
   */
-  getBill: function(id) {
-    return axios.get(BUDGETEER_CONFIG.API_URL + '/bill/' + id);
+  getBill: function(id, options = {}) {
+    let optionsStr = '?';
+    if(options.hasOwnProperty('with') && options.with.length != 0) {
+      optionsStr += (optionsStr == '?' ? 'with=' + options.with[0] : '&with=' + options.with[0]);
+      for(let i in options.with) {
+        if(i == 0) continue;
+        optionsStr += ':' + options.with[i];
+      }
+    }
+    return axios.get(BUDGETEER_CONFIG.API_URL + '/bill/' + id + (optionsStr == '?' ? '' : optionsStr));
   },
   /*
     POST     /api/bill
-    @param data object
+    @param bill object
     @return Promise
   */
-  postBill: function(data) {
-    return axios.post(BUDGETEER_CONFIG.API_URL + '/bill', data);
+  postBill: function(bill) {
+    return axios.post(BUDGETEER_CONFIG.API_URL + '/bill', bill);
   },
   /*
     PUT     /api/bill
-    @param data object
+    @param bill object
     @return Promise
   */
-  putBill: function(data) {
-    return axios.put(BUDGETEER_CONFIG.API_URL + '/bill', data);
+  putBill: function(bill) {
+    return axios.put(BUDGETEER_CONFIG.API_URL + '/bill', bill);
   },
   /*
     DELETE  /api/bill

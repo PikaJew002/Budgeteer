@@ -9,11 +9,19 @@
           </div>
           <hr>
           <collection :items="billsMonthSorted"
-                      type="bills"
+                      type="bill"
                       :month="[month, year]"
-                      :size="1"
-                      @open-item="itemSelected"
-                      @bill-pair-start=""></collection>
+                      :size="1"></collection>
+        </div>
+      </div>
+      <div class="card" v-if="contributionsMonth.length > 0">
+        <div class="card-body">
+          Contributions
+          <hr>
+          <collection :items="contributionsMonth"
+                      type="contribution"
+                      :month="[month, year]"
+                      :size="1"></collection>
         </div>
       </div>
       <div class="card">
@@ -23,10 +31,8 @@
           </div>
           <hr>
           <collection :items="paychecksMonthSorted"
-                      type="paychecks"
-                      :size="1"
-                      @open-item="itemSelected"
-                      @paycheck-pair-start=""></collection>
+                      type="paycheck"
+                      :size="1"></collection>
         </div>
       </div>
     </div>
@@ -39,39 +45,34 @@
   import moment from 'moment';
   export default {
     components: {
-      Collection
+      Collection,
     },
     props: {
       month: {
         type: Number,
-        required: true
+        required: true,
       },
       year: {
         type: Number,
-        required: true
+        required: true,
       },
       isSelected: {
         type: Boolean,
-        default: false
+        default: false,
       },
       incomesshown: {
         type: Number,
-        required: true
+        required: true,
       },
       showmakebill: {
         type: Boolean,
-        required: true
+        required: true,
       },
       showmakepaycheck: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
-
-    created() {
-
-    },
-
     data() {
       return {
         monthsStr: [
@@ -86,12 +87,39 @@
           ['September', 30],
           ['October', 31],
           ['November', 30],
-          ['December', 31]
+          ['December', 31],
         ],
-        showMakePaycheckForm: false
       };
     },
-
+    methods: {
+      comparePaychecks(a, b) {
+        let comparison = 0;
+        if(moment(a.paid_on).isBefore(b.paid_on)) {
+          comparison = -1;
+        } else if (moment(a.paid_on).isAfter(b.paid_on)) {
+          comparison = 1;
+        }
+        return comparison;
+      },
+      compareBills(a, b) {
+        if(a == null || b == null) {
+          return 0;
+        }
+        let comparison = 0;
+        if(a.day_due_on < b.day_due_on) {
+          comparison = -1;
+        } else if (a.day_due_on > b.day_due_on) {
+          comparison = 1;
+        }
+        return comparison;
+      },
+      makeBill() {
+        EventBus.$emit('make-bill', this.startDate);
+      },
+      makePaycheck() {
+        EventBus.$emit('make-paycheck', [this.incomesshown, this.startDate]);
+      },
+    },
     computed: {
       /**
         Date of the first day of the month
@@ -147,10 +175,30 @@
         return this.paychecksMonth.sort(this.comparePaychecks);
       },
       /**
-        Gets the incomes load status
+        Gets the incomes
         */
-      incomesLoadStatus() {
-        return this.$store.getters.getIncomesLoadStatus;
+      goals() {
+        return this.$store.getters.getGoals;
+      },
+      /**
+        Gets the contributions for the goals
+        */
+      contributions() {
+        let contributionArr = [];
+        for(let i in this.goals) {
+          for(let j in this.goals[i].contributions) {
+            contributionArr.push(this.goals[i].contributions[j]);
+          }
+        }
+        return contributionArr;
+      },
+      /**
+        Gets the contributions that fall within "this" month (see startDate and endDate)
+        */
+      contributionsMonth() {
+        return this.contributions.filter((contribution) => {
+          return moment(this.startDate).isSameOrBefore(contribution.end_on) && moment(this.endDate).isSameOrAfter(contribution.start_on);
+        });
       },
       /**
         Gets the bills
@@ -173,42 +221,5 @@
         return this.billsMonth.sort(this.compareBills);
       },
     },
-
-    methods: {
-      itemSelected(id, event) {
-
-      },
-
-      comparePaychecks(a, b) {
-        let comparison = 0;
-        if(moment(a.paid_on).isBefore(b.paid_on)) {
-          comparison = -1;
-        } else if (moment(a.paid_on).isAfter(b.paid_on)) {
-          comparison = 1;
-        }
-        return comparison;
-      },
-
-      compareBills(a, b) {
-        if(a == null || b == null) {
-          return 0;
-        }
-        let comparison = 0;
-        if(a.day_due_on < b.day_due_on) {
-          comparison = -1;
-        } else if (a.day_due_on > b.day_due_on) {
-          comparison = 1;
-        }
-        return comparison;
-      },
-
-      makeBill() {
-        EventBus.$emit('make-bill', this.startDate);
-      },
-
-      makePaycheck() {
-        EventBus.$emit('make-paycheck', [this.incomesshown, this.startDate]);
-      }
-    }
   }
 </script>

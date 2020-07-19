@@ -21,36 +21,34 @@
   export default {
     components: {
       'b-modal': BModal,
-      'b-button': BButton
+      'b-button': BButton,
     },
     props: {
       show: {
         type: Boolean,
-        required: true
-      }
+        required: true,
+      },
     },
     data() {
       return {
         income: {
-          id: 0,
-          user_id: 0,
-          name: ""
-        }
+          id: null,
+          name: "",
+        },
       };
     },
     created() {
       EventBus.$on('delete-income', obj => {
         this.income.id = obj.id;
-        this.income.user_id = obj.user_id;
         this.income.name = obj.name;
         this.showModal = true;
       });
     },
     methods: {
       onDelete() {
-        this.$store.dispatch('deleteIncome', this.income.id);
+        this.$store.dispatch('deleteIncome', this.income);
         this.$emit('close');
-      }
+      },
     },
     computed: {
       showModal: {
@@ -64,7 +62,7 @@
             this.$emit('close');
           }
         }
-      }
-    }
+      },
+    },
   }
 </script>
