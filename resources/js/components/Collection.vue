@@ -39,7 +39,7 @@
   import Item from './Item.vue';
   export default {
     components: {
-      Item,
+      'item': Item,
     },
     props: {
       items: {
@@ -92,7 +92,7 @@
       },
       size: {
         type: Number,
-        default: 3,
+        default: 4, // defaults to 4 items per row
       },
     },
     data() {
