@@ -31,6 +31,7 @@
       </div>
       <hr>
       <collection :items="goals"
+                  :allowSizeChange="true"
                   type="goal"
                   :size="3"></collection>
     </div>

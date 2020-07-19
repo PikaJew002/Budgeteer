@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="d-none d-sm-flex align-items-center mb-3">
+    <div v-if="allowSizeChange" class="d-none d-sm-flex align-items-center mb-3">
       <select v-model="deckSize" class="custom-select" style="width: 50px;">
         <option v-for="n in 4" :value="n" :selected="deckSize === n">{{ n }}</option>
         <option :value="6" :selected="deckSize === 6">6</option>
@@ -102,6 +102,10 @@
       size: {
         type: Number,
         default: 4, // defaults to 4 items per row
+      },
+      allowSizeChange: {
+        type: Boolean,
+        default: false,
       },
     },
     data() {

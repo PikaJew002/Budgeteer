@@ -16,6 +16,7 @@
       </div>
       <hr>
       <collection :items="incomes"
+                  :allowSizeChange="true"
                   type="income"
                   :size="3"></collection>
     </div>
