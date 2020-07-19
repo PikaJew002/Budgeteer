@@ -50,7 +50,7 @@
                                 <a class="nav-link" href="/#/incomes">Incomes</a>
                             </li>
                             <li class="nav-item">
-                                <a class="nav-link" href="/#/goals">Goals <span class="badge badge-pill badge-sub1">Beta</span></a>
+                                <a class="nav-link" href="/#/goals">Goals</a>
                             </li>
                         @endauth
                     </ul>
