@@ -5,7 +5,7 @@
         {{ income.name }}
       </h5>
     </div>
-    <div v-if="highlight" class="text-center mt-2">
+    <div class="text-center mt-2">
       <button class="btn btn-outline-sub1 btn-sm" @click="onModify()">Edit</button>
     </div>
   </div>
