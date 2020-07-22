@@ -24,6 +24,8 @@ $sub1: #0F2440;
 $sub2: #122B4D;
 $accent1: #204F8C;
 $accent2: #173966;
+$cardbg: #E9ECEF;
+$navtext: #BDBAC7;
 
 $colors: (
   "blue": $blue,
@@ -40,5 +42,7 @@ $colors: (
   "sub1": $sub1,
   "sub2": $sub2,
   "accent1": $accent1,
-  "accent2": $accent2
+  "accent2": $accent2,
+  "cardbg": $cardbg,
+  "navtext": $navtext
 ) !default;

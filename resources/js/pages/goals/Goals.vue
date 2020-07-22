@@ -38,6 +38,15 @@
   </main>
 </template>
 
+<style>
+  .bg-white-50 {
+    background: rgb(255, 255, 255, 0.75);
+  }
+  .bg-smokewhite-100 {
+    background: rgb(247, 247, 247, 1);
+  }
+</style>
+
 <script>
   import Collection from '../../components/Collection.vue';
   import MakeContribution from '../../components/contributions/MakeContribution.vue';
@@ -100,6 +109,10 @@
       incomesLoadStatus() {
         return this.$store.getters.getIncomesLoadStatus;
       },
+    },
+    beforeRouteLeave(to, from, next) {
+      window.$('.collapse').collapse('hide');
+      next();
     },
   }
 </script>

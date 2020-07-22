@@ -23,6 +23,15 @@
   </main>
 </template>
 
+<style>
+  .bg-white-50 {
+    background: rgb(255, 255, 255, 0.75);
+  }
+  .bg-smokewhite-100 {
+    background: rgb(247, 247, 247, 1);
+  }
+</style>
+
 <script>
   import Collection from '../../components/Collection.vue';
   import MakeIncome from '../../components/incomes/MakeIncome.vue';
@@ -62,6 +71,10 @@
       incomesLoadStatus() {
         return this.$store.getters.getIncomes;
       },
+    },
+    beforeRouteLeave(to, from, next) {
+      window.$('.collapse').collapse('hide');
+      next();
     },
   }
 </script>
