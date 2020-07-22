@@ -25,15 +25,15 @@
       <delete-goal :show="showDelete"
                    @open="showDelete = true"
                    @close="showDelete = false"></delete-goal>
-      <div class="d-flex justify-content-between">
-        <h3>Goals</h3>
-        <button type="button" class="btn btn-outline-base" @click="makeGoal()">+</button>
+      <div class="card bg-transparent">
+        <div class="card-header d-flex justify-content-between bg-smokewhite-100">
+          <h3>Goals</h3>
+          <button type="button" class="btn btn-outline-base" @click="makeGoal()">+</button>
+        </div>
+        <div class="card-body bg-white-50">
+          <collection :items="goals" type="goal" :size="3"></collection>
+        </div>
       </div>
-      <hr>
-      <collection :items="goals"
-                  :allowSizeChange="true"
-                  type="goal"
-                  :size="3"></collection>
     </div>
   </main>
 </template>
