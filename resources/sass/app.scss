@@ -19,6 +19,8 @@ $theme-colors: (
 @import '~bootstrap/scss/bootstrap';
 @import '~bootstrap-vue/src/index.scss';
 
+@import 'transparent-styles';
+
 // Generate `.bg-*` color utilities
 // @each $color, $value in $theme-colors {
 //  @include bg-variant('.bg-#{$color}', $value);
