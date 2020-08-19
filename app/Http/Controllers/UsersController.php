@@ -64,7 +64,11 @@ class UsersController extends Controller
             if($user->verified == false) {
                 $user->verified = true;
                 $user->save();
-                $user->notify(new UserVerified);
+                try {
+                    $user->notify(new UserVerified);
+                } finally {
+
+                }
             }
             return redirect()->route('user.verified', ['user' => $user->id]);
         } else {
