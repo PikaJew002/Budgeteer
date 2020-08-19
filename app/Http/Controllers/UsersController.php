@@ -58,8 +58,9 @@ class UsersController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function verify(Request $request, User $user)
+    public function verify(Request $request, $id)
     {
+        $user = User::findOrFail($id);
         if(Auth::user()->id == 1) {
             if($user->verified == false) {
                 $user->verified = true;
@@ -82,8 +83,9 @@ class UsersController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function verified(Request $request, User $user)
+    public function verified(Request $request, $id)
     {
+        $user = User::findOrFail($id);
         return view('user_verified', ['user' => $user]);
     }
 
