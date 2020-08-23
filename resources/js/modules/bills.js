@@ -50,6 +50,7 @@ export const bills = {
       commit('insertBill', bill);
       BillAPI.postBill(bill)
         .then(res => {
+          commit('insertBillId', res.data.data);
           commit('setAddBillStatus', 2);
         })
         .catch(err => {
@@ -126,6 +127,14 @@ export const bills = {
     },
     insertBill(state, bill) {
       state.bills.push(bill);
+    },
+    insertBillId(state, bill) {
+      for(let i in state.bills) {
+        if(!state.bills[i].hasOwnProperty('id')) {
+          Vue.set(state.bills[i], 'id', bill.id);
+          return;
+        }
+      }
     },
     updateBill(state, bill) {
       for(let i in state.bills) {

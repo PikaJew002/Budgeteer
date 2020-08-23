@@ -46,9 +46,10 @@ export const goals = {
     },
     addGoal({ commit }, goal) {
       commit('setAddGoalStatus', 1);
+      commit('insertGoal', goal);
       GoalAPI.postGoal(goal)
         .then(res => {
-          commit('insertGoal', res.data.data);
+          commit('insertGoalId', res.data.data);
           commit('setAddGoalStatus', 2);
         })
         .catch(err => {
@@ -184,6 +185,14 @@ export const goals = {
     },
     insertGoal(state, goal) {
       state.goals.push(goal);
+    },
+    insertGoalId(state, goal) {
+      for(let i in state.goals) {
+        if(!state.goals[i].hasOwnProperty('id')) {
+          Vue.set(state.goals[i], 'id', goal.id);
+          return;
+        }
+      }
     },
     updateGoal(state, goal) {
       for(let i in state.goals) {
