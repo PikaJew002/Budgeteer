@@ -184,7 +184,7 @@ export const goals = {
       state.deleteGoalStatus = status;
     },
     insertGoal(state, goal) {
-      state.goals.push(goal);
+      state.goals.push(cloneDeep(goal));
     },
     insertGoalId(state, goal) {
       for(let i in state.goals) {
@@ -218,7 +218,7 @@ export const goals = {
           if(!state.goals[i].hasOwnProperty('contributions')) {
             Vue.set(state.goals[i], 'contributions', []);
           }
-          state.goals[i].contributions.push(contribution);
+          state.goals[i].contributions.push(cloneDeep(contribution));
           return;
         }
       }

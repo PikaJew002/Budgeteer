@@ -153,7 +153,7 @@ export const incomes = {
       state.deleteIncomeStatus = status;
     },
     insertIncome(state, income) {
-      state.incomes.push(income);
+      state.incomes.push(cloneDeep(income));
     },
     insertIncomeId(state, income) {
       for(let i in state.incomes) {
@@ -185,7 +185,7 @@ export const incomes = {
           if(!state.incomes[i].hasOwnProperty('paychecks')) {
             Vue.set(state.incomes[i], 'paychecks', []);
           }
-          state.incomes[i].paychecks.push(paycheck);
+          state.incomes[i].paychecks.push(cloneDeep(paycheck));
           return;
         }
       }
