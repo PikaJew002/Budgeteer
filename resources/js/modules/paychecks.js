@@ -47,6 +47,7 @@ export const paychecks = {
       dispatch('addIncomePaycheck', paycheck);
       PaycheckAPI.postPaycheck(paycheck)
         .then(res => {
+          dispatch('addIncomePaycheckId', res.data.data);
           commit('setAddPaycheckStatus', 2);
         })
         .catch(err => {

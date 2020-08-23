@@ -47,9 +47,10 @@ export const incomes = {
     },
     addIncome({ commit }, income) {
       commit('setAddIncomeStatus', 1);
+      commit('insertIncome', income);
       IncomeAPI.postIncome(income)
         .then(res => {
-          commit('insertIncome', res.data.data);
+          commit('insertIncomeId', res.data.data);
           commit('setAddIncomeStatus', 2);
         })
         .catch(err => {
@@ -94,6 +95,9 @@ export const incomes = {
     },
     addIncomePaycheck({ commit }, paycheck) {
       commit('insertIncomePaycheck', paycheck);
+    },
+    addIncomePaycheckId({ commit }, paycheck) {
+      commit('insertIncomePaycheckId', paycheck);
     },
     editIncomePaycheck({ commit }, paycheck) {
       commit('updateIncomePaycheck', paycheck);
@@ -149,7 +153,15 @@ export const incomes = {
       state.deleteIncomeStatus = status;
     },
     insertIncome(state, income) {
-      state.incomes.push(income);
+      state.incomes.push(cloneDeep(income));
+    },
+    insertIncomeId(state, income) {
+      for(let i in state.incomes) {
+        if(!state.incomes[i].hasOwnProperty('id')) {
+          Vue.set(state.incomes[i], 'id', income.id);
+          return;
+        }
+      }
     },
     updateIncome(state, income) {
       for(let i in state.incomes) {
@@ -173,7 +185,23 @@ export const incomes = {
           if(!state.incomes[i].hasOwnProperty('paychecks')) {
             Vue.set(state.incomes[i], 'paychecks', []);
           }
-          state.incomes[i].paychecks.push(paycheck);
+          state.incomes[i].paychecks.push(cloneDeep(paycheck));
+          return;
+        }
+      }
+    },
+    insertIncomePaycheckId(state, paycheck) {
+      for(let i in state.incomes) {
+        if(state.incomes[i].id == paycheck.income_id) {
+          if(!state.incomes[i].hasOwnProperty('paychecks')) {
+            Vue.set(state.incomes[i], 'paychecks', []);
+          }
+          for(let j in state.incomes[i].paychecks) {
+            if(!state.incomes[i].paychecks[j].hasOwnProperty('id')) {
+              Vue.set(state.incomes[i].paychecks[j], 'id', paycheck.id);
+              return;
+            }
+          }
           return;
         }
       }

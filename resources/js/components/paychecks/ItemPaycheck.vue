@@ -10,7 +10,7 @@
         <h5>${{ leftOver }}</h5>
       </div>
       <div v-if="highlight && !receivingPair" class="d-flex justify-content-between mt-2">
-        <button v-if="paycheck.bills.length > 0 || paycheck.contributions.length > 0"
+        <button v-if="paycheckBills.length > 0 || paycheckContributions.length > 0"
                 type="button"
                 class="btn btn-outline-base btn-sm"
                 @click="billsAndContributionsMode = true">Bills/Contributions</button>
@@ -32,7 +32,7 @@
       </div>
     </template>
     <template v-else>
-      <div v-for="bill in paycheck.bills" class="d-flex justify-content-between mb-2">
+      <div v-for="bill in paycheckBills" class="d-flex justify-content-between mb-2">
         <span>
           {{ bill.name }}
         </span>
@@ -46,7 +46,7 @@
                 class="btn btn-outline-base btn-sm"
                 @click="onPairUpdateBill(bill)">Update</button>
       </div>
-      <div v-for="contribution in paycheck.contributions" class="d-flex justify-content-between mb-2">
+      <div v-for="contribution in paycheckContributions" class="d-flex justify-content-between mb-2">
         <span>
           {{ getContributionGoal(contribution).name }}
         </span>
@@ -186,11 +186,11 @@
     computed: {
       leftOver() {
         let total = ((this.paycheck.amount == null || this.paycheck.amount == 0) ? this.paycheck.amount_project : this.paycheck.amount);
-        for(let i in this.paycheck.bills) {
-          total = total - (this.paycheck.bills[i].pivot_amount == null ? this.paycheck.bills[i].pivot_amount_project : this.paycheck.bills[i].pivot_amount);
+        for(let i in this.paycheckBills) {
+          total = total - (this.paycheckBills[i].pivot_amount == null ? this.paycheckBills[i].pivot_amount_project : this.paycheckBills[i].pivot_amount);
         }
-        for(let i in this.paycheck.contributions) {
-          total = total - (this.paycheck.contributions[i].pivot_amount == null ? this.paycheck.contributions[i].pivot_amount_project : this.paycheck.contributions[i].pivot_amount);
+        for(let i in this.paycheckContributions) {
+          total = total - (this.paycheckContributions[i].pivot_amount == null ? this.paycheckContributions[i].pivot_amount_project : this.paycheckContributions[i].pivot_amount);
         }
         return Math.round(total * 100)/100;
       },
@@ -211,6 +211,18 @@
       },
       goals() {
         return this.$store.getters.getGoals;
+      },
+      paycheckBills() {
+        if(this.paycheck.hasOwnProperty('bills')) {
+          return this.paycheck.bills;
+        }
+        return [];
+      },
+      paycheckContributions() {
+        if(this.paycheck.hasOwnProperty('contributions')) {
+          return this.paycheck.contributions;
+        }
+        return [];
       },
     },
   }
