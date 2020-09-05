@@ -1244,18 +1244,23 @@ boolbase@^1.0.0, boolbase@~1.0.0:
   resolved "https://registry.yarnpkg.com/boolbase/-/boolbase-1.0.0.tgz#68dff5fbe60c51eb37725ea9e3ed310dcc1e776e"
   integrity sha1-aN/1++YMUes3cl6p4+0xDcwed24=
 
-bootstrap-vue@^2.1.0:
-  version "2.2.2"
-  resolved "https://registry.yarnpkg.com/bootstrap-vue/-/bootstrap-vue-2.2.2.tgz#750d461d18352e2fd6cd2debfe52ebeb125c191f"
-  integrity sha512-jFw9WcPX2MLCMaMNdakXke2Fwtz5o7EeByMJGhzGjiL1TNBr/nz2PolCAFW475+o2t5Tz3MZT152o6zLQXcElw==
+bootstrap-vue@^2.13.0:
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/bootstrap-vue/-/bootstrap-vue-2.15.0.tgz#0dfc12c054496c0f10efed510da1def41697cf3c"
+  integrity sha512-ncxWkDG0mKFVot314wWKJELi+ESO7k6ngV//qvJFs9iVzlFI8Hx3rBVbpcPW2vrJ+0vitH8N2SOwn4fdQ3frMQ==
   dependencies:
     "@nuxt/opencollective" "^0.3.0"
-    bootstrap ">=4.4.1 <5.0.0"
-    popper.js "^1.16.0"
+    bootstrap ">=4.5.0 <5.0.0"
+    popper.js "^1.16.1"
     portal-vue "^2.1.7"
     vue-functional-data-merge "^3.1.0"
 
-"bootstrap@>=4.4.1 <5.0.0", bootstrap@^4.4.1:
+"bootstrap@>=4.5.0 <5.0.0":
+  version "4.5.0"
+  resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-4.5.0.tgz#97d9dbcb5a8972f8722c9962483543b907d9b9ec"
+  integrity sha512-Z93QoXvodoVslA+PWNdk23Hze4RBYIkpb5h8I2HY2Tu2h7A0LpAgLcyrhrSUyo2/Oxm2l1fRZPs1e5hnxnliXA==
+
+bootstrap@^4.4.1:
   version "4.4.1"
   resolved "https://registry.yarnpkg.com/bootstrap/-/bootstrap-4.4.1.tgz#8582960eea0c5cd2bede84d8b0baf3789c3e8b01"
   integrity sha512-tbx5cHubwE6e2ZG7nqM3g/FZ5PQEDMWmMGNrCUBVRPHXTJaH7CBDdsLeu3eCh3B1tzAxTnAbtmrzvWEvT2NNEA==
@@ -3690,10 +3695,10 @@ isobject@^3.0.0, isobject@^3.0.1:
   resolved "https://registry.yarnpkg.com/isobject/-/isobject-3.0.1.tgz#4e431e92b11a9731636aa1f9c8d1ccbcfdab78df"
   integrity sha1-TkMekrEalzFjaqH5yNHMvP2reN8=
 
-jquery@^3.5:
-  version "3.5.0"
-  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.5.0.tgz#9980b97d9e4194611c36530e7dc46a58d7340fc9"
-  integrity sha512-Xb7SVYMvygPxbFMpTFQiHh1J7HClEaThguL15N/Gg37Lri/qKyhRGZYzHRyLH8Stq3Aow0LsHO2O2ci86fCrNQ==
+jquery@3.4.1:
+  version "3.4.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.4.1.tgz#714f1f8d9dde4bdfa55764ba37ef214630d80ef2"
+  integrity sha512-36+AdBzCL+y6qjw5Tx7HgzeGCzC81MDDgaUP8ld2zhx58HdqXGoBd+tHdrBMiyjGQs0Hxs/MLZTu/eHNJJuWPw==
 
 js-levenshtein@^1.1.3:
   version "1.1.6"
@@ -4257,10 +4262,10 @@ mkdirp@0.5.x, mkdirp@^0.5.0, mkdirp@^0.5.1, mkdirp@~0.5.0, mkdirp@~0.5.1:
   dependencies:
     minimist "0.0.8"
 
-moment@^2.24.0:
-  version "2.24.0"
-  resolved "https://registry.yarnpkg.com/moment/-/moment-2.24.0.tgz#0d055d53f5052aa653c9f6eb68bb5d12bf5c2b5b"
-  integrity sha512-bV7f+6l2QigeBBZSM/6yTNq4P2fNpSWj/0e7jQcy87A8e7o2nAfP/34/2ky5Vw4B9S446EtIhodAzkFCcR4dQg==
+moment@^2.25.2:
+  version "2.26.0"
+  resolved "https://registry.yarnpkg.com/moment/-/moment-2.26.0.tgz#5e1f82c6bafca6e83e808b30c8705eed0dcbd39a"
+  integrity sha512-oIixUO+OamkUkwjhAVE18rAMfRJNsNe/Stid/gwHSOfHrOtw9EhAY2AHvdKZ/k/MggcYELFCJz/Sn2pL8b8JMw==
 
 move-concurrently@^1.0.1:
   version "1.0.1"
@@ -4860,10 +4865,10 @@ pkg-dir@^3.0.0:
   dependencies:
     find-up "^3.0.0"
 
-popper.js@^1.16.0:
-  version "1.16.0"
-  resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.16.0.tgz#2e1816bcbbaa518ea6c2e15a466f4cb9c6e2fbb3"
-  integrity sha512-+G+EkOPoE5S/zChTpmBSSDYmhXJ5PsW8eMhH8cP/CQHMFPBG/kC9Y5IIw6qNYgdJ+/COf0ddY2li28iHaZRSjw==
+popper.js@^1.16.1:
+  version "1.16.1"
+  resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.16.1.tgz#2a223cb3dc7b6213d740e40372be40de43e65b1b"
+  integrity sha512-Wb4p1J4zyFTbM+u6WuO4XstYx4Ky9Cewe4DWrel7B0w6VVICvPwdOpotjzcf6eD8TsckVnIMNONQyPIUFOUbCQ==
 
 portal-vue@^2.1.7:
   version "2.1.7"
@@ -5702,10 +5707,10 @@ sass-loader@^7.3.1:
     pify "^4.0.1"
     semver "^6.3.0"
 
-sass@^1.24.0:
-  version "1.25.0"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.25.0.tgz#f8bd7dfbb39d6b0305e27704a8ebe637820693f3"
-  integrity sha512-uQMjye0Y70SEDGO56n0j91tauqS9E1BmpKHtiYNQScXDHeaE9uHwNEqQNFf4Bes/3DHMNinB6u79JsG10XWNyw==
+sass@^1.26.5:
+  version "1.26.8"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.26.8.tgz#312652530721f9568d4c4000b0db07ec6eb23325"
+  integrity sha512-yvtzyrKLGiXQu7H12ekXqsfoGT/aTKeMDyVzCB675k1HYuaj0py63i8Uf4SI9CHXj6apDhpfwbUr3gGOjdpu2Q==
   dependencies:
     chokidar ">=2.0.0 <4.0.0"
 
@@ -6562,10 +6567,10 @@ vue-loader@^15.4.2:
     vue-hot-reload-api "^2.3.0"
     vue-style-loader "^4.1.0"
 
-vue-router@^3.1.3:
-  version "3.1.5"
-  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.1.5.tgz#ff29b8a1e1306c526b52d4dc0532109f16c41231"
-  integrity sha512-BszkPvhl7I9h334GjckCh7sVFyjTPMMJFJ4Bsrem/Ik+B/9gt5tgrk8k4gGLO4ZpdvciVdg7O41gW4DisQWurg==
+vue-router@^3.1.6:
+  version "3.3.2"
+  resolved "https://registry.yarnpkg.com/vue-router/-/vue-router-3.3.2.tgz#0099de402edb2fe92f9711053ab5a2156f239cad"
+  integrity sha512-5sEbcfb7MW8mY8lbUVbF4kgcipGXsagkM/X+pb6n0MhjP+RorWIUTPAPSqgPaiPOxVCXgAItBl8Vwz8vq78faA==
 
 vue-style-loader@^4.1.0:
   version "4.1.2"
@@ -6593,15 +6598,15 @@ vue@^2.6.11:
   resolved "https://registry.yarnpkg.com/vue/-/vue-2.6.11.tgz#76594d877d4b12234406e84e35275c6d514125c5"
   integrity sha512-VfPwgcGABbGAue9+sfrD4PuwFar7gPb1yl1UK1MwXoQPAw0BKSqWfoYCT/ThFrdEVWoI51dBuyCoiNU9bZDZxQ==
 
-vuelidate@^0.7.4:
-  version "0.7.4"
-  resolved "https://registry.yarnpkg.com/vuelidate/-/vuelidate-0.7.4.tgz#5a0e54be09ac0192f1aa3387d74b92e0945bf8aa"
-  integrity sha512-QHZWYOL325Zo+2K7VBNEJTZ496Kd8Z31p85aQJFldKudUUGBmgw4zu4ghl4CyqPwjRCmqZ9lDdx4FSdMnu4fGg==
+vuelidate@^0.7.5:
+  version "0.7.5"
+  resolved "https://registry.yarnpkg.com/vuelidate/-/vuelidate-0.7.5.tgz#ff48c75ae9d24ea24c24e9ea08065eda0a0cba0a"
+  integrity sha512-GAAG8QAFVp7BFeQlNaThpTbimq3+HypBPNwdkCkHZZeVaD5zmXXfhp357dcUJXHXTZjSln0PvP6wiwLZXkFTwg==
 
-vuex@^3.1.2:
-  version "3.1.2"
-  resolved "https://registry.yarnpkg.com/vuex/-/vuex-3.1.2.tgz#a2863f4005aa73f2587e55c3fadf3f01f69c7d4d"
-  integrity sha512-ha3jNLJqNhhrAemDXcmMJMKf1Zu4sybMPr9KxJIuOpVcsDQlTBYLLladav2U+g1AvdYDG5Gs0xBTb0M5pXXYFQ==
+vuex@^3.3.0:
+  version "3.4.0"
+  resolved "https://registry.yarnpkg.com/vuex/-/vuex-3.4.0.tgz#20cc086062d750769fce1febb34e7fceeaebde45"
+  integrity sha512-ajtqwEW/QhnrBZQsZxCLHThZZaa+Db45c92Asf46ZDXu6uHXgbfVuBaJ4gzD2r4UX0oMJHstFwd2r2HM4l8umg==
 
 watchpack@^1.5.0:
   version "1.6.0"
@@ -6754,9 +6759,9 @@ websocket-driver@>=0.5.1:
     websocket-extensions ">=0.1.1"
 
 websocket-extensions@>=0.1.1:
-  version "0.1.3"
-  resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.3.tgz#5d2ff22977003ec687a4b87073dfbbac146ccf29"
-  integrity sha512-nqHUnMXmBzT0w570r2JpJxfiSD1IzoI+HGVdd3aZ0yNi3ngvQ4jv1dtHt5VGxfI2yj5yqImPhOK4vmIh2xMbGg==
+  version "0.1.4"
+  resolved "https://registry.yarnpkg.com/websocket-extensions/-/websocket-extensions-0.1.4.tgz#7f8473bc839dfd87608adb95d7eb075211578a42"
+  integrity sha512-OqedPIGOfsDlo31UNwYbCFMSaO9m9G/0faIHj5/dZFDMFqPTcx6UwqyOy3COEaEOg/9VsGIpdqn62W5KhoKSpg==
 
 which-module@^2.0.0:
   version "2.0.0"
