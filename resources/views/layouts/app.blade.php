@@ -13,7 +13,7 @@
     <script type='text/javascript'>
       window.Laravel = <?php echo json_encode(['csrfToken' => csrf_token()]); ?>
     </script>
-    <script src="{{ mix('/js/app.js') }}" defer></script>
+    <script src="{{ mix('js/app.js') }}" defer></script>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
@@ -25,7 +25,7 @@
       }
     </style>
     <!-- Styles -->
-    <link href="{{ asset('css/app.css') }}" rel="stylesheet">
+    <link href="{{ mix('css/app.css') }}" rel="stylesheet">
 </head>
 <body>
     <div id="app">
