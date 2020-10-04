@@ -6,7 +6,7 @@
           {{ goal.name }}
         </h5>
         <h5 class="card-title">
-          ${{ (paycheck.contribution_amount == null ? paycheck.contribution_amount_project : paycheck.contribution_amount) }}
+          ${{ paycheck_contribution_amount_to_string }}
         </h5>
         <h5 class="card-title text-primary">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.917 52.917" height="26" width="26"><g fill="none" stroke="#007BFF"><path d="M52.13 26.458A25.672 25.672 0 0126.458 52.13 25.672 25.672 0 01.786 26.458 25.672 25.672 0 0126.458.786 25.672 25.672 0 0152.13 26.458z" stroke-width="1.573"/><path d="M26.309.744h.299v22.325h-.299z" stroke-width="1.487"/></g></svg>
@@ -22,7 +22,7 @@
           {{ goal.name }}
         </h5>
         <h5 class="card-title">
-          ${{ (paycheck.contribution_amount == null ? paycheck.contribution_amount_project : paycheck.contribution_amount) }}
+          ${{ paycheck_contribution_amount_to_string }}
         </h5>
         <h5 class="card-title text-success">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.917 52.917" height="26" width="26"><g fill="none" stroke="#28A745"><path d="M52.13 26.458A25.672 25.672 0 0126.458 52.13 25.672 25.672 0 01.786 26.458 25.672 25.672 0 0126.458.786 25.672 25.672 0 0152.13 26.458z" stroke-width="1.573"/><path stroke-width="1.605" d="M25.712 28.197L47.817 6.092l.674.674-22.105 22.105z"/><path stroke-width="1.605" d="M15.761 18.246l.682-.681 9.951 9.95-.681.682z"/></g></svg>
@@ -38,7 +38,7 @@
           {{ goal.name }}
         </h5>
         <h5 class="card-title">
-          ${{ contribution.amount }}
+          ${{ contribution_amount_to_string }}
         </h5>
         <h5 class="card-title text-base">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52.917 52.917" height="26" width="26"><path d="M52.13 26.458A25.672 25.672 0 0126.458 52.13 25.672 25.672 0 01.786 26.458 25.672 25.672 0 0126.458.786 25.672 25.672 0 0152.13 26.458z" fill="none" stroke="#1D4880" stroke-width="1.573"/></svg>
@@ -157,6 +157,12 @@
         this.canStopPair = false;
         EventBus.$emit('paycheck-pair-end', null);
       },
+      amount_to_string(amount) {
+        if(Number(amount).toFixed(2) != "NaN" && amount != "" && amount != null) {
+          return Number(amount).toFixed(2);
+        }
+        return "";
+      },
     },
     computed: {
       goals() {
@@ -188,6 +194,12 @@
       },
       contribution_day_due_on() {
         return moment([this.month[1], this.month[0] - 1, (this.contribution.day_due_on == null ? "01" : this.contribution.day_due_on) ]).format('ddd, MMM D');
+      },
+      paycheck_contribution_amount_to_string() {
+        return (this.paycheck.contribution_amount == null ? this.amount_to_string(this.paycheck.contribution_amount_project) : this.amount_to_string(this.paycheck.contribution_amount));
+      },
+      contribution_amount_to_string() {
+        return this.amount_to_string(this.contribution.amount);
       },
     },
   }
