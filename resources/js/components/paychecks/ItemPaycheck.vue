@@ -6,8 +6,8 @@
         <h5>{{ paycheck_paid_on }}</h5>
       </div>
       <div class="d-flex justify-content-between mb-2">
-        <h5>${{ paycheck.amount == null ? paycheck.amount_project : paycheck.amount }}</h5>
-        <h5>${{ leftOver }}</h5>
+        <h5>${{ (paycheck.amount == null ? getAmountToString(paycheck.amount_project) : getAmountToString(paycheck.amount)) }}</h5>
+        <h5>${{ leftOver.toFixed(2) }}</h5>
       </div>
       <div v-if="highlight && !receivingPair" class="d-flex justify-content-between mt-2">
         <button v-if="paycheckBills.length > 0 || paycheckContributions.length > 0"
@@ -40,7 +40,7 @@
           {{ getMonthShort(bill.pivot_due_on) }}
         </span>
         <span>
-          {{ " $" + (bill.pivot_amount ? bill.pivot_amount : bill.pivot_amount_project) }}
+          ${{ (bill.pivot_amount == null ? getAmountToString(bill.pivot_amount_project) : getAmountToString(bill.pivot_amount)) }}
         </span>
         <button type="button"
                 class="btn btn-outline-base btn-sm"
@@ -54,7 +54,7 @@
           {{ getMonthShort(contribution.pivot_due_on) }}
         </span>
         <span>
-          {{ " $" + (contribution.pivot_amount ? contribution.pivot_amount : contribution.pivot_amount_project) }}
+          ${{ (contribution.pivot_amount == null ? getAmountToString(contribution.pivot_amount_project) : getAmountToString(contribution.pivot_amount)) }}
         </span>
         <button type="button"
                 class="btn btn-outline-base btn-sm"
@@ -178,6 +178,12 @@
             return this.goals[i];
           }
         }
+      },
+      getAmountToString(amount) {
+        if(Number(amount).toFixed(2) != "NaN" && amount != "" && amount != null) {
+          return Number(amount).toFixed(2);
+        }
+        return "";
       },
       moment(args) {
         return moment(args);
