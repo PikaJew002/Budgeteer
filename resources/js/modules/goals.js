@@ -50,6 +50,9 @@ export const goals = {
       GoalAPI.postGoal(goal)
         .then(res => {
           commit('insertGoalId', res.data.data);
+          for(let i in res.data.data.contributions) {
+            commit('insertGoalContribution', res.data.data.contributions[i]);
+          }
           commit('setAddGoalStatus', 2);
         })
         .catch(err => {
@@ -184,7 +187,9 @@ export const goals = {
       state.deleteGoalStatus = status;
     },
     insertGoal(state, goal) {
-      state.goals.push(cloneDeep(goal));
+      let newGoal = cloneDeep(goal);
+      newGoal.contributions = [];
+      state.goals.push(newGoal);
     },
     insertGoalId(state, goal) {
       for(let i in state.goals) {
