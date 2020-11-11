@@ -21,18 +21,14 @@ So, I get paid for 13 "months", but have 12 months of bills. How do I decide wha
 The solution that Budgeteer gives is this: you define the monthly bills and when you get paid, assign bills to paychecks. That's it. Simple, low-complexity solution.
 Currently, I'm hosting the app on some personal shared hosting. But here's the source code. If you like it, you can use it! When a new user registers, I get notified and I'll reach out to you to provide some first steps like docs (pre-documentation, if you will).
 
-## Entered Testing Phase!
+## Deployment
 
-Yay! I've deployed the app at [here](https://www.budgeteer.ironmthome.com) and public registration is open. However, to be able to login in after registration you'll need to be verified. So after registration, I get a notification, I'll verify your account and provide some basic guidelines for using the app. As I have no documentation on how to use the app (yet) or real testing data, if you have ideas or just general feedback shoot me an email. If you'd like to rip me a new one anonymously, I'll be throwing up a feedback form, which won't include an identifier leading back to you. Or submit an issue here on GitHub. Anyways, hope those who use it find it helpful and can give me any kind of feedback. Cheers!
+Yay! I've deployed the app at [here](https://www.budgeteer.ironmthome.com) and public registration is open. However, to be able to login in after registration you'll need to be verified. So after registration, I get a notification, I'll verify your account and provide some basic guidelines for using the app. As I have no documentation on how to use the app (yet), if you have ideas or just general feedback shoot me an email. If you'd like to rip me a new one anonymously, it's the internet, go make a fake gmail or something. Or submit an issue here on GitHub. Anyways, hope those who use it find it helpful and can give me any kind of feedback. Cheers!
 -AE
 
-## Roadmap
+## Roadmap/Current Improvments on the Way
 
- * 4/13/20 - Added sorting in monthly bills and paychecks automatically (by paid on in paychecks and day due on in bills)
- * 5/4/20 - Added "Notify when paid" feature to paychecks
- * Later in May 2020 - Add optional frequency to incomes
- * Maybe next month - Add savings goals feature to track savings over a span of months
- * (Sometime in the future?) - Adding functionality to split bills across paychecks within an individual month
+[Trello Board](https://trello.com/b/5l3dBYi0/budgeteer)
 
 ## License
 
