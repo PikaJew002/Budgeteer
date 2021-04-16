@@ -6,6 +6,8 @@ use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\IncomeResource;
 use App\Http\Resources\BillResource;
 use App\Http\Resources\ContributionResource;
+use App\Http\Resources\ContributionPaycheckResource;
+use App\Http\Resources\BillPaycheckResource;
 
 class PaycheckResource extends JsonResource
 {
@@ -22,30 +24,12 @@ class PaycheckResource extends JsonResource
             'income_id' => $this->income_id,
             'income' => new IncomeResource($this->whenLoaded('income')),
             'bills' => BillResource::collection($this->whenLoaded('bills')),
-            'bill_amount' => $this->whenPivotLoaded('bill_paycheck', function() {
-                return $this->pivot->amount;
-            }),
-            'bill_amount_project' => $this->whenPivotLoaded('bill_paycheck', function() {
-                return $this->pivot->amount_project;
-            }),
-            'bill_due_on' => $this->whenPivotLoaded('bill_paycheck', function() {
-                return $this->pivot->due_on;
-            }),
-            'bill_paid_on' => $this->whenPivotLoaded('bill_paycheck', function() {
-                return $this->pivot->paid_on;
+            'bill' => $this->whenPivotLoaded('bill_paycheck', function() {
+              return new BillPaycheckResource($this->pivot);
             }),
             'contributions' => ContributionResource::collection($this->whenLoaded('contributions')),
-            'contribution_amount' => $this->whenPivotLoaded('contribution_paycheck', function() {
-                return $this->pivot->amount;
-            }),
-            'contribution_amount_project' => $this->whenPivotLoaded('contribution_paycheck', function() {
-                return $this->pivot->amount_project;
-            }),
-            'contribution_due_on' => $this->whenPivotLoaded('contribution_paycheck', function() {
-                return $this->pivot->due_on;
-            }),
-            'contribution_paid_on' => $this->whenPivotLoaded('contribution_paycheck', function() {
-                return $this->pivot->paid_on;
+            'contribution' => $this->whenPivotLoaded('contribution_paycheck', function() {
+              return new ContributionPaycheckResource($this->pivot);
             }),
             'amount' => $this->amount,
             'amount_project' => $this->amount_project,
