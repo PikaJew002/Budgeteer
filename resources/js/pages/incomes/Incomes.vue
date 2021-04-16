@@ -53,10 +53,24 @@
       }
     },
     created() {
-      if(this.incomesLoadStatus < 2) {
-        this.$store.dispatch('loadIncomes', {
-          with: ['paychecks.bills', 'paychecks.contributions'],
+      if(this.billsLoadStatus < 2) {
+        this.$store.dispatch('loadBills', {
+          with: ['paychecks'],
         });
+      }
+      if(this.incomesLoadStatus < 2) {
+        this.$store.dispatch('loadIncomes');
+      }
+      if(this.paychecksLoadStatus < 2) {
+        this.$store.dispatch('loadPaychecks');
+      }
+      if(this.goalsLoadStatus < 2) {
+        this.$store.dispatch('loadGoals');
+      }
+      if(this.contributionsLoadStatus < 2) {
+        this.$store.dispatch('loadContributions', {
+          with: ['paychecks'],
+        })
       }
     },
     methods: {
@@ -69,7 +83,19 @@
         return this.$store.getters.getIncomes;
       },
       incomesLoadStatus() {
-        return this.$store.getters.getIncomes;
+        return this.$store.getters.getIncomesLoadStatus;
+      },
+      paychecksLoadStatus() {
+        return this.$store.getters.getPaychecksLoadStatus;
+      },
+      billsLoadStatus() {
+        return this.$store.getters.getBillsLoadStatus;
+      },
+      goalsLoadStatus() {
+        return this.$store.getters.getGoalsLoadStatus;
+      },
+      contributionsLoadStatus() {
+        return this.$store.getters.getContributionsLoadStatus;
       },
     },
     beforeRouteLeave(to, from, next) {

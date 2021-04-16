@@ -35,14 +35,18 @@
         });
       }
       if(this.incomesLoadStatus < 2) {
-        this.$store.dispatch('loadIncomes', {
-          with: ['paychecks.bills', 'paychecks.contributions'],
-        });
+        this.$store.dispatch('loadIncomes');
+      }
+      if(this.paychecksLoadStatus < 2) {
+        this.$store.dispatch('loadPaychecks');
       }
       if(this.goalsLoadStatus < 2) {
-        this.$store.dispatch('loadGoals', {
-          with: ['contributions.paychecks'],
-        });
+        this.$store.dispatch('loadGoals');
+      }
+      if(this.contributionsLoadStatus < 2) {
+        this.$store.dispatch('loadContributions', {
+          with: ['paychecks'],
+        })
       }
       EventBus.$on('paycheck-pairable-pair-start', id => this.disableSelector = true);
       EventBus.$on('paycheck-pair-start', id => this.disableSelector = true);
@@ -65,19 +69,25 @@
       incomesLoadStatus() {
         return this.$store.getters.getIncomesLoadStatus;
       },
+      paychecksLoadStatus() {
+        return this.$store.getters.getPaychecksLoadStatus;
+      },
       billsLoadStatus() {
         return this.$store.getters.getBillsLoadStatus;
       },
       goalsLoadStatus() {
         return this.$store.getters.getGoalsLoadStatus;
       },
+      contributionsLoadStatus() {
+        return this.$store.getters.getContributionsLoadStatus;
+      },
       /**
         Gets currently selected incomes
         */
       incomesSelect() {
-        return this.incomes.filter((income) => {
+        return this.incomes.filter((income, id) => {
           if(this.incomesSelected == 0) return true;
-          return income.id == this.incomesSelected;
+          return id == this.incomesSelected;
         });
       },
     },
