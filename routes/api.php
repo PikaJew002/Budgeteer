@@ -20,6 +20,12 @@ Route::post('goal', ['as' => 'goal.store', 'uses' => 'GoalsController@store']);
 Route::put('goal', ['as' => 'goal.update', 'uses' => 'GoalsController@update']);
 Route::delete('goal/{goal}', ['as' => 'goal.destroy', 'uses' => 'GoalsController@destroy']);
 
+Route::get('contribution', ['as' => 'contribution.index', 'uses' => 'ContributionsController@index']);
+Route::get('contribution/{contribution}', ['as' => 'contribution.show', 'uses' => 'ContributionsController@show']);
+Route::post('contribution', ['as' => 'contribution.store', 'uses' => 'ContributionsController@store']);
+Route::put('contribution', ['as' => 'contribution.update', 'uses' => 'ContributionsController@update']);
+Route::delete('contribution/{contribution}', ['as' => 'contribution.destroy', 'uses' => 'ContributionsController@destroy']);
+
 Route::get('income', ['as' => 'income.index', 'uses' => 'IncomesController@index']);
 Route::get('income/{income}', ['as' => 'income.show', 'uses' => 'IncomesController@show']);
 Route::post('income', ['as' => 'income.store', 'uses' => 'IncomesController@store']);
