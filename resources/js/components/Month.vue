@@ -135,12 +135,14 @@
       },
       /**
         Gets the incomes
+        @return array
         */
       incomes() {
         return this.$store.getters.getIncomes;
       },
       /**
         Gets the incomes selected
+        @return array
         */
       incomesSelected() {
         if(this.incomesshown == "0") return this.incomes;
@@ -149,16 +151,23 @@
         });
       },
       /**
+        Gets the ids of the incomes selected
+        @return array
+        */
+      incomesSelectedIds() {
+        return this.incomesSelected.reduce((ids, income) => {
+          ids.push(income.id);
+          return ids;
+        }, []);
+      },
+      /**
         Gets the paychecks for the incomes shown
+        @return array
         */
       paychecks() {
-        let paycheckArr = [];
-        for(let i in this.incomesSelected) {
-          for(let j in this.incomesSelected[i].paychecks) {
-            paycheckArr.push(this.incomesSelected[i].paychecks[j]);
-          }
-        }
-        return paycheckArr;
+        return this.$store.getters.getPaychecks.filter((paycheck) => {
+          return this.incomesSelectedIds.includes(paycheck.income_id);
+        });
       },
       /**
         Gets the paychecks that fall within "this" month (see startDate and endDate)
@@ -181,16 +190,10 @@
         return this.$store.getters.getGoals;
       },
       /**
-        Gets the contributions for the goals
+        Gets the incomes
         */
       contributions() {
-        let contributionArr = [];
-        for(let i in this.goals) {
-          for(let j in this.goals[i].contributions) {
-            contributionArr.push(this.goals[i].contributions[j]);
-          }
-        }
-        return contributionArr;
+        return this.$store.getters.getContributions;
       },
       /**
         Gets the contributions that fall within "this" month (see startDate and endDate)

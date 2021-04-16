@@ -4,13 +4,8 @@
       Are you sure you want to edit the {{ goal.name }} goal? <br>
       Caution! The following contribution-paycheck pairings will be removed due to changes in the contributions. <br>
       <ul>
-        <template v-for="contribution in contributionsDeleted">
-          <li v-for="paycheck in contribution.paychecks">
-            {{ getIncome(paycheck).name }} - ${{ paycheck.amount == null ? paycheck.amount_project : paycheck.amount }} - {{ paidOnFormat(paycheck.paid_on) }}
-          </li>
-        </template>
-        <li v-for="paycheck in paychecksDeleted">
-          {{ getIncome(paycheck).name }} - ${{ paycheck.amount == null ? paycheck.amount_project : paycheck.amount }} - {{ paidOnFormat(paycheck.paid_on) }}
+        <li v-for="contributionPaycheck in contributionPaychecksDeleted" :key="contributionPaycheck.contribution_id + '_' + contributionPaycheck.paycheck_id">
+          {{ getIncome(getPaycheck(contributionPaycheck.paycheck_id)).name }} - ${{ amountProjectIfAmountNull(getPaycheck(contributionPaycheck.paycheck_id)) }} - {{ paidOnFormat(getPaycheck(contributionPaycheck.paycheck_id).paid_on) }}
         </li>
       </ul>
       <template slot="modal-footer">
@@ -27,8 +22,9 @@
 
 <script>
   import { BModal, BButton } from 'bootstrap-vue';
-  import moment from 'moment';
+  import { cloneDeep } from 'lodash';
   import { EventBus } from '../../event-bus.js';
+  import { otherIfNull, dateToFormatedString } from '../../utils/main.js';
   export default {
     components: {
       'b-modal': BModal,
@@ -47,10 +43,9 @@
           name: "",
           amount: null,
           initial_amount: null,
-          contributions: [],
         },
         contributionsDeleted: [],
-        paychecksDeleted: [],
+        contributionPaychecksDeleted: [],
       };
     },
     created() {
@@ -59,14 +54,8 @@
         this.goal.name = data.goal.name;
         this.goal.amount = data.goal.amount;
         this.goal.initial_amount = data.goal.initial_amount;
-        this.contributionsDeleted = [];
-        this.paychecksDeleted = [];
-        for(let i in data.contributionsDeleted) {
-          this.contributionsDeleted.push(data.contributionsDeleted[i]);
-        }
-        for(let j in data.paychecksDeleted) {
-          this.paychecksDeleted.push(data.paychecksDeleted[j]);
-        }
+        this.contributionsDeleted = cloneDeep(data.contributionsDeleted);
+        this.contributionPaychecksDeleted = cloneDeep(data.contributionPaychecksDeleted);
         this.showModal = true;
       });
     },
@@ -79,15 +68,20 @@
         this.$emit('close');
       },
       getIncome(paycheck) {
-        for(let i in this.incomes) {
-          if(this.incomes[i].id == paycheck.income_id) {
-            return this.incomes[i];
-          }
-        }
-        return {};
+        return this.incomes.find((income) => {
+          return income.id === paycheck.income_id;
+        }) || {};
+      },
+      getPaycheck(paycheck_id) {
+        return this.paychecks.find((paycheck) => {
+          return paycheck.id === paycheck_id;
+        }) || {};
+      },
+      amountProjectIfAmountNull(paycheck) {
+        return otherIfNull(paycheck, 'amount', 'amount_project');
       },
       paidOnFormat(paycheck) {
-        return moment(paycheck.paid_on).format('ddd, MMM D');
+        return dateToFormatedString(paycheck.paid_on);
       },
     },
     computed: {
@@ -106,6 +100,23 @@
       incomes() {
         return this.$store.getters.getIncomes;
       },
+      paychecks() {
+        return this.$store.getters.getPaychecks;
+      },
+      contributionPaychecks() {
+        return this.$store.getters.getContributionPaychecks;
+      },
+      // goalContributionPaychecksDeleted() {
+      //   let goalContributionPaychecks = [];
+      //   this.contributionsDeleted.forEach((contribution) => {
+      //     this.contributionPaychecks.forEach((contribution_paycheck) => {
+      //       if(contribution.id === contribution_paycheck.contribution_id) {
+      //         goalContributionPaychecks.push(contribution_paycheck);
+      //       }
+      //     });
+      //   });
+      //   return goalContributionPaychecks;
+      // }
     },
   }
 </script>

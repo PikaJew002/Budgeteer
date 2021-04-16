@@ -3,14 +3,14 @@
     <template v-if="!billsAndContributionsMode">
       <div class="d-flex justify-content-between">
         <h5>{{ income.name }}</h5>
-        <h5>{{ paycheck_paid_on }}</h5>
+        <h5>{{ dateToFormatedString(paycheck.paid_on) }}</h5>
       </div>
       <div class="d-flex justify-content-between mb-2">
-        <h5>${{ (paycheck.amount == null ? getAmountToString(paycheck.amount_project) : getAmountToString(paycheck.amount)) }}</h5>
-        <h5>${{ leftOver.toFixed(2) }}</h5>
+        <h5>${{ amountProjectedIfAmountNull(paycheck) }}</h5>
+        <h5>${{ leftOver }}</h5>
       </div>
       <div v-if="highlight && !receivingPair" class="d-flex justify-content-between mt-2">
-        <button v-if="paycheckBills.length > 0 || paycheckContributions.length > 0"
+        <button v-if="billPaychecks.length > 0 || contributionPaychecks.length > 0"
                 type="button"
                 class="btn btn-outline-base btn-sm"
                 @click="billsAndContributionsMode = true">Bills/Contributions</button>
@@ -32,33 +32,33 @@
       </div>
     </template>
     <template v-else>
-      <div v-for="bill in paycheckBills" class="d-flex justify-content-between mb-2">
+      <div v-for="billPaycheck in billPaychecks" class="d-flex justify-content-between mb-2">
         <span>
-          {{ bill.name }}
+          {{ getBill(billPaycheck.bill_id).name }}
         </span>
         <span>
-          {{ getMonthShort(bill.pivot_due_on) }}
+          {{ dateToFormatedString(billPaycheck.due_on, "MMM") }}
         </span>
         <span>
-          ${{ (bill.pivot_amount == null ? getAmountToString(bill.pivot_amount_project) : getAmountToString(bill.pivot_amount)) }}
+          ${{ amountProjectedIfAmountNull(billPaycheck) }}
         </span>
         <button type="button"
                 class="btn btn-outline-base btn-sm"
-                @click="onPairUpdateBill(bill)">Update</button>
+                @click="onPairUpdateBill(getBill(billPaycheck.bill_id))">Update</button>
       </div>
-      <div v-for="contribution in paycheckContributions" class="d-flex justify-content-between mb-2">
+      <div v-for="contributionPaycheck in contributionPaychecks" class="d-flex justify-content-between mb-2">
         <span>
-          {{ getContributionGoal(contribution).name }}
+          {{ getGoal(getContribution(contributionPaycheck.contribution_id).goal_id).name }}
         </span>
         <span>
-          {{ getMonthShort(contribution.pivot_due_on) }}
+          {{ dateToFormatedString(contributionPaycheck.due_on, "MMM") }}
         </span>
         <span>
-          ${{ (contribution.pivot_amount == null ? getAmountToString(contribution.pivot_amount_project) : getAmountToString(contribution.pivot_amount)) }}
+          ${{ amountProjectedIfAmountNull(contributionPaycheck) }}
         </span>
         <button type="button"
                 class="btn btn-outline-base btn-sm"
-                @click="onPairUpdateContribution(contribution)">Update</button>
+                @click="onPairUpdateContribution(getContribution(contributionPaycheck.contribution_id))">Update</button>
       </div>
       <div v-if="highlight && !receivingPair" class="d-flex justify-content-between mt-2">
         <button type="button" class="btn btn-outline-base btn-sm" @click="billsAndContributionsMode = false">Paycheck</button>
@@ -90,6 +90,7 @@
 
 <script>
   import { EventBus } from '../../event-bus.js';
+  import { numberToString, otherIfNull, dateToFormatedString } from '../../utils/main.js';
   import moment from 'moment';
   export default {
     props: {
@@ -149,10 +150,10 @@
         EventBus.$emit('modify-paycheck', this.paycheck);
       },
       onPairUpdateBill(bill) {
-        EventBus.$emit('pair-update', [bill, this.paycheck, 'bill', 'bill']);
+        EventBus.$emit('pair-update', { pairable: bill, paycheck: this.paycheck, type: 'bill' });
       },
       onPairUpdateContribution(contribution) {
-        EventBus.$emit('pair-update', [contribution, this.paycheck, 'contribution', 'contribution']);
+        EventBus.$emit('pair-update', { pairable: contribution, paycheck: this.paycheck, type: 'contribution' });
       },
       onPair() {
         if(!this.receivingPair) {
@@ -169,66 +170,47 @@
         this.canStopPair = false;
         EventBus.$emit('paycheck-pairable-pair-end', null);
       },
-      getMonthShort(date) {
-        return moment(date).format('MMM');
+      dateToFormatedString(date, format) {
+        return dateToFormatedString(date, format);
       },
-      getContributionGoal(contribution) {
-        for(let i in this.goals) {
-          if(this.goals[i].id == contribution.goal_id) {
-            return this.goals[i];
-          }
-        }
+      amountProjectedIfAmountNull(obj) {
+        return numberToString(otherIfNull(obj, 'amount', 'amount_project'));
       },
-      getAmountToString(amount) {
-        if(Number(amount).toFixed(2) != "NaN" && amount != "" && amount != null) {
-          return Number(amount).toFixed(2);
-        }
-        return "";
+      getGoal(goal_id) {
+        return this.$store.getters.getGoal(goal_id);
       },
-      moment(args) {
-        return moment(args);
+      getContribution(contribution_id) {
+        return this.$store.getters.getContribution(contribution_id);
+      },
+      getBill(bill_id) {
+        return this.$store.getters.getBill(bill_id);
       },
     },
     computed: {
-      leftOver() {
-        let total = ((this.paycheck.amount == null || this.paycheck.amount == 0) ? this.paycheck.amount_project : this.paycheck.amount);
-        for(let i in this.paycheckBills) {
-          total = total - (this.paycheckBills[i].pivot_amount == null ? this.paycheckBills[i].pivot_amount_project : this.paycheckBills[i].pivot_amount);
-        }
-        for(let i in this.paycheckContributions) {
-          total = total - (this.paycheckContributions[i].pivot_amount == null ? this.paycheckContributions[i].pivot_amount_project : this.paycheckContributions[i].pivot_amount);
-        }
-        return Math.round(total * 100)/100;
-      },
-      paycheck_paid_on() {
-        return moment(this.paycheck.paid_on).format('ddd, MMM D');
-      },
-      /**
-        Gets the incomes
-        */
-      incomes() {
-        return this.$store.getters.getIncomes;
-      },
       income() {
-        for(let i in this.incomes) {
-          if(this.incomes[i].id == this.paycheck.income_id) return this.incomes[i];
-        }
-        return {};
+        return this.$store.getters.getIncome(this.paycheck.income_id) || {};
       },
-      goals() {
-        return this.$store.getters.getGoals;
+      // ContributionPaychecks where paycheck_id is Paycheck.id
+      contributionPaychecks() {
+        return this.$store.getters.getContributionPaychecks.filter((contributionPaycheck) => {
+          return contributionPaycheck.paycheck_id == this.paycheck.id;
+        });
       },
-      paycheckBills() {
-        if(this.paycheck.hasOwnProperty('bills')) {
-          return this.paycheck.bills;
-        }
-        return [];
+      // BillPaychecks where paycheck_id is Paycheck.id
+      billPaychecks() {
+        return this.$store.getters.getBillPaychecks.filter((billPaycheck) => {
+          return billPaycheck.paycheck_id == this.paycheck.id;
+        });
       },
-      paycheckContributions() {
-        if(this.paycheck.hasOwnProperty('contributions')) {
-          return this.paycheck.contributions;
-        }
-        return [];
+      leftOver() {
+        let total = Number(otherIfNull(this.paycheck, 'amount', 'amount_project'));
+        this.billPaychecks.forEach((billPaycheck) => {
+          total -= Number(otherIfNull(billPaycheck, 'amount', 'amount_project'));
+        });
+        this.contributionPaychecks.forEach((contributionPaycheck) => {
+          total -= Number(otherIfNull(contributionPaycheck, 'amount', 'amount_project'));
+        });
+        return total.toFixed(2);
       },
     },
   }

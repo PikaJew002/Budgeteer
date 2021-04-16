@@ -13,10 +13,9 @@
         <div class="form-group">
           <label for="income_id">Income: </label>
           <select class="custom-select"
-                  :class="{ 'is-invalid': $v.paycheck.income_id.$invalid && !$v.paycheck.income_id.$pending,
-                            'is-valid': !$v.paycheck.income_id.$invalid && !$v.paycheck.income_id.$pending }"
+                  id="income_id"
                   v-model.number="paycheck.income_id"
-                  id="income_id">
+                  :class="validationClasses('paycheck', 'income_id')">
             <option :value="0">Please Select a Source of Income</option>
             <option v-for="income in incomes" :key="income.id" :value="income.id">
               {{ income.name }}
@@ -30,17 +29,29 @@
               <div class="input-group-prepend">
                 <div class="input-group-text">$</div>
               </div>
-              <input v-if="projected" type="text" class="form-control" id="amount" placeholder="Amount"
-                     v-model="paycheck.amount_project" @blur="formatAmountProject()"
-                     :class="{ 'is-invalid': $v.paycheck.amount_project.$invalid && !$v.paycheck.amount_project.$pending,
-                               'is-valid': !$v.paycheck.amount_project.$invalid && !$v.paycheck.amount_project.$pending }">
-              <input v-else type="text" class="form-control" id="amount" placeholder="Amount"
-                     v-model="paycheck.amount" @blur="formatAmount()"
-                     :class="{ 'is-invalid': $v.paycheck.amount.$invalid && !$v.paycheck.amount.$pending,
-                               'is-valid': !$v.paycheck.amount.$invalid && !$v.paycheck.amount.$pending }">
+              <input v-if="projected"
+                     class="form-control"
+                     id="amount"
+                     type="text"
+                     placeholder="Amount"
+                     v-model="paycheck.amount_project"
+                     @blur="paycheck.amount_project = formatAmount(paycheck.amount_project)"
+                     :class="validationClasses('paycheck', 'amount_project')">
+              <input v-else
+                     class="form-control"
+                     id="amount"
+                     type="text"
+                     placeholder="Amount"
+                     v-model="paycheck.amount"
+                     @blur="paycheck.amount = formatAmount(paycheck.amount)"
+                     :class="validationClasses('paycheck', 'amount')">
             </div>
             <div class="custom-control custom-checkbox">
-              <input type="checkbox" class="custom-control-input" id="projected" v-model="projected" @change="onCheckProjected()">
+              <input class="custom-control-input"
+                     id="projected"
+                     type="checkbox"
+                     v-model="projected"
+                     @change="onCheckProjected()">
               <label class="custom-control-label" for="projected">Projected?</label>
             </div>
             <div v-if="!$v.paycheck.amount.required || !$v.paycheck.amount_project.required" class="invalid-feedback d-block">
@@ -57,7 +68,11 @@
         <div class="row">
           <div class="col form-group">
             <div class="custom-control custom-checkbox">
-              <input type="checkbox" class="custom-control-input" id="notify" v-model="paycheck.notify_when_paid" :disabled="!isNotifiable">
+              <input class="custom-control-input"
+                     id="notify"
+                     type="checkbox"
+                     v-model="paycheck.notify_when_paid"
+                     :disabled="!isNotifiable">
               <label class="custom-control-label" for="notify">Notify when paid?</label>
             </div>
             <span v-if="isNotifiable">You'll receive an email</span>
@@ -67,13 +82,12 @@
         <div class="form-group">
           <label for="paid_on">Paid On: </label>
           <input class="form-control"
-                  :class="{ 'is-invalid': $v.paycheck.paid_on.$invalid && !$v.paycheck.paid_on.$pending,
-                            'is-valid': !$v.paycheck.paid_on.$invalid && !$v.paycheck.paid_on.$pending }"
-                  id="paid_on"
-                  type="date"
-                  placeholder="mm/dd/yyyy"
-                  v-model.date="paycheck.paid_on"
-                  @change="onPaidOnChange()">
+                 id="paid_on"
+                 type="date"
+                 placeholder="mm/dd/yyyy"
+                 v-model.date="paycheck.paid_on"
+                 @change="onPaidOnChange()"
+                 :class="validationClasses('paycheck', 'paid_on')">
           <div v-if="!$v.paycheck.paid_on.required" class="invalid-feedback">
             Paid On is required (valid date)
           </div>
@@ -97,6 +111,7 @@
   import moment from 'moment';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { numberToString, emptyStringToNull } from '../../utils/main.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
   export default {
     components: {
@@ -122,7 +137,7 @@
           amount_project: null,
           amount: null,
           notify_when_paid: false,
-          paid_on: null,
+          paid_on: "",
         },
       };
     },
@@ -167,25 +182,21 @@
     methods: {
       onSave(paycheck) {
         if(!this.$v.paycheck.$invalid) {
-          if(this.paycheck.amount == "") {
-            this.paycheck.amount = null;
-          }
-          if(this.paycheck.amount_project == "") {
-            this.paycheck.amount_project = null;
-          }
+          this.paycheck.amount = emptyStringToNull(this.paycheck.amount);
+          this.paycheck.amount_project = emptyStringToNull(this.paycheck.amount_project);
           this.$store.dispatch('addPaycheck', paycheck);
           this.$emit('close');
         }
       },
-      formatAmount() {
-        if(Number(this.paycheck.amount).toFixed(2) != "NaN" && this.paycheck.amount != "" && this.paycheck.amount != null) {
-          this.paycheck.amount = Number(this.paycheck.amount).toFixed(2);
-        }
+      formatAmount(amount) {
+        return numberToString(amount);
       },
-      formatAmountProject() {
-        if(Number(this.paycheck.amount_project).toFixed(2) != "NaN" && this.paycheck.amount_project != "" && this.paycheck.amount_project != null) {
-          this.paycheck.amount_project = Number(this.paycheck.amount_project).toFixed(2);
-        }
+      /* @TODO extract (along with input) into amount-input component */
+      validationClasses(obj, attr) {
+        return {
+          'is-invalid': this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+          'is-valid': !this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+        };
       },
       onCheckProjected() {
         if(this.projected) {
@@ -218,9 +229,6 @@
       isNotifiable() {
         return this.paycheck.paid_on && moment().isSameOrBefore(this.paycheck.paid_on, 'day');
       },
-      /**
-        Gets the incomes
-        */
       incomes() {
         return this.$store.getters.getIncomes;
       },

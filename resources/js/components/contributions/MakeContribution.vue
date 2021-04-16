@@ -18,10 +18,13 @@
               <div class="input-group-prepend">
                 <div class="input-group-text">$</div>
               </div>
-              <input class="form-control" id="amount" type="text" placeholder="Amount"
-                     v-model="contribution.amount" @blur="formatAmount()"
-                     :class="{ 'is-invalid': $v.contribution.amount.$invalid && !$v.contribution.amount.$pending,
-                               'is-valid': !$v.contribution.amount.$invalid && !$v.contribution.amount.$pending }">
+              <input class="form-control"
+                     id="amount"
+                     type="text"
+                     placeholder="Amount"
+                     v-model="contribution.amount"
+                     @blur="contribution.amount = formatAmount(contribution.amount)"
+                     :class="validationClasses('contribution', 'amount')">
             </div>
             <div v-if="!$v.contribution.amount.required" class="invalid-feedback d-block">
               Amount is required
@@ -36,12 +39,11 @@
           <div class="col form-group">
             <label for="day_due_on">Day Due: </label>
             <input class="form-control"
-                    :class="{ 'is-invalid': $v.contribution.day_due_on.$invalid && !$v.contribution.day_due_on.$pending,
-                              'is-valid': !$v.contribution.day_due_on.$invalid && !$v.contribution.day_due_on.$pending }"
-                    id="day_due_on"
-                    type="number"
-                    placeholder="Day Due"
-                    v-model.number="contribution.day_due_on">
+                   id="day_due_on"
+                   type="number"
+                   placeholder="Day Due"
+                   v-model.number="contribution.day_due_on"
+                   :class="validationClasses('contribution', 'day_due_on')">
             <div v-if="!$v.contribution.day_due_on.integer || !$v.contribution.day_due_on.minValue || !$v.contribution.day_due_on.maxValue" class="invalid-feedback">
               Day Due On must be a valid integer day (1-31)
             </div>
@@ -51,12 +53,11 @@
           <div class="col form-group">
             <label for="start_on">Start On Date: </label>
             <input class="form-control"
-                   :class="{ 'is-invalid': $v.contribution.start_on.$invalid && !$v.contribution.start_on.$pending,
-                             'is-valid': !$v.contribution.start_on.$invalid && !$v.contribution.start_on.$pending }"
                    id="start_on"
                    type="date"
                    placeholder="mm/dd/yyyy"
-                   v-model="contribution.start_on">
+                   v-model="contribution.start_on"
+                   :class="validationClasses('contribution', 'start_on')">
             <div v-if="!$v.contribution.start_on.required" class="invalid-feedback">
               Start On is required (valid date)
             </div>
@@ -70,12 +71,11 @@
           <div class="col form-group">
             <label for="end_on">End On Date: </label>
             <input class="form-control"
-                   :class="{ 'is-invalid': $v.contribution.end_on.$invalid && !$v.contribution.end_on.$pending,
-                             'is-valid': !$v.contribution.end_on.$invalid && !$v.contribution.end_on.$pending }"
                    id="end_on"
                    type="date"
                    placeholder="mm/dd/yyyy"
-                   v-model="contribution.end_on">
+                   v-model="contribution.end_on"
+                   :class="validationClasses('contribution', 'end_on')">
             <div v-if="!$v.contribution.end_on.required" class="invalid-feedback">
               End On is required (valid date)
             </div>
@@ -110,6 +110,7 @@
   import moment from 'moment';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { numberToString, emptyStringToNull } from '../../utils/main.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,6}(\.\d{0,2})?$/); // double(8,2)
   export default {
     components: {
@@ -134,8 +135,8 @@
           goal_id: null,
           amount: null,
           day_due_on: null,
-          start_on: null,
-          end_on: null,
+          start_on: "",
+          end_on: "",
         },
         contributions: [],
       };
@@ -169,15 +170,12 @@
     },
     created() {
       EventBus.$on('make-contribution', (data) => {
-        this.type = data.type;
+        this.type = data.type; // make-goal or modify-goal
         this.contribution.amount = null;
         this.contribution.day_due_on = null;
-        this.contribution.start_on = null;
-        this.contribution.end_on = null;
-        this.contributions = [];
-        for(let j in data.contributions) {
-          this.contributions.push(data.contributions[j]);
-        }
+        this.contribution.start_on = "";
+        this.contribution.end_on = "";
+        this.contributions = cloneDeep(data.contributions);
         this.showModal = true;
       });
     },
@@ -187,9 +185,7 @@
     methods: {
       onSave(contribution) {
         if(!this.$v.contribution.$invalid) {
-          if(this.contribution.day_due_on == "") {
-            this.contribution.day_due_on = null;
-          }
+          this.contribution.day_due_on = emptyStringToNull(this.contribution.day_due_on);
           let newContribution = cloneDeep(contribution);
           newContribution.monthSpan = this.monthSpan;
           newContribution.diff = Math.ceil(moment(newContribution.end_on).diff(newContribution.start_on, 'months', true));
@@ -200,10 +196,15 @@
           this.showModal = false;
         }
       },
-      formatAmount() {
-        if(Number(this.contribution.amount).toFixed(2) != "NaN" && this.contribution.amount != "" && this.contribution.amount != null) {
-          this.contribution.amount = Number(this.contribution.amount).toFixed(2);
-        }
+      formatAmount(amount) {
+        return numberToString(amount);
+      },
+      /* @TODO extract (along with input) into amount-input component */
+      validationClasses(obj, attr) {
+        return {
+          'is-invalid': this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+          'is-valid': !this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+        };
       },
       noOverlap(any_on) {
         for(let i in this.contributions) {

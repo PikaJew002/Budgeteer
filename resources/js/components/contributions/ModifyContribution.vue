@@ -18,10 +18,13 @@
               <div class="input-group-prepend">
                 <div class="input-group-text">$</div>
               </div>
-              <input class="form-control" id="amount" type="text" placeholder="Amount"
-                     v-model="contribution.amount" @blur="formatAmount()"
-                     :class="{ 'is-invalid': $v.contribution.amount.$invalid && !$v.contribution.amount.$pending,
-                               'is-valid': !$v.contribution.amount.$invalid && !$v.contribution.amount.$pending }">
+              <input class="form-control"
+                     id="amount"
+                     type="text"
+                     placeholder="Amount"
+                     v-model="contribution.amount"
+                     @blur="contribution.amount = formatAmount(contribution.amount)"
+                     :class="validationClasses('contribution', 'amount')">
             </div>
             <div v-if="!$v.contribution.amount.required" class="invalid-feedback d-block">
               Amount is required
@@ -36,12 +39,11 @@
           <div class="col form-group">
             <label for="day_due_on">Day Due: </label>
             <input class="form-control"
-                    :class="{ 'is-invalid': $v.contribution.day_due_on.$invalid && !$v.contribution.day_due_on.$pending,
-                              'is-valid': !$v.contribution.day_due_on.$invalid && !$v.contribution.day_due_on.$pending }"
-                    id="day_due_on"
-                    type="number"
-                    placeholder="Day Due"
-                    v-model.number="contribution.day_due_on">
+                   id="day_due_on"
+                   type="number"
+                   placeholder="Day Due"
+                   v-model.number="contribution.day_due_on"
+                   :class="validationClasses('contribution', 'day_due_on')">
             <div v-if="!$v.contribution.day_due_on.integer || !$v.contribution.day_due_on.minValue || !$v.contribution.day_due_on.maxValue" class="invalid-feedback">
               Day Due On must be a valid integer day (1-31)
             </div>
@@ -51,12 +53,11 @@
           <div class="col form-group">
             <label for="start_on">Start On Date: </label>
             <input class="form-control"
-                   :class="{ 'is-invalid': $v.contribution.start_on.$invalid && !$v.contribution.start_on.$pending,
-                             'is-valid': !$v.contribution.start_on.$invalid && !$v.contribution.start_on.$pending }"
                    id="start_on"
                    type="date"
                    placeholder="mm/dd/yyyy"
-                   v-model="contribution.start_on">
+                   v-model="contribution.start_on"
+                   :class="validationClasses('contribution', 'start_on')">
             <div v-if="!$v.contribution.start_on.required" class="invalid-feedback">
               Start On is required (valid date)
             </div>
@@ -70,12 +71,11 @@
           <div class="col form-group">
             <label for="end_on">End On Date: </label>
             <input class="form-control"
-                   :class="{ 'is-invalid': $v.contribution.end_on.$invalid && !$v.contribution.end_on.$pending,
-                             'is-valid': !$v.contribution.end_on.$invalid && !$v.contribution.end_on.$pending }"
                    id="end_on"
                    type="date"
                    placeholder="mm/dd/yyyy"
-                   v-model="contribution.end_on">
+                   v-model="contribution.end_on"
+                   :class="validationClasses('contribution', 'end_on')">
             <div v-if="!$v.contribution.end_on.required" class="invalid-feedback">
               End On is required (valid date)
             </div>
@@ -110,6 +110,7 @@
   import moment from 'moment';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { numberToString, emptyStringToNull, dateToFormatedString } from '../../utils/main.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,6}(\.\d{0,2})?$/); // double(8,2)
   export default {
     components: {
@@ -136,13 +137,15 @@
           amount: null,
           day_due_on: null,
           diff: null,
-          monthSpan: null,
-          start_on: null,
-          end_on: null,
-          paychecks: [],
+          monthSpan: [],
+          start_on: "",
+          end_on: "",
+          created_at: "",
+          updated_at: "",
         },
+        contribution_paychecks: [],
         contributions: [],
-        paychecksDeleted: [],
+        contributionPaychecksDeleted: [],
       };
     },
     validations() {
@@ -151,7 +154,7 @@
           amount: {
             required,
             validDecimal,
-            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)),
+            notZero: (amount) => ((amount === "" || amount === null) || (Number(amount) > 0)),
           },
           day_due_on: {
             integer,
@@ -176,46 +179,36 @@
       EventBus.$on('modify-contribution', (data) => {
         this.type = data.type;
         this.index = data.index;
-        if(data.contributions[this.index].hasOwnProperty('id')) {
-          this.contribution.id = data.contributions[this.index].id;
-        }
-        if(data.contributions[this.index].hasOwnProperty('goal_id')) {
+        this.contribution_paychecks = [];
+        if(this.type == 'modify-goal') {
+          if(data.contributions[this.index].hasOwnProperty('id')) {
+            this.contribution.id = data.contributions[this.index].id;
+            this.contribution.created_at = data.contributions[this.index].created_at;
+            this.contribution.updated_at = data.contributions[this.index].updated_at;
+          } else {
+            this.contribution.id = null;
+            this.contribution.created_at = null;
+            this.contribution.updated_at = null;
+          }
           this.contribution.goal_id = data.contributions[this.index].goal_id;
+          this.contributionPaychecks.forEach((contribution_paycheck) => {
+            if(contribution_paycheck.contribution_id === this.contribution.id) {
+              this.contribution_paychecks.push(cloneDeep(contribution_paycheck));
+            }
+          });
         }
         this.contribution.amount = data.contributions[this.index].amount;
         this.contribution.day_due_on = data.contributions[this.index].day_due_on;
         this.contribution.diff = data.contributions[this.index].diff;
-        if(data.contributions[this.index].monthSpan.length > 1) {
-          this.contribution.monthSpan = [];
-          this.contribution.monthSpan.push(data.contributions[this.index].monthSpan[0]);
-          this.contribution.monthSpan.push(data.contributions[this.index].monthSpan[1]);
-        } else {
-          this.contribution.monthSpan = [];
-          this.contribution.monthSpan.push(data.contributions[this.index].monthSpan[0]);
-        }
-        this.contribution.monthSpan = data.contributions[this.index].monthSpan;
+        this.contribution.monthSpan = cloneDeep(data.contributions[this.index].monthSpan);
         this.contribution.start_on = data.contributions[this.index].start_on;
         this.contribution.end_on = data.contributions[this.index].end_on;
-        this.contribution.paychecks = [];
-        if(data.contributions[this.index].hasOwnProperty('paychecks')) {
-          for(let i in data.contributions[this.index].paychecks) {
-            this.contribution.paychecks.push(data.contributions[this.index].paychecks[i]);
-          }
-        }
-        if(data.hasOwnProperty('paychecks')) {
-          this.paychecksDeleted = [];
-          for(let i in data.paychecks) {
-            this.paychecksDeleted.push(data.paychecks[i]);
-          }
-        }
-        this.contributions = [];
-        for(let j in data.contributions) {
-          this.contributions.push(data.contributions[j]);
-        }
+        this.contributionPaychecksDeleted = cloneDeep(data.contributionPaychecksDeleted);
+        this.contributions = cloneDeep(data.contributions);
         this.showModal = true;
       });
       EventBus.$on('save-modify-contribution-confirm-save', (data) => {
-        this.onSaveConfirm(data.paychecksToRemove);
+        this.onSaveConfirm(data.contributionPaychecksToRemove);
       });
     },
     beforeDestroy() {
@@ -226,56 +219,63 @@
       onSave(contribution) {
         if(!this.$v.contribution.$invalid) {
           if(this.type == 'modify-goal') {
-            let paychecksToRemove = [];
-            for(let i in contribution.paychecks) {
-              if(!moment(contribution.paychecks[i].paid_on).isBetween(contribution.start_on, contribution.end_on, 'month', '[]')) {
-                var found = false;
-                for(let j in this.paychecksDeleted) {
-                  if(contribution.paychecks[i].id == this.paychecksDeleted[j].id) {
-                    found = true;
-                    break;
-                  }
-                }
-                if(!found) {
-                  paychecksToRemove.push(contribution.paychecks[i]);
+            let contributionPaychecksToRemove = [];
+            this.contribution_paychecks.forEach((contribution_paycheck) => {
+              if(!moment(this.getPaycheck(contribution_paycheck.paycheck_id).paid_on).isBetween(this.contribution.start_on, this.contribution.end_on, 'month', '[]')) {
+                // if contribution_paycheck is NOT in contributionPaychecksDeleted, add it to contributionPaychecksToRemove
+                if(this.contributionPaychecksDeleted.find(
+                  (this_contribution_paycheck) => contribution_paycheck.paycheck_id === this_contribution_paycheck.paycheck_id && contribution_paycheck.contribution_id === this_contribution_paycheck.contribution_i
+                ) === undefined) {
+                  contributionPaychecksToRemove.push(contribution_paycheck);
                 }
               }
-            }
-            if(paychecksToRemove.length > 0) {
+            });
+            if(contributionPaychecksToRemove.length > 0) {
               EventBus.$emit('save-modify-contribution-confirm', {
-                paychecksToRemove: paychecksToRemove,
+                contributionPaychecksToRemove: contributionPaychecksToRemove,
                 index: this.index,
                 contribution: contribution,
               });
               return;
             }
           }
-          this.onSaveConfirm([]);
+          this.onSaveConfirm();
         }
       },
-      onSaveConfirm(paychecksToRemove) {
-        if(this.contribution.day_due_on == "") {
-          this.contribution.day_due_on = null;
-        }
+      onSaveConfirm(contributionPaychecksToRemove = []) {
+        this.contribution.day_due_on = emptyStringToNull(this.contribution.day_due_on);
         let newContribution = cloneDeep(this.contribution);
-        newContribution.monthSpan = this.monthSpan;
+        newContribution.monthSpan = cloneDeep(this.monthSpan);
         newContribution.diff = Math.ceil(moment(newContribution.end_on).diff(newContribution.start_on, 'months', true));
         EventBus.$emit('save-modify-contribution', {
           type: this.type,
           index: this.index,
           contribution: newContribution,
-          paychecksToRemove: paychecksToRemove,
+          contributionPaychecksToRemove: contributionPaychecksToRemove,
         });
         this.showModal = false;
       },
-      formatAmount() {
-        if(Number(this.contribution.amount).toFixed(2) != "NaN" && this.contribution.amount != "" && this.contribution.amount != null) {
-          this.contribution.amount = Number(this.contribution.amount).toFixed(2);
-        }
+      getContributionPaychecks(contribution_id = null) {
+        this.contributionPaychecks.filter((contribution_paycheck) => {
+          return contribution_paycheck.contribution_id === contribution_id;
+        });
+      },
+      getPaycheck(paycheck_id) {
+        return this.$store.getters.getPaycheck(paycheck_id) || { paid_on: '' };
+      },
+      formatAmount(amount) {
+        return numberToString(amount);
+      },
+      /* @TODO extract (along with input) into amount-input component */
+      validationClasses(obj, attr) {
+        return {
+          'is-invalid': this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+          'is-valid': !this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+        };
       },
       noOverlap(any_on) {
         for(let i in this.contributions) {
-          if(this.contributions[i].monthSpan[0] == this.contribution.monthSpan[0]) {
+          if(this.contributions[i].monthSpan[0] === this.contribution.monthSpan[0]) {
             continue;
           }
           if(moment(any_on).isBetween(this.contributions[i].start_on, this.contributions[i].end_on, 'month', "[]")) {
@@ -286,7 +286,7 @@
       },
       noInterlap(start_on, end_on) {
         for(let i in this.contributions) {
-          if(this.contributions[i].monthSpan[0] == this.contribution.monthSpan[0]) {
+          if(this.contributions[i].monthSpan[0] === this.contribution.monthSpan[0]) {
             continue;
           }
           if(moment(this.contributions[i].start_on).isBetween(start_on, end_on, 'month', "[]")
@@ -310,12 +310,15 @@
           }
         }
       },
+      contributionPaychecks() {
+        return this.$store.getters.getContributionPaychecks;
+      },
       monthSpan() {
         if(!this.$v.contribution.$invalid) {
           if(moment(this.contribution.start_on).isSame(this.contribution.end_on, 'month')) {
-            return [moment(this.contribution.start_on).format('MMM YYYY')];
+            return [dateToFormatedString(this.contribution.start_on, 'MMM YYYY')];
           } else {
-            return [moment(this.contribution.start_on).format('MMM YYYY'), moment(this.contribution.end_on).format('MMM YYYY')]
+            return [dateToFormatedString(this.contribution.start_on, 'MMM YYYY'), dateToFormatedString(this.contribution.end_on, 'MMM YYYY')]
           }
         } else {
           return [];

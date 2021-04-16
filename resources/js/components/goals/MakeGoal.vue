@@ -13,9 +13,12 @@
         <div class="row">
           <div class="col form-group">
             <label for="name">Name</label>
-            <input class="form-control" :class="{ 'is-invalid': $v.goal.name.$invalid && !$v.goal.name.$pending,
-                                                  'is-valid': !$v.goal.name.$invalid && !$v.goal.name.$pending }"
-                   id="name" type="text" placeholder="Goal Name" v-model="goal.name">
+            <input class="form-control"
+                   id="name"
+                   type="text"
+                   placeholder="Goal Name"
+                   v-model="goal.name"
+                   :class="validationClasses('goal', 'name')">
             <div v-if="!$v.goal.name.required" class="invalid-feedback">
               Name is required
             </div>
@@ -34,10 +37,13 @@
               <div class="input-group-prepend">
                 <div class="input-group-text">$</div>
               </div>
-              <input class="form-control" id="amount" type="text" placeholder="Amount"
-                     v-model="goal.amount" @blur="formatAmount()"
-                     :class="{ 'is-invalid': $v.goal.amount.$invalid && !$v.goal.amount.$pending,
-                               'is-valid': !$v.goal.amount.$invalid && !$v.goal.amount.$pending }">
+              <input class="form-control"
+                     id="amount"
+                     type="text"
+                     placeholder="Amount"
+                     v-model="goal.amount"
+                     @blur="goal.amount = formatAmount(goal.amount)"
+                     :class="validationClasses('goal', 'amount')">
             </div>
             <div v-if="!$v.goal.amount.required" class="invalid-feedback d-block">
               Amount is required
@@ -57,10 +63,13 @@
               <div class="input-group-prepend">
                 <div class="input-group-text">$</div>
               </div>
-              <input class="form-control" id="initial_amount" type="text" placeholder="Amount"
-                     v-model="goal.initial_amount" @blur="formatInitialAmount()"
-                     :class="{ 'is-invalid': $v.goal.initial_amount.$invalid && !$v.goal.initial_amount.$pending,
-                               'is-valid': !$v.goal.initial_amount.$invalid && !$v.goal.initial_amount.$pending }">
+              <input class="form-control"
+                     id="initial_amount"
+                     type="text"
+                     placeholder="Amount"
+                     v-model="goal.initial_amount"
+                     @blur="goal.initial_amount = formatAmount(goal.initial_amount)"
+                     :class="validationClasses('goal', 'initial_amount')">
             </div>
             <div v-if="!$v.goal.initial_amount.validDecimal" class="invalid-feedback d-block">
               Initial Amount must be a valid decimal ($xx xxx xxx.xx)
@@ -92,7 +101,7 @@
           <b-progress :max="goalAmount" height="2rem" class="mb-1">
             <b-progress-bar :value="goal.initial_amount" v-if="goalInitialAmount > 0"></b-progress-bar>
             <template v-for="(contribution, index) in goal.contributions">
-              <b-progress-bar :value="getContributionTotal(contribution)" :variant="legend_key[index % 6]"></b-progress-bar>
+              <b-progress-bar :key="contribution.start_on" :value="getContributionTotal(contribution)" :variant="legend_key[index % 6]"></b-progress-bar>
             </template>
           </b-progress>
           <template v-if="goalInitialAmount > 0">
@@ -142,6 +151,7 @@
   import { cloneDeep } from 'lodash';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { numberToString, emptyStringToNull } from '../../utils/main.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,8}(\.\d{0,2})?$/); // double(10,2)
   export default {
     components: {
@@ -241,6 +251,7 @@
           type: 'make-goal',
           contributions: this.goal.contributions,
           index: index,
+          contributionPaychecksDeleted: [],
         });
       },
       onDeleteContribution(index) {
@@ -251,7 +262,10 @@
           if(this.goal.initial_amount == "") {
             this.goal.initial_amount = null;
           }
-          this.$store.dispatch('addGoal', goal);
+          this.$store.dispatch('addGoal', {
+            goal: goal,
+            contributions: goal.contributions,
+          });
           this.$emit('close');
         }
       },
@@ -264,15 +278,14 @@
         }
         this.goal.contributions.push(contribution);
       },
-      formatAmount() {
-        if(Number(this.goal.amount).toFixed(2) != "NaN" && this.goal.amount != "" && this.goal.amount != null) {
-          this.goal.amount = Number(this.goal.amount).toFixed(2);
-        }
-      },
-      formatInitialAmount() {
-        if(Number(this.goal.initial_amount).toFixed(2) != "NaN" && this.goal.initial_amount != "" && this.goal.initial_amount != null) {
-          this.goal.initial_amount = Number(this.goal.initial_amount).toFixed(2);
-        }
+      formatAmount(amount) {
+        return numberToString(amount);
+      },/* @TODO extract (along with input) into amount-input component */
+      validationClasses(obj, attr) {
+        return {
+          'is-invalid': this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+          'is-valid': !this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+        };
       },
       getContributionTotal(contribution) {
         return Number(contribution.amount)*contribution.diff;
@@ -304,11 +317,9 @@
         return Number(this.goal.initial_amount);
       },
       contributionsTotal() {
-        let total = 0;
-        for(let i in this.goal.contributions) {
-          total += (Number(this.goal.contributions[i].amount)*this.goal.contributions[i].diff);
-        }
-        return total;
+        return this.goal.contributions.reduce((acc, contribution) => {
+          return acc + Number(contribution.amount)*contribution.diff;
+        }, 0);
       },
     },
   };

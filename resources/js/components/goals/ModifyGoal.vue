@@ -14,9 +14,12 @@
           <div class="row">
             <div class="col form-group">
               <label for="name">Name</label>
-              <input class="form-control" :class="{ 'is-invalid': $v.goal.name.$invalid && !$v.goal.name.$pending,
-                                                    'is-valid': !$v.goal.name.$invalid && !$v.goal.name.$pending }"
-                     id="name" type="text" placeholder="Goal Name" v-model="goal.name">
+              <input class="form-control"
+                     id="name"
+                     type="text"
+                     placeholder="Goal Name"
+                     v-model="goal.name"
+                     :class="validationClasses('goal', 'name')">
               <div v-if="!$v.goal.name.required" class="invalid-feedback">
                 Name is required
               </div>
@@ -35,10 +38,13 @@
                 <div class="input-group-prepend">
                   <div class="input-group-text">$</div>
                 </div>
-                <input class="form-control" id="amount" type="text" placeholder="Amount"
-                       v-model="goal.amount" @blur="formatAmount()"
-                       :class="{ 'is-invalid': $v.goal.amount.$invalid && !$v.goal.amount.$pending,
-                                 'is-valid': !$v.goal.amount.$invalid && !$v.goal.amount.$pending }">
+                <input class="form-control"
+                       id="amount"
+                       type="text"
+                       placeholder="Amount"
+                       v-model="goal.amount"
+                       @blur="goal.amount = formatAmount(goal.amount)"
+                       :class="validationClasses('goal', 'amount')">
               </div>
               <div v-if="!$v.goal.amount.required" class="invalid-feedback d-block">
                 Amount is required
@@ -58,10 +64,13 @@
                 <div class="input-group-prepend">
                   <div class="input-group-text">$</div>
                 </div>
-                <input class="form-control" id="initial_amount" type="text" placeholder="Amount"
-                       v-model="goal.initial_amount" @blur="formatInitialAmount()"
-                       :class="{ 'is-invalid': $v.goal.initial_amount.$invalid && !$v.goal.initial_amount.$pending,
-                                 'is-valid': !$v.goal.initial_amount.$invalid && !$v.goal.initial_amount.$pending }">
+                <input class="form-control"
+                       id="initial_amount"
+                       type="text"
+                       placeholder="Amount"
+                       v-model="goal.initial_amount"
+                       @blur="goal.initial_amount = formatAmount(goal.initial_amount)"
+                       :class="validationClasses('goal', 'initial_amount')">
               </div>
               <div v-if="!$v.goal.initial_amount.validDecimal" class="invalid-feedback d-block">
                 Initial Amount must be a valid decimal ($xx xxx xxx.xx)
@@ -72,28 +81,35 @@
             </div>
           </div>
           <div class="d-flex justify-content-between align-items-center">
-            <h6>Contributions</h6><button type="button" class="btn btn-outline-base" @click="onAddContribution()">+</button>
+            <h6>Contributions</h6>
+            <button type="button" class="btn btn-outline-base" @click="onAddContribution()">+</button>
           </div>
-          <hr v-if="goal.contributions.length > 0">
+          <hr v-if="contributions.length > 0">
           <div class="d-flex flex-row flex-nowrap overflow-auto">
-            <div v-for="(contribution, index) in goal.contributions"
+            <div v-for="(contribution, index) in contributions"
                  :key="contribution.start_on"
                  class="card p-3 mx-2 my-0 border border-base rounded-sm"
                  style="min-width: 100px;">
-              <h6 class="card-title">{{ contribution.monthSpan[0] + (contribution.monthSpan.length > 1 ? " - " + contribution.monthSpan[1] : "") }}</h6>
-              <h6 v-if="contribution.diff > 1" class="card-subtitle mb-2 text-muted">${{ contribution.amount }} x {{ contribution.diff }} months = ${{ (contribution.diff*Number(contribution.amount)).toFixed(2) }}</h6>
-              <h6 v-else class="card-subtitle mb-2 text-muted">${{ contribution.amount }} x 1 month</h6>
+              <h6 class="card-title">
+                {{ contribution.monthSpan[0] + (contribution.monthSpan.length > 1 ? " - " + contribution.monthSpan[1] : "") }}
+              </h6>
+              <h6 v-if="contribution.diff > 1" class="card-subtitle mb-2 text-muted">
+                ${{ contribution.amount }} x {{ contribution.diff }} months = ${{ (contribution.diff*Number(contribution.amount)).toFixed(2) }}
+              </h6>
+              <h6 v-else class="card-subtitle mb-2 text-muted">
+                ${{ contribution.amount }} x 1 month
+              </h6>
               <button class="btn btn-outline-sub1 btn-sm" @click.prevent="onEditContribution(index)">Edit</button>
               <button class="btn btn-outline-sub1 btn-sm" @click.prevent="onDeleteContribution(index)">Delete</button>
             </div>
           </div>
-          <hr v-if="goal.contributions.length > 0">
+          <hr v-if="contributions.length > 0">
           <template v-if="goalAmount > 0 && (contributionsTotal > 0 || goalInitialAmount > 0)">
             <b-progress :max="goalAmount" height="2rem" class="mb-1">
               <b-progress-bar :value="goal.initial_amount" v-if="goalInitialAmount > 0"></b-progress-bar>
-              <template v-for="(contribution, index) in goal.contributions">
-                <b-progress-bar :value="getContributionPaycheckPaidTotal(contribution)" striped :variant="legend_key[index % 6]"></b-progress-bar>
-                <b-progress-bar :value="getContributionTotal(contribution) - getContributionPaycheckPaidTotal(contribution)" :variant="legend_key[index % 6]"></b-progress-bar>
+              <template v-for="(contribution, index) in contributions">
+                <b-progress-bar :key="`paid-${contribution.start_on}`" v-if="getContributionPaycheckPaidTotal(contribution) > 0" :value="getContributionPaycheckPaidTotal(contribution)" striped :variant="legend_key[index % 6]"></b-progress-bar>
+                <b-progress-bar :key="`total-${contribution.start_on}`" :value="getContributionTotal(contribution) - getContributionPaycheckPaidTotal(contribution)" :variant="legend_key[index % 6]"></b-progress-bar>
               </template>
             </b-progress>
             <template v-if="goalInitialAmount > 0">
@@ -109,7 +125,7 @@
                 </div>
               </div>
             </template>
-            <template v-for="(contribution, index) in goal.contributions">
+            <div v-for="(contribution, index) in contributions" :key="contribution.id">
               <h5 class="text-center">
                 <span :class="'badge badge-'+legend_key[index % 6]" class="text-wrap">
                   {{ contribution.monthSpan[0] + (contribution.monthSpan.length > 1 ? " - " + contribution.monthSpan[1] : "") }}
@@ -125,7 +141,7 @@
                   ${{ getContributionPaycheckPaidTotal(contribution).toFixed(2)}} ({{ ((getContributionPaycheckPaidTotal(contribution) / getContributionTotal(contribution))*100).toFixed(2) }}%)
                 </div>
               </div>
-            </template>
+            </div>
             <template v-if="contributionsTotal > 0 || goalInitialAmount > 0">
               <h5 class="text-center">
                 <span class="badge badge-base">Goal</span>
@@ -166,6 +182,7 @@
   import { cloneDeep } from 'lodash';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { otherIfNull, numberToString, dateToFormatedString } from '../../utils/main.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,8}(\.\d{0,2})?$/);
   export default {
     components: {
@@ -192,10 +209,10 @@
           name: "",
           amount: null,
           initial_amount: null,
-          contributions: [],
         },
+        contributions: [],
         contributionsDeleted: [],
-        paychecksDeleted: [],
+        contributionPaychecksDeleted: [],
         legend_key: [
           'success',
           'danger',
@@ -232,30 +249,32 @@
         this.goal.name = goal.name;
         this.goal.amount = goal.amount;
         this.goal.initial_amount = goal.initial_amount;
-        this.goal.contributions = [];
-        for(let i in goal.contributions) {
-          let contribution = cloneDeep(goal.contributions[i]);
-          if(moment(contribution.start_on).isSame(contribution.end_on, 'month')) {
-            contribution.monthSpan = [moment(contribution.start_on).format('MMM YYYY')];
-          } else {
-            contribution.monthSpan = [moment(contribution.start_on).format('MMM YYYY'), moment(contribution.end_on).format('MMM YYYY')]
+        this.contributions = cloneDeep(this.goalContributions);
+        this.contributions.forEach((contribution) => {
+          contribution.monthSpan = [dateToFormatedString(contribution.start_on, 'MMM YYYY')];
+          if(!moment(contribution.start_on).isSame(contribution.end_on, 'month')) {
+            contribution.monthSpan.push(dateToFormatedString(contribution.end_on, 'MMM YYYY'));
           }
-          contribution.diff = Math.ceil(moment(contribution.end_on).diff(contribution.start_on, 'months', true))
-          this.goal.contributions.push(contribution);
-        }
-        this.goal.contributions.sort(function(a, b) {
+          contribution.diff = Math.ceil(moment(contribution.end_on).diff(contribution.start_on, 'months', true));
+        });
+        this.contributions.sort(function(a, b) {
           return (moment(a.start_on).isBefore(b.start_on, 'month') ? -1 : 1);
         });
         this.contributionsDeleted = [];
-        this.paychecksDeleted = [];
+        this.contributionPaychecksDeleted = [];
         this.showModal = true;
       });
       EventBus.$on('delete-goal-confirm', () => {
         this.$emit('close');
       });
       EventBus.$on('delete-contribution-confirm', (data) => {
-        this.contributionsDeleted.push(data.contribution);
-        this.goal.contributions.splice(data.index, 1);
+        this.contributionPaychecks.filter((contributionPaycheck) => {
+          return contributionPaycheck.contribution_id === data.contribution.id;
+        }).forEach((contributionPaycheck) => {
+          this.contributionPaychecksDeleted.push(cloneDeep(contributionPaycheck));
+        });
+        this.contributionsDeleted.push(cloneDeep(data.contribution));
+        this.contributions.splice(data.index, 1);
       });
       EventBus.$on('save-make-contribution', (data) => {
         if(data.type != 'modify-goal') {
@@ -264,17 +283,17 @@
         if(data.contribution.goal_id == null) {
           data.contribution.goal_id = this.goal.id;
         }
-        this.onSaveContribution(data.contribution);
+        this.onSaveContribution(cloneDeep(data.contribution));
       });
       EventBus.$on('save-modify-contribution', (data) => {
         if(data.type != 'modify-goal') {
           return;
         }
-        for(let i in data.paychecksToRemove) {
-          this.paychecksDeleted.push(data.paychecksToRemove[i]);
-        }
-        this.goal.contributions.splice(data.index, 1);
-        this.onSaveContribution(data.contribution);
+        data.contributionPaychecksToRemove.forEach((contribution_paycheck) => {
+          this.contributionPaychecksDeleted.push(contribution_paycheck);
+        });
+        this.contributions.splice(data.index, 1);
+        this.onSaveContribution(cloneDeep(data.contribution));
       });
       EventBus.$on('save-modify-goal-confirm', () => {
         this.onSaveConfirm();
@@ -291,72 +310,71 @@
       onAddContribution() {
         EventBus.$emit('make-contribution', {
           type: 'modify-goal',
-          contributions: this.goal.contributions,
+          contributions: this.contributions,
         });
       },
       onDeleteContribution(index) {
-        if(this.goal.contributions[index].hasOwnProperty('paychecks') && this.goal.contributions[index].paychecks.length > 0) {
+        let goalContributionPaychecksToDelete = this.goalContributionPaychecks.filter((contributionPaycheck) => {
+          return contributionPaycheck.contribution_id === this.contributions[index].id;
+        });
+        if(goalContributionPaychecksToDelete.length > 0) {
           EventBus.$emit('delete-contribution', {
             index: index,
-            contribution: this.goal.contributions[index],
+            contribution: this.contributions[index],
+            contributionPaychecks: goalContributionPaychecksToDelete,
           });
         } else {
-          if(this.goal.contributions[index].hasOwnProperty('id')) {
-            this.contributionsDeleted.push(this.goal.contributions[index]);
+          if(this.contributions[index].hasOwnProperty('id')) {
+            this.contributionsDeleted.push(cloneDeep(this.contributions[index]));
           }
-          this.goal.contributions.splice(index, 1);
+          this.contributions.splice(index, 1);
         }
       },
       onEditContribution(index) {
         EventBus.$emit('modify-contribution', {
           type: 'modify-goal',
-          contributions: this.goal.contributions,
+          contributions: this.contributions,
           index: index,
-          paychecks: this.paychecksDeleted,
+          contributionPaychecksDeleted: this.contributionPaychecksDeleted,
         });
       },
       onSave(goal) {
         if(!this.$v.goal.$invalid) {
-          if(this.contributionsDeleted.length > 0) {
-            for(let i in this.contributionsDeleted) {
-              if(this.contributionsDeleted[i].hasOwnProperty('paychecks') && this.contributionsDeleted[i].paychecks.length > 0) {
-                EventBus.$emit('save-modify-goal', {
-                  goal: this.goal,
-                  paychecksDeleted: this.paychecksDeleted,
-                  contributionsDeleted: this.contributionsDeleted,
-                });
-                return;
-              }
-            }
-          }
-          if(this.paychecksDeleted.length > 0) {
+          let contributionIdsToDelete = this.contributionsDeleted.map((contribution) => contribution.id);
+          let contributionPaychecksToDelete = this.contributionPaychecks.filter((contribution_paycheck) => {
+            return contributionIdsToDelete.find((id) => {
+              return id === contribution_paycheck.contribution_id;
+            }) || false;
+          });
+          if(contributionPaychecksToDelete.length > 0 || this.contributionPaychecksDeleted.length > 0) {
             EventBus.$emit('save-modify-goal', {
               goal: this.goal,
-              paychecksDeleted: this.paychecksDeleted,
+              contributionPaychecksDeleted: this.contributionPaychecksDeleted,
               contributionsDeleted: this.contributionsDeleted,
             });
-            return;
+          } else {
+            this.onSaveConfirm();
           }
-          this.onSaveConfirm();
         }
       },
       onSaveConfirm() {
         this.$store.dispatch('editGoal', {
           goal: this.goal,
-          paychecksDeleted: this.paychecksDeleted,
+          contributions: this.contributions,
+          contributionPaychecksDeleted: this.contributionPaychecksDeleted,
           contributionsDeleted: this.contributionsDeleted,
         });
         this.$emit('close');
         return;
       },
       onSaveContribution(contribution) {
-        for(let i in this.goal.contributions) {
-          if(moment(contribution.start_on).isBefore(this.goal.contributions[i].start_on, 'month')) {
-            this.goal.contributions.splice(i, 0, contribution);
+        for(let i in this.contributions) {
+          if(moment(contribution.start_on).isBefore(this.contributions[i].start_on, 'month')) {
+            this.contributions.splice(i, 0, contribution);
             return;
           }
         }
-        this.goal.contributions.push(contribution);
+        this.contributions.push(contribution);
       },
       onDelete(goal) {
         EventBus.$emit('delete-goal', {
@@ -364,29 +382,33 @@
           contributionsDeleted: this.contributionsDeleted,
         });
       },
-      formatInitialAmount() {
-        if(Number(this.goal.initial_amount).toFixed(2) != "NaN" && this.goal.initial_amount != '' && this.goal.initial_amount != null) {
-          this.goal.initial_amount = Number(this.goal.initial_amount).toFixed(2);
-        }
+      formatAmount(amount) {
+        return numberToString(amount);
       },
-      formatAmount() {
-        if(Number(this.goal.amount).toFixed(2) != "NaN" && this.goal.amount != '' && this.goal.amount != null) {
-          this.goal.amount = Number(this.goal.amount).toFixed(2);
-        }
+      /* @TODO extract (along with input) into amount-input component */
+      validationClasses(obj, attr) {
+        return {
+          'is-invalid': this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+          'is-valid': !this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+        };
       },
       getContributionTotal(contribution) {
         return Number(contribution.amount)*contribution.diff;
       },
       getContributionPaycheckPaidTotal(contribution) {
-        if(!contribution.hasOwnProperty('paychecks')) {
+        if(!contribution.hasOwnProperty('id')) {
           return 0;
         }
         let total = 0;
-        for(let i in contribution.paychecks) {
-          if(contribution.paychecks[i].contribution_paid_on != null) {
-            total += (contribution.paychecks[i].contribution_amount == null ? contribution.paychecks[i].contribution_amount_project : contribution.paychecks[i].contribution_amount);
+        this.goalContributionPaychecks.forEach((contribution_paycheck) => {
+          if(contribution_paycheck.contribution_id === contribution.id && contribution_paycheck.paid_on !== null) {
+            if(this.contributionPaychecksDeleted.find((contributionPaycheck) => {
+              return contributionPaycheck.paycheck_id === contribution_paycheck.paycheck_id && contributionPaycheck.contribution_id === contribution_paycheck.contribution_id;
+            }) === undefined) {
+              total += Number(otherIfNull(contribution_paycheck, 'amount', 'amount_project'));
+            }
           }
-        }
+        });
         return total;
       },
     },
@@ -403,37 +425,48 @@
           }
         }
       },
+      goalContributions() {
+        return this.$store.getters.getContributions.filter((contribution) => {
+          return contribution.goal_id === this.goal.id;
+        });
+      },
+      goalContributionIds() {
+        return this.goalContributions.map((contribution) => {
+          return contribution.id;
+        });
+      },
+      contributionPaychecks() {
+        return this.$store.getters.getContributionPaychecks;
+      },
+      goalContributionPaychecks() {
+        return this.contributionPaychecks.filter((contributionPaycheck) => {
+          return this.goalContributionIds.includes(contributionPaycheck.contribution_id);
+        });
+      },
       goalAmount() {
-        if(this.goal.amount == '' || this.goal.amount == null) {
+        if(this.goal.amount === '' || this.goal.amount === null) {
           return 0;
         }
         return Number(this.goal.amount);
       },
       goalInitialAmount() {
-        if(this.goal.initial_amount == '' || this.goal.initial_amount == null) {
+        if(this.goal.initial_amount === '' || this.goal.initial_amount === null) {
           return 0;
         }
         return Number(this.goal.initial_amount);
       },
       contributionsTotal() {
         let total = 0;
-        for(let i in this.goal.contributions) {
-          total += Number(this.goal.contributions[i].amount)*this.goal.contributions[i].diff;
-        }
+        this.contributions.forEach((contribution) => {
+          total += Number(contribution.amount)*contribution.diff;
+        });
         return total;
       },
       paychecksPaidTotal() {
         let total = 0;
-        for(let i in this.goal.contributions) {
-          if(!this.goal.contributions[i].hasOwnProperty('paychecks')) {
-            continue;
-          }
-          for(let j in this.goal.contributions[i].paychecks) {
-            if(this.goal.contributions[i].paychecks[j].contribution_paid_on != null) {
-              total += (this.goal.contributions[i].paychecks[j].contribution_amount == null ? this.goal.contributions[i].paychecks[j].contribution_amount_project : this.goal.contributions[i].paychecks[j].contribution_amount);
-            }
-          }
-        }
+        this.contributions.forEach((contribution) => {
+          total += this.getContributionPaycheckPaidTotal(contribution);
+        });
         return total;
       },
     },

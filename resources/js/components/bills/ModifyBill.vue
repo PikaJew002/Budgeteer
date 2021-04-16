@@ -13,12 +13,11 @@
         <div class="form-group">
           <label for="name">Name: </label>
           <input class="form-control"
-                  :class="{ 'is-invalid': $v.bill.name.$invalid && !$v.bill.name.$pending,
-                            'is-valid': !$v.bill.name.$invalid && !$v.bill.name.$pending }"
-                  id="name"
-                  type="text"
-                  placeholder="Name"
-                  v-model="bill.name">
+                 id="name"
+                 type="text"
+                 placeholder="Name"
+                 v-model="bill.name"
+                 :class="validationClasses('bill', 'name')">
           <div v-if="!$v.bill.name.required" class="invalid-feedback">
             Name is required
           </div>
@@ -31,12 +30,12 @@
                 <div class="input-group-text">$</div>
               </div>
               <input class="form-control"
-                      :class="{ 'is-invalid': $v.bill.amount.$invalid && !$v.bill.amount.$pending,
-                                'is-valid': !$v.bill.amount.$invalid && !$v.bill.amount.$pending }"
-                      id="amount"
-                      type="text"
-                      placeholder="Amount"
-                      v-model="bill.amount">
+                     id="amount"
+                     type="text"
+                     placeholder="Amount"
+                     v-model="bill.amount"
+                     @blur="bill.amount = formatAmount(bill.amount)"
+                     :class="validationClasses('bill', 'amount')">
             </div>
             <div v-if="!$v.bill.amount.required" class="invalid-feedback">
               Amount is required
@@ -51,12 +50,11 @@
           <div class="col form-group">
             <label for="day_due_on">Day Due: </label>
             <input class="form-control"
-                    :class="{ 'is-invalid': $v.bill.day_due_on.$invalid && !$v.bill.day_due_on.$pending,
-                              'is-valid': !$v.bill.day_due_on.$invalid && !$v.bill.day_due_on.$pending }"
-                    id="day_due_on"
-                    type="number"
-                    placeholder="Day Due"
-                    v-model.number="bill.day_due_on">
+                   id="day_due_on"
+                   type="number"
+                   placeholder="Day Due"
+                   v-model.number="bill.day_due_on"
+                   :class="validationClasses('bill', 'day_due_on')">
             <div v-if="!$v.bill.day_due_on.integer || !$v.bill.day_due_on.minValue || !$v.bill.day_due_on.maxValue" class="invalid-feedback">
               Day Due On must be a valid integer day (1-31)
             </div>
@@ -66,12 +64,11 @@
           <div class="col form-group">
             <label for="start_on">Start On Date: </label>
             <input class="form-control"
-                    :class="{ 'is-invalid': $v.bill.start_on.$invalid && !$v.bill.start_on.$pending,
-                              'is-valid': !$v.bill.start_on.$invalid && !$v.bill.start_on.$pending }"
-                    id="start_on"
-                    type="date"
-                    placeholder="mm/dd/yyyy"
-                    v-model="bill.start_on">
+                   id="start_on"
+                   type="date"
+                   placeholder="mm/dd/yyyy"
+                   v-model="bill.start_on"
+                   :class="validationClasses('bill', 'start_on')">
             <div v-if="!$v.bill.start_on.required" class="invalid-feedback">
               Start On is required (valid date)
             </div>
@@ -79,12 +76,11 @@
           <div class="col form-group">
             <label for="end_on">End On Date: </label>
             <input class="form-control"
-                    :class="{ 'is-invalid': $v.bill.end_on.$invalid && !$v.bill.end_on.$pending,
-                              'is-valid': !$v.bill.end_on.$invalid && !$v.bill.end_on.$pending }"
-                    id="end_on"
-                    type="date"
-                    placeholder="mm/dd/yyyy"
-                    v-model="bill.end_on">
+                   id="end_on"
+                   type="date"
+                   placeholder="mm/dd/yyyy"
+                   v-model="bill.end_on"
+                   :class="validationClasses('bill', 'end_on')">
             <div v-if="!$v.bill.end_on.required" class="invalid-feedback">
               End On is required (valid date)
             </div>
@@ -116,6 +112,7 @@
   import moment from 'moment';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { emptyStringToNull, numberToString } from '../../utils/main.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
   export default {
     components: {
@@ -140,8 +137,10 @@
           name: "",
           amount: null,
           day_due_on: null,
-          start_on: null,
-          end_on: null,
+          start_on: "",
+          end_on: "",
+          created_at: "",
+          updated_at: "",
         },
       };
     },
@@ -175,24 +174,34 @@
       EventBus.$on('modify-bill', obj => {
         this.bill.id = obj.id;
         this.bill.name = obj.name;
-        this.bill.amount = obj.amount;
+        this.bill.amount = emptyStringToNull(numberToString(obj.amount));
         this.bill.day_due_on = obj.day_due_on;
         this.bill.start_on = obj.start_on;
         this.bill.end_on = obj.end_on;
+        this.bill.created_at = obj.created_at;
+        this.bill.updated_at = obj.updated_at;
         this.showModal = true;
       });
     },
     methods: {
       onSave(bill) {
-        if(this.bill.day_due_on == "") {
-          this.bill.day_due_on = null;
-        }
+        this.bill.day_due_on = emptyStringToNull(this.bill.day_due_on);
         this.$store.dispatch('editBill', bill);
         this.$emit('close');
       },
       onDelete(bill) {
         EventBus.$emit('delete-bill', bill);
         this.$emit('close');
+      },
+      formatAmount(amount) {
+        return numberToString(amount);
+      },
+      /* @TODO extract (along with input) into amount-input component */
+      validationClasses(obj, attr) {
+        return {
+          'is-invalid': this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+          'is-valid': !this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
+        };
       },
     },
     computed: {

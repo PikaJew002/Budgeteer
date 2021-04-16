@@ -3,9 +3,9 @@
     <b-modal v-model="showModal" ref="delete-contribution-modal" id="delete-contribution-modal" title="Delete Contribution" centered no-close-on-backdrop header-bg-variant="danger" header-text-variant="white">
       Are you sure you want to delete this contribution? <br>
       Caution! This contribution is paired to the following paychecks! <br>
-      <ul v-if="contribution.paychecks.length > 0">
-        <li v-for="paycheck in contribution.paychecks">
-          {{ getIncome(paycheck).name }} - ${{ paycheck.amount == null ? paycheck.amount_project : paycheck.amount }} - Paid on: {{ paidOnFormat(paycheck) }}
+      <ul v-if="contributionPaychecks.length > 0">
+        <li v-for="contributionPaycheck in contributionPaychecks" :key="contributionPaycheck.paycheck_id + '_' + contributionPaycheck.contribution_id">
+          {{ getIncome(getPaycheck(contributionPaycheck.paycheck_id)).name }} - ${{ amountProjectIfAmountNull(getPaycheck(contributionPaycheck.paycheck_id)) }} - {{ paidOnFormat(getPaycheck(contributionPaycheck.paycheck_id).paid_on) }}
         </li>
       </ul>
       These pairings will be deleted when/if the goal is saved (another confirmation will be displayed).
@@ -26,6 +26,8 @@
   import { cloneDeep } from 'lodash';
   import moment from 'moment';
   import { EventBus } from '../../event-bus.js';
+  import { otherIfNull, dateToFormatedString } from '../../utils/main.js';
+
   export default {
     components: {
       'b-modal': BModal,
@@ -46,7 +48,6 @@
           day_due_on: null,
           start_on: null,
           end_on: null,
-          paychecks: [],
         },
       };
     },
@@ -58,10 +59,6 @@
         this.contribution.day_due_on = data.contribution.day_due_on;
         this.contribution.start_on = data.contribution.start_on;
         this.contribution.end_on = data.contribution.end_on;
-        this.contribution.paychecks = [];
-        for(let i in data.contribution.paychecks) {
-          this.contribution.paychecks.push(cloneDeep(data.contribution.paychecks[i]));
-        }
         this.showModal = true;
       });
     },
@@ -77,12 +74,15 @@
         this.$emit('close');
       },
       getIncome(paycheck) {
-        for(let i in this.incomes) {
-          if(this.incomes[i].id == paycheck.income_id) {
-            return this.incomes[i];
-          }
-        }
-        return {};
+        return this.incomes.find((income) => {
+          return income.id === paycheck.income_id;
+        }) || {};
+      },
+      getPaycheck(paycheck_id) {
+        return this.$store.getters.getPaycheck(paycheck_id);
+      },
+      amountProjectIfAmountNull(paycheck) {
+        return otherIfNull(paycheck, 'amount', 'amount_project');
       },
       paidOnFormat(paycheck) {
         return moment(paycheck.paid_on).format('ddd, MMM D');
@@ -100,6 +100,11 @@
             this.$emit('close');
           }
         }
+      },
+      contributionPaychecks() {
+        return this.$store.getters.getContributionPaychecks.filter((contributionPaycheck) => {
+          return contributionPaycheck.contribution_id === this.contribution.id;
+        });
       },
       incomes() {
         return this.$store.getters.getIncomes;
