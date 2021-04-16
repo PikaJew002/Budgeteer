@@ -8,6 +8,7 @@ use App\Contribution;
 use App\Paycheck;
 use App\Http\Resources\ContributionResource;
 use App\Http\Resources\PaycheckResource;
+use App\Http\Resources\ContributionPaycheckResource;
 
 class ContributionPaycheckController extends Controller
 {
@@ -52,14 +53,8 @@ class ContributionPaycheckController extends Controller
           'paid_on' => $request->input('paid_on'),
         ]);
 
-        /**
-         * A paycheck resource is returned only because (arbitrarily)
-         * the paycheck resource was chosen to contain 'pivot'
-         * (intermediate table) values.
-         */
-
         /* return resource */
-        return new PaycheckResource($paycheck);
+        return new ContributionPaycheckResource($paycheck->contributions()->find($request->input('contribution_id'))->pivot);
     }
 
     /**
@@ -92,14 +87,8 @@ class ContributionPaycheckController extends Controller
           'paid_on' => $request->input('paid_on'),
         ]);
 
-        /**
-         * A paycheck resource is returned only because (arbitrarily)
-         * the paycheck resource was chosen to contain 'pivot'
-         * (intermediate table) values.
-         */
-
         /* return resource */
-        return new PaycheckResource($paycheck);
+        return new ContributionPaycheckResource($paycheck->contributions()->find($request->input('contribution_id'))->pivot);
     }
 
     /**
@@ -119,14 +108,7 @@ class ContributionPaycheckController extends Controller
         /* delete association */
         $paycheck->contributions()->detach($contributionId);
 
-        /**
-         * A paycheck resource is returned only because (arbitrarily)
-         * the paycheck resource was chosen to contain 'pivot'
-         * (intermediate table) values. Either one will have them,
-         * paycheck resource is only picked for consistency.
-         */
-
         /* return resource */
-        return new PaycheckResource($paycheck);
+        return new ContributionPaycheckResource($returnModel);
     }
 }

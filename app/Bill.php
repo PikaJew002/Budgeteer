@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Bill extends Model
 {
     public function paychecks() {
-        return $this->belongsToMany('App\Paycheck')->withPivot(['amount', 'amount_project', 'due_on', 'paid_on'])->withTimestamps();
+        return $this->belongsToMany('App\Paycheck')->using('App\BillPaycheck')->withPivot(['amount', 'amount_project', 'due_on', 'paid_on'])->withTimestamps();
     }
 
     public function user() {
