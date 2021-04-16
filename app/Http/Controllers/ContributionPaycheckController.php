@@ -75,7 +75,7 @@ class ContributionPaycheckController extends Controller
         ]);
         /* find models */
         $contribution = Contribution::findOrFail($request->input('contribution_id'));
-        $paycheck = Paycheck::with('income', 'contributions')->findOrFail($request->input('paycheck_id'));
+        $paycheck = Paycheck::with(['income', 'contributions'])->findOrFail($request->input('paycheck_id'));
         /* authorization */
         $this->authorize('updatePivotContribution', [$paycheck, $contribution]);
         /* save association from request */
@@ -104,6 +104,8 @@ class ContributionPaycheckController extends Controller
         $paycheck = Paycheck::findOrFail($paycheckId);
         /* authorization */
         $this->authorize('detachContribution', [$paycheck, $contribution]);
+        /* since the detach method returns null, the pivot model need to be pre-fetched for the return */
+        $returnModel = $paycheck->contributions()->find($contributionId)->pivot;
         /* delete association */
         $paycheck->contributions()->detach($contributionId);
 
