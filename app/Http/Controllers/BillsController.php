@@ -29,7 +29,7 @@ class BillsController extends Controller
     public function index(Request $request)
     {
         /* authorization */
-        $this->authorize('index', Bill::class);
+        $this->authorize('viewAny', Bill::class);
         /* extract options */
         $optionsArr = $this->extractOptions($request);
         /* find models with options */

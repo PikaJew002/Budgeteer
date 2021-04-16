@@ -18,7 +18,7 @@ class PaycheckPolicy
      * @param  \App\User  $user
      * @return mixed
      */
-    public function index(User $user)
+    public function viewAny(User $user)
     {
         return true;
     }

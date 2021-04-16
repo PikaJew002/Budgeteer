@@ -32,7 +32,7 @@ class PaychecksController extends Controller
     public function index(Request $request)
     {
         /* authorization */
-        $this->authorize('index', Paycheck::class);
+        $this->authorize('viewAny', Paycheck::class);
         /* extract options */
         $optionsArr = $this->extractOptions($request);
         /* find models with options */

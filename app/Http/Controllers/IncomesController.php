@@ -27,7 +27,7 @@ class IncomesController extends Controller
     public function index(Request $request)
     {
         /* authorization */
-        $this->authorize('index', Income::class);
+        $this->authorize('viewAny', Income::class);
         /* extract options */
         $optionsArr = $this->extractOptions($request);
         /* find models with options */
