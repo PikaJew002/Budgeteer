@@ -6,13 +6,14 @@
 */
 
 import PaycheckAPI from '../api/paycheck.js';
+import { objectToArray } from '../utils/main.js';
+import Vue from 'vue';
+import { cloneDeep } from 'lodash';
 
 export const paychecks = {
   state: {
-    paychecks: [],
+    paychecks: {},
     paychecksLoadStatus: 0,
-    paycheck: {},
-    paycheckLoadStatus: 0,
     addPaycheckStatus: 0,
     editPaycheckStatus: 0,
     deletePaycheckStatus: 0,
@@ -22,32 +23,21 @@ export const paychecks = {
       commit('setPaychecksLoadStatus', 1);
       PaycheckAPI.getPaychecks(data)
         .then(res => {
-          commit('setPaychecks', res.data.data);
+          res.data.data.forEach(paycheck => {
+            commit('insertPaycheck', paycheck);
+          });
           commit('setPaychecksLoadStatus', 2);
         })
         .catch(err => {
-          commit('setPaychecks', []);
+          commit('insertPaychecks', {});
           commit('setPaychecksLoadStatus', 3);
-        });
-    },
-    loadPaycheck({ commit }, data) {
-      commit('setPaycheckLoadStatus', 1);
-      PaycheckAPI.getPaycheck(data.id)
-        .then(res => {
-          commit('setPaycheck', res.data.data);
-          commit('setPaycheckLoadStatus', 2);
-        })
-        .catch(err => {
-          commit('setPaycheck', {});
-          commit('setPaycheckLoadStatus', 3);
         });
     },
     addPaycheck({ commit, state, dispatch }, paycheck) {
       commit('setAddPaycheckStatus', 1);
-      dispatch('addIncomePaycheck', paycheck);
       PaycheckAPI.postPaycheck(paycheck)
         .then(res => {
-          dispatch('addIncomePaycheckId', res.data.data);
+          commit('insertPaycheck', res.data.data);
           commit('setAddPaycheckStatus', 2);
         })
         .catch(err => {
@@ -68,7 +58,7 @@ export const paychecks = {
           paycheck: paycheck,
         });
       }
-      dispatch('editIncomePaycheck', paycheck);
+      commit('updatePaycheck', paycheck);
       PaycheckAPI.putPaycheck(paycheck)
         .then(res => {
           commit('setEditPaycheckStatus', 2);
@@ -91,7 +81,7 @@ export const paychecks = {
           paycheck: paycheck,
         });
       }
-      dispatch('deleteIncomePaycheck', paycheck);
+      commit('removePaycheck', paycheck);
       PaycheckAPI.deletePaycheck(paycheck.id)
         .then(res => {
           commit('setDeletePaycheckStatus', 2);
@@ -105,14 +95,11 @@ export const paychecks = {
     setPaychecksLoadStatus(state, status) {
       state.paychecksLoadStatus = status;
     },
-    setPaychecks(state, paychecks) {
-      state.paychecks = paychecks;
+    insertPaycheck(state, paycheck) {
+      Vue.set(state.paychecks, paycheck.id, cloneDeep(paycheck));
     },
     setPaycheckLoadStatus(state, status) {
       state.paycheckLoadStatus = status;
-    },
-    setPaycheck(state, paycheck) {
-      state.paycheck = paycheck;
     },
     setAddPaycheckStatus(state, status) {
       state.addPaycheckStatus = status;
@@ -123,19 +110,34 @@ export const paychecks = {
     setDeletePaycheckStatus(state, status) {
       state.deletePaycheckStatus = status;
     },
+    updatePaycheck(state, paycheck) {
+      Vue.set(state.paychecks[paycheck.id], 'amount', paycheck.amount);
+      Vue.set(state.paychecks[paycheck.id], 'amount_project', paycheck.amount_project);
+      Vue.set(state.paychecks[paycheck.id], 'notify_when_paid', paycheck.notify_when_paid);
+      Vue.set(state.paychecks[paycheck.id], 'paid_on', paycheck.paid_on);
+      Vue.set(state.paychecks[paycheck.id], 'created_at', paycheck.created_at);
+      Vue.set(state.paychecks[paycheck.id], 'updated_at', paycheck.updated_at);
+    },
+    removePaycheck(state, paycheck) {
+      Vue.delete(state.paychecks, paycheck.id);
+    },
   },
   getters: {
+    /**
+     * @param id int
+     * @return object
+     */
+    getPaycheck: (state) => (id) => {
+      return state.paychecks[id];
+    },
+    /**
+     * @return array
+     */
+    getPaychecks(state) {
+      return objectToArray(state.paychecks);
+    },
     getPaychecksLoadStatus(state) {
       return state.paychecksLoadStatus;
-    },
-    getPaychecks(state) {
-      return state.paychecks;
-    },
-    getPaycheckLoadStatus(state) {
-      return state.paycheckLoadStatus;
-    },
-    getPaycheck(state) {
-      return state.paycheck;
     },
     getAddPaycheckStatus(state) {
       return state.addPaycheckStatus;

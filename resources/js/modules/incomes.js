@@ -6,16 +6,15 @@
 */
 
 import IncomeAPI from '../api/income.js';
+import { objectToArray } from '../utils/main.js';
 import Vue from 'vue';
 import { cloneDeep } from 'lodash';
 import moment from 'moment';
 
 export const incomes = {
   state: {
-    incomes: [],
+    incomes: {},
     incomesLoadStatus: 0,
-    income: {},
-    incomeLoadStatus: 0,
     addIncomeStatus: 0,
     editIncomeStatus: 0,
     deleteIncomeStatus: 0,
@@ -25,32 +24,21 @@ export const incomes = {
       commit('setIncomesLoadStatus', 1);
       IncomeAPI.getIncomes(options)
         .then(res => {
-          commit('setIncomes', res.data.data);
+          res.data.data.forEach((income) => {
+            commit('insertIncome', income);
+          });
           commit('setIncomesLoadStatus', 2);
         })
         .catch(err => {
-          commit('setIncomes', []);
+          commit('insertIncomes', {});
           commit('setIncomesLoadStatus', 3);
-        });
-    },
-    loadIncome({ commit }, income) {
-      commit('setIncomeLoadStatus', 1);
-      IncomeAPI.getIncome(income.id)
-        .then(res => {
-          commit('setIncome', res.data.data);
-          commit('setIncomeLoadStatus', 2);
-        })
-        .catch(err => {
-          commit('setIncome', {});
-          commit('setIncomeLoadStatus', 3);
         });
     },
     addIncome({ commit }, income) {
       commit('setAddIncomeStatus', 1);
-      commit('insertIncome', income);
       IncomeAPI.postIncome(income)
         .then(res => {
-          commit('insertIncomeId', res.data.data);
+          commit('insertIncome', res.data.data);
           commit('setAddIncomeStatus', 2);
         })
         .catch(err => {
@@ -59,9 +47,9 @@ export const incomes = {
     },
     editIncome({ commit }, income) {
       commit('setEditIncomeStatus', 1);
-      commit('updateIncome', income);
       IncomeAPI.putIncome(income)
         .then(res => {
+          commit('insertIncome', res.data.data);
           commit('setEditIncomeStatus', 2);
         })
         .catch(err => {
@@ -84,20 +72,14 @@ export const incomes = {
           });
         }
       }
-      commit('removeIncome', income);
       IncomeAPI.deleteIncome(income.id)
         .then(res => {
+          commit('removeIncome', res.data.data);
           commit('setDeleteIncomeStatus', 2);
         })
         .catch(err => {
           commit('setDeleteIncomeStatus', 3);
         });
-    },
-    addIncomePaycheck({ commit }, paycheck) {
-      commit('insertIncomePaycheck', paycheck);
-    },
-    addIncomePaycheckId({ commit }, paycheck) {
-      commit('insertIncomePaycheckId', paycheck);
     },
     editIncomePaycheck({ commit }, paycheck) {
       commit('updateIncomePaycheck', paycheck);
@@ -134,15 +116,6 @@ export const incomes = {
     setIncomesLoadStatus(state, status) {
       state.incomesLoadStatus = status;
     },
-    setIncomes(state, incomes) {
-      state.incomes = incomes;
-    },
-    setIncomeLoadStatus(state, status) {
-      state.incomeLoadStatus = status;
-    },
-    setIncome(state, income) {
-      state.income = income;
-    },
     setAddIncomeStatus(state, status) {
       state.addIncomeStatus = status;
     },
@@ -153,85 +126,15 @@ export const incomes = {
       state.deleteIncomeStatus = status;
     },
     insertIncome(state, income) {
-      state.incomes.push(cloneDeep(income));
-    },
-    insertIncomeId(state, income) {
-      for(let i in state.incomes) {
-        if(!state.incomes[i].hasOwnProperty('id')) {
-          Vue.set(state.incomes[i], 'id', income.id);
-          return;
-        }
-      }
+      Vue.set(state.incomes, income.id, cloneDeep(income));
     },
     updateIncome(state, income) {
-      for(let i in state.incomes) {
-        if(state.incomes[i].id == income.id) {
-          Vue.set(state.incomes[i], 'name', income.name);
-          return;
-        }
-      }
+      Vue.set(state.incomes[income.id], 'name', income.name);
+      Vue.set(state.incomes[income.id], 'created_at', income.created_at);
+      Vue.set(state.incomes[income.id], 'updated_at', income.updated_at);
     },
     removeIncome(state, income) {
-      for(let i in state.incomes) {
-        if(state.incomes[i].id == income.id) {
-          state.incomes.splice(i, 1);
-          return;
-        }
-      }
-    },
-    insertIncomePaycheck(state, paycheck) {
-      for(let i in state.incomes) {
-        if(state.incomes[i].id == paycheck.income_id) {
-          if(!state.incomes[i].hasOwnProperty('paychecks')) {
-            Vue.set(state.incomes[i], 'paychecks', []);
-          }
-          state.incomes[i].paychecks.push(cloneDeep(paycheck));
-          return;
-        }
-      }
-    },
-    insertIncomePaycheckId(state, paycheck) {
-      for(let i in state.incomes) {
-        if(state.incomes[i].id == paycheck.income_id) {
-          if(!state.incomes[i].hasOwnProperty('paychecks')) {
-            Vue.set(state.incomes[i], 'paychecks', []);
-          }
-          for(let j in state.incomes[i].paychecks) {
-            if(!state.incomes[i].paychecks[j].hasOwnProperty('id')) {
-              Vue.set(state.incomes[i].paychecks[j], 'id', paycheck.id);
-              return;
-            }
-          }
-          return;
-        }
-      }
-    },
-    updateIncomePaycheck(state, paycheck) {
-      for(let i in state.incomes) {
-        if(state.incomes[i].id == paycheck.income_id) {
-          for(let j in state.incomes[i].paychecks) {
-            if(state.incomes[i].paychecks[j].id == paycheck.id) {
-              Vue.set(state.incomes[i].paychecks[j], 'amount', paycheck.amount);
-              Vue.set(state.incomes[i].paychecks[j], 'amount_project', paycheck.amount_project);
-              Vue.set(state.incomes[i].paychecks[j], 'notify_when_paid', paycheck.notify_when_paid);
-              Vue.set(state.incomes[i].paychecks[j], 'paid_on', paycheck.paid_on);
-              return;
-            }
-          }
-        }
-      }
-    },
-    removeIncomePaycheck(state, paycheck) {
-      for(let i in state.incomes) {
-        if(state.incomes[i].id == paycheck.income_id) {
-          for(let j in state.incomes[i].paychecks) {
-            if(state.incomes[i].paychecks[j].id == paycheck.id) {
-              state.incomes[i].paychecks.splice(j, 1);
-              return;
-            }
-          }
-        }
-      }
+      Vue.delete(state.incomes, income.id);
     },
     insertIncomePaycheckBill(state, data) {
       let billClone = cloneDeep(data.bill);
@@ -384,17 +287,18 @@ export const incomes = {
     },
   },
   getters: {
-    getIncomesLoadStatus(state) {
-      return state.incomesLoadStatus;
+    /**
+     * @param id  int
+     * @return object
+     */
+    getIncome: (state) => (id) => {
+      return state.incomes[id];
     },
     getIncomes(state) {
-      return state.incomes;
+      return objectToArray(state.incomes);
     },
-    getIncomeLoadStatus(state) {
-      return state.incomeLoadStatus;
-    },
-    getIncome(state){
-      return state.income;
+    getIncomesLoadStatus(state) {
+      return state.incomesLoadStatus;
     },
     getAddIncomeStatus(state) {
       return state.addIncomeStatus;
