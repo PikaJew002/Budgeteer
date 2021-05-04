@@ -116,7 +116,7 @@
       },
     },
     created() {
-      EventBus.$on('paycheck-pairable-pair-start', arr => {
+      EventBus.$on('paycheck-pairable-pair-start',  ({ pairable, month, type}) => {
         this.receivingPair = true;
         this.$emit('paycheck-stay-highlighted', [true, 'paycheck']);
       });
@@ -125,11 +125,11 @@
           this.canStopPair = true;
         }
       });
-      EventBus.$on('paycheck-pair-end', obj => {
+      EventBus.$on('paycheck-pair-end', (paycheck) => {
         this.receivingPair = false;
         this.$emit('paycheck-stay-highlighted', [false, 'paycheck']);
       });
-      EventBus.$on('paycheck-pairable-pair-end', arr => {
+      EventBus.$on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
         if(this.receivingPair) {
           this.receivingPair = false;
           this.canStopPair = false;
@@ -168,7 +168,7 @@
       },
       onStopPair() {
         this.canStopPair = false;
-        EventBus.$emit('paycheck-pairable-pair-end', null);
+        EventBus.$emit('paycheck-pairable-pair-end', { type: null });
       },
       dateToFormatedString(date, format) {
         return dateToFormatedString(date, format);

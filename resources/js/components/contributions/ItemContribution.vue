@@ -89,16 +89,16 @@
         this.receivingPair = true;
         this.$emit('contribution-stay-highlighted', [true, 'contribution']);
       });
-      EventBus.$on('paycheck-pairable-pair-start', arr => {
-        if(arr[2] === 'contribution' && arr[0].id == this.contribution.id && this.month[0] == arr[1][0] && this.month[1] == arr[1][1]) {
+      EventBus.$on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
+        if(type === 'contribution' && pairable.id == this.contribution.id && this.month[0] == month[0] && this.month[1] == month[1]) {
           this.canStopPair = true;
         }
       });
-      EventBus.$on('paycheck-pairable-pair-end', obj => {
+      EventBus.$on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
         this.receivingPair = false;
         this.$emit('contribution-stay-highlighted', [false, 'contribution']);
       });
-      EventBus.$on('paycheck-pair-end', obj => {
+      EventBus.$on('paycheck-pair-end', (paycheck) => {
         if(this.receivingPair) {
           this.receivingPair = false;
           this.canStopPair = false;
@@ -114,16 +114,28 @@
     },
     methods: {
       onPairUpdate() {
-        EventBus.$emit('pair-update', { pairable: this.contribution, paycheck: this.getPaycheck(this.contributionPaychecks[0].paycheck_id), type: 'contribution' });
+        EventBus.$emit('pair-update', {
+          pairable: this.contribution,
+          paycheck: this.getPaycheck(this.contributionPaychecks[0].paycheck_id),
+          type: 'contribution',
+        });
       },
       onPair() {
         if(!this.receivingPair) {
           // case: the contribution is selected first
           this.receivingPair = true;
           this.$emit('contribution-stay-highlighted', [true, 'contribution']);
-          EventBus.$emit('paycheck-pairable-pair-start', [this.contribution, this.month, 'contribution']);
+          EventBus.$emit('paycheck-pairable-pair-start', {
+            pairable: this.contribution,
+            month: this.month,
+            type: 'contribution',
+          });
         } else {
-          EventBus.$emit('paycheck-pairable-pair-end', [this.contribution, this.month, 'contribution']);
+          EventBus.$emit('paycheck-pairable-pair-end', {
+            pairable: this.contribution,
+            month: this.month,
+            type: 'contribution',
+          });
         }
       },
       onStopPair() {

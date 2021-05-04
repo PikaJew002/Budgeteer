@@ -24,37 +24,43 @@ export const contribution_paycheck = {
         commit('insertContributionPaycheck', contribution_paycheck);
       });
     },
-    attachContributionPaycheck({ commit }, contribution_paycheck) {
+    async attachContributionPaycheck({ commit }, contribution_paycheck) {
       commit('setAttachContributionPaycheckStatus', 1);
-      ContributionPaycheckAPI.postContributionPaycheck(contribution_paycheck)
-        .then(res => {
+      await ContributionPaycheckAPI.postContributionPaycheck(contribution_paycheck)
+        .then((res) => {
           commit('insertContributionPaycheck', res.data.data);
           commit('setAttachContributionPaycheckStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setAttachContributionPaycheckStatus', 3);
+          throw err;
         });
     },
     async modifyContributionPaycheck({ commit }, contribution_paycheck) {
       commit('setModifyContributionPaycheckStatus', 1);
       await ContributionPaycheckAPI.putContributionPaycheck(contribution_paycheck)
-        .then(res => {
+        .then((res) => {
           commit('updateContributionPaycheck', res.data.data);
           commit('setModifyContributionPaycheckStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setModifyContributionPaycheckStatus', 3);
+          throw err;
         });
     },
     async detachContributionPaycheck({ commit }, contribution_paycheck) {
       commit('setDetachContributionPaycheckStatus', 1);
       await ContributionPaycheckAPI.deleteContributionPaycheck(contribution_paycheck)
-        .then(res => {
+        .then((res) => {
           commit('removeContributionPaycheck', res.data.data);
           commit('setDetachContributionPaycheckStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setDetachContributionPaycheckStatus', 3);
+          throw err;
         });
     },
   },
@@ -84,6 +90,12 @@ export const contribution_paycheck = {
     },
   },
   getters: {
+    getContributionPaycheck: (state) => (contribution_id, paycheck_id) => {
+      return state.contribution_paychecks[`${contribution_id}_${paycheck_id}`];
+    },
+    getContributionPaychecks(state) {
+      return objectToArray(state.contribution_paychecks);
+    },
     getAttachContributionPaycheckStatus(state) {
       return state.attachContributionPaycheckStatus;
     },
@@ -92,12 +104,6 @@ export const contribution_paycheck = {
     },
     getDetachContributionPaycheckStatus(state) {
       return state.detachContributionPaycheckStatus;
-    },
-    getContributionPaycheck: (state) => (contribution_id, paycheck_id) => {
-      return state.contribution_paychecks[`${contribution_id}_${paycheck_id}`];
-    },
-    getContributionPaychecks(state) {
-      return objectToArray(state.contribution_paychecks);
     },
   },
 }

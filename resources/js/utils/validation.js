@@ -1,8 +1,15 @@
-function validationInputClasses(formInput) {
+function validationInputClasses(v$, obj, attr) {
   return {
-    'is-invalid': this.$v.paycheck[formInput].$invalid && !this.$v.paycheck[formInput].$pending,
-    'is-valid': !this.$v.paycheck[formInput].$invalid && !this.$v.paycheck[formInput].$pending
+    'is-invalid': v$[obj][attr].$invalid && !v$[obj][attr].$pending,
+    'is-valid': !v$[obj][attr].$invalid && !v$[obj][attr].$pending,
   };
 }
 
-export { validationInputClasses };
+function notZero(amount) {
+  return (amount == "" || amount == null) || (Number(amount) > 0);
+}
+
+export {
+  validationInputClasses,
+  notZero,
+};

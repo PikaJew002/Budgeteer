@@ -19,9 +19,6 @@
       <modify-goal :show="showModify"
                    @open="showModify = true"
                    @close="showModify = false"></modify-goal>
-      <modify-goal-confirm :show="showModifyConfirm"
-                           @open="showModifyConfirm = true"
-                           @close="showModifyConfirm = false"></modify-goal-confirm>
       <delete-goal :show="showDelete"
                    @open="showDelete = true"
                    @close="showDelete = false"></delete-goal>
@@ -55,7 +52,6 @@
   import DeleteContribution from '../../components/contributions/DeleteContribution.vue';
   import MakeGoal from '../../components/goals/MakeGoal.vue';
   import ModifyGoal from '../../components/goals/ModifyGoal.vue';
-  import ModifyGoalConfirm from '../../components/goals/ModifyGoalConfirm.vue';
   import DeleteGoal from '../../components/goals/DeleteGoal.vue';
   import { EventBus } from '../../event-bus.js';
   export default {
@@ -67,7 +63,6 @@
       'delete-contribution': DeleteContribution,
       'make-goal': MakeGoal,
       'modify-goal': ModifyGoal,
-      'modify-goal-confirm': ModifyGoalConfirm,
       'delete-goal': DeleteGoal,
     },
     data() {
@@ -78,7 +73,6 @@
         showDeleteContribution: false,
         showMake: false,
         showModify: false,
-        showModifyConfirm: false,
         showDelete: false,
       };
     },

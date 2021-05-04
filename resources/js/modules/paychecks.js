@@ -19,87 +19,76 @@ export const paychecks = {
     deletePaycheckStatus: 0,
   },
   actions: {
-    loadPaychecks({ commit }, data) {
+    loadPaychecks({ commit }, options) {
       commit('setPaychecksLoadStatus', 1);
-      PaycheckAPI.getPaychecks(data)
-        .then(res => {
-          res.data.data.forEach(paycheck => {
+      PaycheckAPI.getPaychecks(options)
+        .then((res) => res.data.data)
+        .then((paychecks) => {
+          paychecks.forEach(paycheck => {
             commit('insertPaycheck', paycheck);
           });
           commit('setPaychecksLoadStatus', 2);
         })
-        .catch(err => {
-          commit('insertPaychecks', {});
+        .catch((err) => {
           commit('setPaychecksLoadStatus', 3);
+          throw err;
         });
     },
-    addPaycheck({ commit, state, dispatch }, paycheck) {
+    async addPaycheck({ commit }, paycheck) {
       commit('setAddPaycheckStatus', 1);
-      PaycheckAPI.postPaycheck(paycheck)
-        .then(res => {
+      await PaycheckAPI.postPaycheck(paycheck)
+        .then((res) => {
           commit('insertPaycheck', res.data.data);
           commit('setAddPaycheckStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setAddPaycheckStatus', 3);
+          throw err;
         });
     },
-    editPaycheck({ commit, state, dispatch }, paycheck) {
+    async editPaycheck({ commit }, paycheck) {
       commit('setEditPaycheckStatus', 1);
-      for(let i in paycheck.bills) {
-        dispatch('editBillPaycheck', {
-          bill: paycheck.bills[i],
-          paycheck: paycheck,
-        });
-      }
-      for(let j in paycheck.contributions) {
-        dispatch('editGoalContributionPaycheck', {
-          contribution: paycheck.contributions[j],
-          paycheck: paycheck,
-        });
-      }
-      commit('updatePaycheck', paycheck);
-      PaycheckAPI.putPaycheck(paycheck)
-        .then(res => {
+      await PaycheckAPI.putPaycheck(paycheck)
+        .then((res) => {
+          commit('updatePaycheck', res.data.data);
           commit('setEditPaycheckStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setEditPaycheckStatus', 3);
+          throw err;
         });
     },
-    deletePaycheck({ commit, state, dispatch }, paycheck) {
+    async deletePaycheck({ commit, dispatch, getters }, paycheck) {
       commit('setDeletePaycheckStatus', 1);
-      for(let i in paycheck.bills) {
-        dispatch('deleteBillPaycheck', {
-          bill: paycheck.bills[i],
-          paycheck: paycheck,
-        });
-      }
-      for(let j in paycheck.contributions) {
-        dispatch('deleteGoalContributionPaycheck', {
-          contribution: paycheck.contributions[j],
-          paycheck: paycheck,
-        });
-      }
-      commit('removePaycheck', paycheck);
-      PaycheckAPI.deletePaycheck(paycheck.id)
-        .then(res => {
+      // delete BillPaychecks before deleting Paycheck
+      await Promise.all(getters.getBillPaychecks.filter((bill_paycheck) => {
+        return bill_paycheck.paycheck_id === paycheck.id;
+      }).map(async (bill_paycheck) => {
+        return await dispatch('detachBillPaycheck', bill_paycheck);
+      }));
+      // delete ContributionPaychecks before deleting Paycheck
+      await Promise.all(getters.getContributionPaychecks.filter((contribution_paycheck) => {
+        return contribution_paycheck.paycheck_id === paycheck.id;
+      }).map(async (contribution_paycheck) => {
+        return await dispatch('detachContributionPaycheck', contribution_paycheck);
+      }));
+      await PaycheckAPI.deletePaycheck(paycheck.id)
+        .then((res) => {
+          commit('removePaycheck', res.data.data);
           commit('setDeletePaycheckStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setDeletePaycheckStatus', 3);
+          throw err;
         });
     },
   },
   mutations: {
     setPaychecksLoadStatus(state, status) {
       state.paychecksLoadStatus = status;
-    },
-    insertPaycheck(state, paycheck) {
-      Vue.set(state.paychecks, paycheck.id, cloneDeep(paycheck));
-    },
-    setPaycheckLoadStatus(state, status) {
-      state.paycheckLoadStatus = status;
     },
     setAddPaycheckStatus(state, status) {
       state.addPaycheckStatus = status;
@@ -109,6 +98,9 @@ export const paychecks = {
     },
     setDeletePaycheckStatus(state, status) {
       state.deletePaycheckStatus = status;
+    },
+    insertPaycheck(state, paycheck) {
+      Vue.set(state.paychecks, paycheck.id, cloneDeep(paycheck));
     },
     updatePaycheck(state, paycheck) {
       Vue.set(state.paychecks[paycheck.id], 'amount', paycheck.amount);
@@ -123,16 +115,9 @@ export const paychecks = {
     },
   },
   getters: {
-    /**
-     * @param id int
-     * @return object
-     */
     getPaycheck: (state) => (id) => {
       return state.paychecks[id];
     },
-    /**
-     * @return array
-     */
     getPaychecks(state) {
       return objectToArray(state.paychecks);
     },

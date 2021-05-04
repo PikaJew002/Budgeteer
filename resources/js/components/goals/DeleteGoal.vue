@@ -52,11 +52,11 @@
       };
     },
     created() {
-      EventBus.$on('delete-goal', data => {
-        this.goal.id = data.goal.id;
-        this.goal.name = data.goal.name;
-        this.goal.amount = data.goal.amount;
-        this.goal.initial_amount = data.goal.initial_amount;
+      EventBus.$on('delete-goal', (goal) => {
+        this.goal.id = goal.id;
+        this.goal.name = goal.name;
+        this.goal.amount = goal.amount;
+        this.goal.initial_amount = goal.initial_amount;
         this.showModal = true;
       });
     },

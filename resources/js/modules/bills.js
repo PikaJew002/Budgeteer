@@ -19,57 +19,65 @@ export const bills = {
     deleteBillStatus: 0,
   },
   actions: {
-    loadBills({ commit, dispatch }, data) {
+    loadBills({ commit, dispatch }, options) {
       commit('setBillsLoadStatus', 1);
-      BillAPI.getBills(data)
-        .then(res => {
-          res.data.data.forEach(bill => {
+      BillAPI.getBills(options)
+        .then((res) => res.data.data)
+        .then((bills) => {
+          bills.forEach(bill => {
             commit('insertBill', bill);
             dispatch('loadBillPaychecks', bill.paychecks.map(paycheck => paycheck.bill));
           });
           commit('setBillsLoadStatus', 2);
         })
-        .catch(err => {
-          console.log(err);
+        .catch((err) => {
           commit('setBillsLoadStatus', 3);
+          throw err;
         });
     },
-    addBill({ commit }, bill) {
+    async addBill({ commit }, bill) {
       commit('setAddBillStatus', 1);
-      BillAPI.postBill(bill)
-        .then(res => {
+      await BillAPI.postBill(bill)
+        .then((res) => {
           commit('insertBill', res.data.data);
           commit('setAddBillStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setAddBillStatus', 3);
+          throw err;
         });
     },
-    editBill({ commit }, bill) {
+    async editBill({ commit }, bill) {
       commit('setEditBillStatus', 1);
-      BillAPI.putBill(bill)
-        .then(res => {
+      await BillAPI.putBill(bill)
+        .then((res) => {
           commit('updateBill', res.data.data);
           commit('setEditBillStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setEditBillStatus', 3);
+          throw err;
         });
     },
-    deleteBill({ commit, state, dispatch }, bill) {
+    async deleteBill({ commit, dispatch, getters }, bill) {
       commit('setDeleteBillStatus', 1);
-      BillAPI.deleteBill(bill.id)
-        .then(res => {
-          state.bill_paychecks.filter((bill_paycheck) => {
-            return bill_paycheck.bill_id == res.data.data.id;
-          }).forEach((bill_paycheck) => {
-            dispatch('detachBillPaycheck', bill_paycheck);
-          });
+      // delete BillPaychecks before deleting Bill
+      await Promise.all(getters.getBillPaychecks.filter((bill_paycheck) => {
+        return bill_paycheck.bill_id === bill.id;
+      }).map(async (bill_paycheck) => {
+        return await dispatch('detachBillPaycheck', bill_paycheck);
+      }));
+      await BillAPI.deleteBill(bill.id)
+        .then((res) => {
           commit('removeBill', res.data.data);
           commit('setDeleteBillStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setDeleteBillStatus', 3);
+          throw err;
         });
     },
   },

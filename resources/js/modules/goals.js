@@ -22,53 +22,42 @@ export const goals = {
     loadGoals({ commit }, options) {
       commit('setGoalsLoadStatus', 1);
       GoalAPI.getGoals(options)
-        .then(res => {
-          res.data.data.forEach((goal) => {
+        .then((res) => res.data.data)
+        .then((goals) => {
+          goals.forEach((goal) => {
             commit('insertGoal', goal);
           });
           commit('setGoalsLoadStatus', 2);
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setGoalsLoadStatus', 3);
+          throw err;
         });
     },
-    addGoal({ commit, dispatch }, data) {
+    async addGoal({ commit }, data) {
       commit('setAddGoalStatus', 1);
-      GoalAPI.postGoal(data.goal)
-        .then(res => {
+      return await GoalAPI.postGoal(data.goal)
+        .then((res) => {
           commit('insertGoal', res.data.data);
-          data.contributions.forEach((contribution) => {
-            contribution.goal_id = res.data.data.id;
-            dispatch('addContribution', contribution);
-          });
           commit('setAddGoalStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setAddGoalStatus', 3);
+          throw err;
         });
     },
-    async editGoal({ commit, dispatch, getters }, data) {
+    async editGoal({ commit }, goal) {
       commit('setEditGoalStatus', 1);
-      await Promise.all(data.contributionPaychecksDeleted.map(async (contribution_paycheck) => {
-        return await dispatch('detachContributionPaycheck', contribution_paycheck);
-      }));
-      await Promise.all(data.contributionsDeleted.map(async (contribution) => {
-        return await dispatch('deleteContribution', contribution);
-      }));
-      await Promise.all(data.contributions.map(async (contribution) => {
-        if(contribution.hasOwnProperty('id') && contribution.id !== null) {
-          return await dispatch('editContribution', contribution);
-        } else {
-          return dispatch('addContribution', contribution);
-        }
-      }));
-      await GoalAPI.putGoal(data.goal)
-        .then(res => {
+      await GoalAPI.putGoal(goal)
+        .then((res) => {
           commit('updateGoal', res.data.data);
           commit('setEditGoalStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setEditGoalStatus', 3);
+          throw err;
         });
     },
     async deleteGoal({ commit, dispatch, getters }, goal) {
@@ -79,12 +68,14 @@ export const goals = {
         return await dispatch('deleteContribution', contribution);
       }));
       await GoalAPI.deleteGoal(goal.id)
-        .then(res => {
+        .then((res) => {
           commit('removeGoal', goal);
           commit('setDeleteGoalStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setDeleteGoalStatus', 3);
+          throw err;
         });
     },
   },
@@ -116,10 +107,6 @@ export const goals = {
     },
   },
   getters: {
-    /**
-     * @param id  int
-     * @return object
-     */
     getGoal: (state) => (id) => {
       return state.goals[id];
     },

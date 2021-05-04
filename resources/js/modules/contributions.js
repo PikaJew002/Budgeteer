@@ -19,41 +19,46 @@ export const contributions = {
     deleteContributionStatus: 0,
   },
   actions: {
-    loadContributions({ commit, dispatch }, data) {
+    loadContributions({ commit, dispatch }, options) {
       commit('setContributionsLoadStatus', 1);
-      ContributionAPI.getContributions(data)
-        .then(res => {
-          res.data.data.forEach(contribution => {
+      ContributionAPI.getContributions(options)
+        .then((res) => res.data.data)
+        .then((contributions) => {
+          contributions.forEach(contribution => {
             commit('insertContribution', contribution);
             dispatch('loadContributionPaychecks', contribution.paychecks.map(paycheck => paycheck.contribution));
           });
           commit('setContributionsLoadStatus', 2);
         })
-        .catch(err => {
-          console.log(err);
+        .catch((err) => {
           commit('setContributionsLoadStatus', 3);
+          throw err;
         });
     },
-    addContribution({ commit }, contribution) {
+    async addContribution({ commit }, contribution) {
       commit('setAddContributionStatus', 1);
-      ContributionAPI.postContribution(contribution)
-        .then(res => {
+      await ContributionAPI.postContribution(contribution)
+        .then((res) => {
           commit('insertContribution', res.data.data);
           commit('setAddContributionStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setAddContributionStatus', 3);
+          throw err;
         });
     },
     async editContribution({ commit }, contribution) {
       commit('setEditContributionStatus', 1);
       await ContributionAPI.putContribution(contribution)
-        .then(res => {
+        .then((res) => {
           commit('updateContribution', res.data.data);
           commit('setEditContributionStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setEditContributionStatus', 3);
+          throw err;
         });
     },
     async deleteContribution({ commit, dispatch, getters }, contribution) {
@@ -65,12 +70,14 @@ export const contributions = {
         return await dispatch('detachContributionPaycheck', contribution_paycheck);
       }));
       await ContributionAPI.deleteContribution(contribution.id)
-        .then(res => {
+        .then((res) => {
           commit('removeContribution', res.data.data);
           commit('setDeleteContributionStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setDeleteContributionStatus', 3);
+          throw err;
         });
     },
   },
@@ -103,16 +110,9 @@ export const contributions = {
     },
   },
   getters: {
-    /**
-     * @param id int
-     * @return object
-     */
     getContribution: (state) => (id) => {
       return state.contributions[id];
     },
-    /**
-     * @return array
-     */
     getContributions(state) {
         return objectToArray(state.contributions);
     },

@@ -12,13 +12,14 @@
       <form @submit.prevent="onSave(income)">
         <div class="form-group">
           <label for="name">Name: </label>
-          <input class="form-control"
-                  :class="{ 'is-invalid': $v.income.name.$invalid && !$v.income.name.$pending,
-                            'is-valid': !$v.income.name.$invalid && !$v.income.name.$pending }"
-                  id="name"
-                  type="text"
-                  placeholder="Name"
-                  v-model="income.name">
+          <input
+            v-model="income.name"
+            id="name"
+            type="text"
+            placeholder="Name"
+            class="form-control"
+            :class="validationClasses($v, 'income', 'name')"
+          >
           <div v-if="!$v.income.name.required" class="invalid-feedback">
             Name is required
           </div>
@@ -51,6 +52,8 @@
   import { cloneDeep } from 'lodash';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { copyObjectProperties } from '../../utils/main.js';
+  import { validationInputClasses } from '../../utils/validation.js';
   export default {
     components: {
       'b-modal': BModal,
@@ -73,6 +76,8 @@
           id: null,
           user_id: null,
           name: "",
+          created_at: "",
+          updated_at: "",
         },
       };
     },
@@ -86,10 +91,8 @@
       },
     },
     created() {
-      EventBus.$on('modify-income', obj => {
-        this.income.id = obj.id;
-        this.income.user_id = obj.user_id;
-        this.income.name = obj.name;
+      EventBus.$on('modify-income', (income) => {
+        copyObjectProperties(income, this.income);
         this.showModal = true;
       });
     },
@@ -97,6 +100,9 @@
       EventBus.$off('modify-income');
     },
     methods: {
+      validationClasses(v$, obj, attr) {
+        return validationInputClasses(v$, obj, attr);
+      },
       onSave(income) {
         if(!this.$v.income.$invalid) {
           this.$store.dispatch('editIncome', income);

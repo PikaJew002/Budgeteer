@@ -24,40 +24,43 @@ export const bill_paycheck = {
         commit('insertBillPaycheck', bill_paycheck);
       });
     },
-    attachBillPaycheck({ commit }, bill_paycheck) {
+    async attachBillPaycheck({ commit }, bill_paycheck) {
       commit('setAttachBillPaycheckStatus', 1);
-      BillPaycheckAPI.postBillPaycheck(bill_paycheck)
-        .then(res => {
+      await BillPaycheckAPI.postBillPaycheck(bill_paycheck)
+        .then((res) => {
           commit('insertBillPaycheck', res.data.data)
           commit('setAttachBillPaycheckStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
-          console.log(err);
+        .catch((err) => {
           commit('setAttachBillPaycheckStatus', 3);
+          throw err;
         });
     },
-    modifyBillPaycheck({ commit }, bill_paycheck) {
+    async modifyBillPaycheck({ commit }, bill_paycheck) {
       commit('setModifyBillPaycheckStatus', 1);
-      BillPaycheckAPI.putBillPaycheck(bill_paycheck)
-        .then(res => {
+      await BillPaycheckAPI.putBillPaycheck(bill_paycheck)
+        .then((res) => {
           commit('updateBillPaycheck', res.data.data);
           commit('setModifyBillPaycheckStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
-          console.log(err);
+        .catch((err) => {
           commit('setModifyBillPaycheckStatus', 3);
+          throw err;
         });
     },
-    detachBillPaycheck({ commit }, bill_paycheck) {
+    async detachBillPaycheck({ commit }, bill_paycheck) {
       commit('setDetachBillPaycheckStatus', 1);
-      BillPaycheckAPI.deleteBillPaycheck(bill_paycheck)
-        .then(res => {
+      await BillPaycheckAPI.deleteBillPaycheck(bill_paycheck)
+        .then((res) => {
           commit('removeBillPaycheck', res.data.data);
           commit('setDetachBillPaycheckStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
-          console.log(err);
+        .catch((err) => {
           commit('setDetachBillPaycheckStatus', 3);
+          throw err;
         });
     },
   },
@@ -87,6 +90,12 @@ export const bill_paycheck = {
     },
   },
   getters: {
+    getBillPaycheck: (state) => (bill_id, paycheck_id) => {
+      return state.bill_paychecks[`${bill_id}_${paycheck_id}`];
+    },
+    getBillPaychecks(state) {
+      return objectToArray(state.bill_paychecks);
+    },
     getAttachBillPaycheckStatus(state) {
       return state.attachBillPaycheckStatus;
     },
@@ -95,12 +104,6 @@ export const bill_paycheck = {
     },
     getDetachBillPaycheckStatus(state) {
       return state.detachBillPaycheckStatus;
-    },
-    getBillPaycheck: (state) => (bill_id, paycheck_id) => {
-      return state.bill_paychecks[`${bill_id}_${paycheck_id}`];
-    },
-    getBillPaychecks(state) {
-      return objectToArray(state.bill_paychecks);
     },
   },
 }

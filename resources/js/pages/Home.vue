@@ -48,10 +48,10 @@
           with: ['paychecks'],
         })
       }
-      EventBus.$on('paycheck-pairable-pair-start', id => this.disableSelector = true);
+      EventBus.$on('paycheck-pairable-pair-start', ({ pairable, month, type}) => this.disableSelector = true);
       EventBus.$on('paycheck-pair-start', id => this.disableSelector = true);
-      EventBus.$on('paycheck-pairable-pair-end', id => this.disableSelector = false);
-      EventBus.$on('paycheck-pair-end', id => this.disableSelector = false);
+      EventBus.$on('paycheck-pairable-pair-end', ({ pairable, month, type }) => this.disableSelector = false);
+      EventBus.$on('paycheck-pair-end', (paycheck) => this.disableSelector = false);
     },
     beforeDestroy() {
       EventBus.$off('paycheck-pairable-pair-start');

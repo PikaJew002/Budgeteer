@@ -17,9 +17,9 @@ export default {
     return await axios.post(BUDGETEER_CONFIG.URL + '/login', {
       email: email,
       password: password
-    }).then(res => {
+    }).then((res) => {
       return res.data;
-    }).catch(err => {
+    }).catch((err) => {
       throw err;
     });
   },
@@ -28,9 +28,9 @@ export default {
   */
   logout: async function() {
     return await axios.post(BUDGETEER_CONFIG.URL + '/logout', {
-    }).then(res => {
+    }).then((res) => {
       return res.data;
-    }).catch(err => {
+    }).catch((err) => {
       throw err;
     });
   }

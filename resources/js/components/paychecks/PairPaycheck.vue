@@ -43,7 +43,7 @@
                      placeholder="Amount"
                      v-model="pair.amount_project"
                      @blur="pair.amount_project = formatAmount(pair.amount_project)"
-                     :class="validationClasses('pair', 'amount_project')">
+                     :class="validationClasses($v, 'pair', 'amount_project')">
               <input v-else
                      class="form-control"
                      id="amount"
@@ -51,7 +51,7 @@
                      placeholder="Amount"
                      v-model="pair.amount"
                      @blur="pair.amount = formatAmount(pair.amount)"
-                     :class="validationClasses('pair', 'amount')">
+                     :class="validationClasses($v, 'pair', 'amount')">
             </div>
             <div class="custom-control custom-checkbox">
               <input class="custom-control-input"
@@ -79,7 +79,7 @@
                    id="due_on"
                    type="date"
                    v-model="pair.due_on"
-                   :class="validationClasses('pair', 'due_on')">
+                   :class="validationClasses($v, 'pair', 'due_on')">
             <div v-if="!$v.pair.due_on.required" class="invalid-feedback">
               Due On is required
             </div>
@@ -90,7 +90,7 @@
                    id="paid_on"
                    type="date"
                    v-model="pair.paid_on"
-                   :class="validationClasses('pair', 'paid_on')">
+                   :class="validationClasses($v, 'pair', 'paid_on')">
             <div v-if="!$v.pair.paid_on.maxValue" class="invalid-feedback">
               Paid On must be before or on the date due
             </div>
@@ -118,6 +118,7 @@
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
   import { dateToFormatedString, dateToString, capitalize, emptyStringToNull, numberToString, otherIfNull } from '../../utils/main.js';
+  import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
   export default {
     components: {
@@ -127,53 +128,52 @@
     },
     mixins: [Alert],
     created() {
-      EventBus.$on('paycheck-pair-start', paycheck => {
-        this.paycheck = paycheck;
+      EventBus.$on('paycheck-pair-start', (paycheck) => {
+        this.paycheck = { ...paycheck };
         this.pair.paycheck_id = paycheck.id;
         this.type = ""; // paycheck was selected first
         this.showPairAlert = true;
       });
-      EventBus.$on('paycheck-pairable-pair-start', arr => {
-        // payload: 0: pairableObj, 1: month, 2: pairableType (bill or contribution)
-        this.type = arr[2]; // bill or contribution (pairable) was selected first
-        this[this.type] = arr[0];
-        this.month = arr[1];
+      EventBus.$on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
+        this.type = type; // bill or contribution (pairable) was selected first
+        this[this.type] = { ...pairable };
+        this.month = month;
         this.pair[this.type + '_id'] = this[this.type].id;
         this.showPairAlert = true;
       });
-      EventBus.$on('paycheck-pair-end', paycheck => {
+      EventBus.$on('paycheck-pair-end', (paycheck) => {
         if(paycheck == null) {
           this.showPairAlert = false;
           this.onHideModal();
           return;
         }
-        this.paycheck = paycheck;
+        this.paycheck = { ...paycheck };
         this.pair.paycheck_id = paycheck.id;
         this.pair.amount = numberToString(this[this.type].amount);
         this.pair.due_on = dateToString(this.month[1], this.month[0], this[this.type].day_due_on == null ? 1 : this[this.type].day_due_on);
         this.pair.paid_on = "";
         this.showPairAlert = false;
       });
-      EventBus.$on('paycheck-pairable-pair-end', arr => {
+      EventBus.$on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
         // arr: 0: pairableObj, 1: month, 2: pairableType (bill or contribution)
-        if(arr === null) {
+        if(type === null) {
           this.showPairAlert = false;
           this.onHideModal();
           return;
         }
-        this.month = arr[1];
-        this.type = arr[2];
-        this[this.type] = arr[0]; // bill or contribution
+        this.month = month;
+        this.type = type;
+        this[this.type] = { ...pairable }; // bill or contribution
         this.pair[this.type+"_id"] = this[this.type].id;
         this.pair.amount = numberToString(this[this.type].amount);
         this.pair.due_on = dateToString(this.month[1], this.month[0], this[this.type].day_due_on == null ? 1 : this[this.type].day_due_on);
         this.showPairAlert = false;
       });
-      EventBus.$on('pair-update', obj => {
+      EventBus.$on('pair-update', ({ pairable, paycheck, type }) => {
         this.isUpdate = true;
-        this.type = obj.type; // is bill or contribution
-        this[this.type] = obj.pairable;
-        this.paycheck = obj.paycheck;
+        this.type = type; // is bill or contribution
+        this[this.type] = { ...pairable };
+        this.paycheck = { ...paycheck };
         this.pair[this.type+'_id'] = this[this.type].id;
         this.pair.paycheck_id = this.paycheck.id;
         let pivotModel = this.$store.getters[`get${capitalize(this.type)}Paycheck`](this[this.type].id, this.paycheck.id);
@@ -226,14 +226,14 @@
               return !this.pair.amount;
             }),
             validDecimal,
-            notZero: (amount_project) => ((amount_project == "" || amount_project == null) || (Number(amount_project) > 0)),
+            notZero,
           },
           amount: {
             required: requiredIf(function() {
               return !this.pair.amount_project;
             }),
             validDecimal,
-            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)),
+            notZero,
           },
           due_on: {
             required,
@@ -255,7 +255,7 @@
         // if pairable entity (bill or contribution) is null
         if(this[this.type] === null) {
           this.onHideModal();
-          EventBus.$emit('paycheck-pairable-pair-end', null);
+          EventBus.$emit('paycheck-pairable-pair-end', { type: null });
           return;
         }
         // if the pairable entity (bill or contribution) is already paired to the paycheck
@@ -269,8 +269,6 @@
       },
       onSave() {
         if(!this.$v.pair.$invalid) {
-          this.pair.amount = emptyStringToNull(this.pair.amount);
-          this.pair.amount_project = emptyStringToNull(this.pair.amount_project);
           this.pair.paid_on = emptyStringToNull(this.pair.paid_on);
           this.$store.dispatch(`${this.isUpdate ? 'modify' : 'attach'}${capitalize(this.type)}Paycheck`, this.pair);
           this.onClose();
@@ -303,11 +301,8 @@
         return numberToString(amount);
       },
       /* @TODO extract (along with input) into amount-input component */
-      validationClasses(obj, attr) {
-        return {
-          'is-invalid': this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
-          'is-valid': !this.$v[obj][attr].$invalid && !this.$v[obj][attr].$pending,
-        };
+      validationClasses(v$, obj, attr) {
+        return validationInputClasses(v$, obj, attr);
       },
       amountProjectIfAmountNull(obj) {
         return otherIfNull(obj, 'amount', 'amount_project');
@@ -347,12 +342,12 @@
         if(this.paycheck === null) return 0;
         let total = otherIfNull(this.paycheck, 'amount', 'amount_project');
         this.billPaychecks.forEach((bill_paycheck) => {
-          if(bill_paycheck.bill_id != this.pair.bill_id) {
+          if(bill_paycheck.bill_id !== this.pair.bill_id) {
             total -= otherIfNull(bill_paycheck, 'amount', 'amount_project');
           }
         });
         this.contributionPaychecks.forEach((contribution_paycheck) => {
-          if(contribution_paycheck.contribution_id != this.pair.contribution_id) {
+          if(contribution_paycheck.contribution_id !== this.pair.contribution_id) {
             total -= otherIfNull(contribution_paycheck, 'amount', 'amount_project');
           }
         });
