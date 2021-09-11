@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use App\Bill;
-use App\Http\Resources\BillResource;
 use App\Paycheck;
+use App\Http\Resources\BillResource;
 use App\Http\Resources\PaycheckResource;
+use App\Http\Resources\BillPaycheckResource;
 
 class BillPaycheckController extends Controller
 {
@@ -52,14 +52,8 @@ class BillPaycheckController extends Controller
           'paid_on' => $request->input('paid_on')
         ]);
 
-        /**
-         * A paycheck resource is returned only because (arbitrarily)
-         * the paycheck resource was chosen to contain 'pivot'
-         * (intermediate table) values.
-         */
-
         /* return resource */
-        return new PaycheckResource($paycheck);
+        return new BillPaycheckResource($paycheck->bills()->find($request->input('bill_id'))->pivot);
     }
 
     /**
@@ -92,14 +86,8 @@ class BillPaycheckController extends Controller
           'paid_on' => $request->input('paid_on')
         ]);
 
-        /**
-         * A paycheck resource is returned only because (arbitrarily)
-         * the paycheck resource was chosen to contain 'pivot'
-         * (intermediate table) values.
-         */
-
         /* return resource */
-        return new PaycheckResource($paycheck);
+        return new BillPaycheckResource($paycheck->bills()->find($request->input('bill_id'))->pivot);
     }
 
     /**
@@ -116,16 +104,12 @@ class BillPaycheckController extends Controller
         $paycheck = Paycheck::findOrFail($paycheckId);
         /* authorization */
         $this->authorize('detachBill', [$paycheck, $bill]);
+        /* since the detach method returns null, the pivot model need to be pre-fetched for the return */
+        $returnModel = $paycheck->bills()->find($billId)->pivot;
         /* delete association */
         $paycheck->bills()->detach($billId);
 
-        /**
-         * A paycheck resource is returned only because (arbitrarily)
-         * the paycheck resource was chosen to contain 'pivot'
-         * (intermediate table) values.
-         */
-
         /* return resource */
-        return new PaycheckResource($paycheck);
+        return new BillPaycheckResource($returnModel);
     }
 }

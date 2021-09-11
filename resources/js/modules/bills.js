@@ -5,116 +5,85 @@
 | The Vuex data store for the bills
 */
 
+import BillAPI from '../api/bill.js';
+import { objectToArray } from '../utils/main.js';
 import Vue from 'vue';
 import { cloneDeep } from 'lodash';
-import BillAPI from '../api/bill.js';
 
 export const bills = {
   state: {
-    bills: [],
+    bills: {},
     billsLoadStatus: 0,
-    bill: {},
-    billLoadStatus: 0,
     addBillStatus: 0,
     editBillStatus: 0,
     deleteBillStatus: 0,
   },
   actions: {
-    loadBills({ commit }, data) {
+    loadBills({ commit, dispatch }, options) {
       commit('setBillsLoadStatus', 1);
-      BillAPI.getBills(data)
-        .then(res => {
-          commit('setBills', res.data.data);
+      BillAPI.getBills(options)
+        .then((res) => res.data.data)
+        .then((bills) => {
+          bills.forEach(bill => {
+            commit('insertBill', bill);
+            dispatch('loadBillPaychecks', bill.paychecks.map(paycheck => paycheck.bill));
+          });
           commit('setBillsLoadStatus', 2);
         })
-        .catch(err => {
-          commit('setBills', []);
+        .catch((err) => {
           commit('setBillsLoadStatus', 3);
+          throw err;
         });
     },
-    loadBill({ commit }, bill) {
-      commit('setBillLoadStatus', 1);
-      BillAPI.getBill(bill.id)
-        .then(res => {
-          commit('setBill', res.data.data);
-          commit('setBillLoadStatus', 2);
-        })
-        .catch(err => {
-          commit('setBill', {});
-          commit('setBillLoadStatus', 3);
-        });
-
-    },
-    addBill({ commit }, bill) {
+    async addBill({ commit }, bill) {
       commit('setAddBillStatus', 1);
-      commit('insertBill', bill);
-      BillAPI.postBill(bill)
-        .then(res => {
-          commit('insertBillId', res.data.data);
+      await BillAPI.postBill(bill)
+        .then((res) => {
+          commit('insertBill', res.data.data);
           commit('setAddBillStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setAddBillStatus', 3);
+          throw err;
         });
     },
-    editBill({ commit, state, dispatch }, bill) {
+    async editBill({ commit }, bill) {
       commit('setEditBillStatus', 1);
-      for(let i in bill.paychecks) {
-        dispatch('editIncomePaycheckBill', {
-          paycheck: bill.paychecks[i], bill: bill,
-        });
-      }
-      commit('updateBill', bill);
-      BillAPI.putBill(bill)
-        .then(res => {
+      await BillAPI.putBill(bill)
+        .then((res) => {
+          commit('updateBill', res.data.data);
           commit('setEditBillStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setEditBillStatus', 3);
+          throw err;
         });
     },
-    deleteBill({ commit, state, dispatch }, bill) {
+    async deleteBill({ commit, dispatch, getters }, bill) {
       commit('setDeleteBillStatus', 1);
-      for(let i in bill.paychecks) {
-        dispatch('deleteIncomePaycheckBill', {
-          paycheck: bill.paychecks[i],
-          bill: bill,
-        });
-      }
-      commit('removeBill', bill);
-      BillAPI.deleteBill(bill.id)
-        .then(res => {
+      // delete BillPaychecks before deleting Bill
+      await Promise.all(getters.getBillPaychecks.filter((bill_paycheck) => {
+        return bill_paycheck.bill_id === bill.id;
+      }).map(async (bill_paycheck) => {
+        return await dispatch('detachBillPaycheck', bill_paycheck);
+      }));
+      await BillAPI.deleteBill(bill.id)
+        .then((res) => {
+          commit('removeBill', res.data.data);
           commit('setDeleteBillStatus', 2);
+          return res.data.data;
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setDeleteBillStatus', 3);
+          throw err;
         });
-    },
-    addBillPaycheck({ commit, state }, data) {
-      commit('insertBillPaycheck', data);
-    },
-    editBillPaycheck({ commit, state }, data) {
-      commit('updateBillPaycheck', data);
-    },
-    editBillPaycheckPivot({ commit, state }, data) {
-      commit('updateBillPaycheckPivot', data);
-    },
-    deleteBillPaycheck({ commit, state }, data) {
-      commit('removeBillPaycheck', data);
     },
   },
   mutations: {
     setBillsLoadStatus(state, status) {
       state.billsLoadStatus = status;
-    },
-    setBills(state, bills) {
-      state.bills = bills;
-    },
-    setBillLoadStatus(state, status) {
-      state.billLoadStatus = status;
-    },
-    setBill(state, bill) {
-      state.bill = bill;
     },
     setAddBillStatus(state, status) {
       state.addBillStatus = status;
@@ -126,107 +95,30 @@ export const bills = {
       state.deleteBillStatus = status;
     },
     insertBill(state, bill) {
-      state.bills.push(bill);
-    },
-    insertBillId(state, bill) {
-      for(let i in state.bills) {
-        if(!state.bills[i].hasOwnProperty('id')) {
-          Vue.set(state.bills[i], 'id', bill.id);
-          return;
-        }
-      }
+      Vue.set(state.bills, bill.id, cloneDeep(bill));
     },
     updateBill(state, bill) {
-      for(let i in state.bills) {
-        if(state.bills[i].id == bill.id) {
-          Vue.set(state.bills[i], 'name', bill.name);
-          Vue.set(state.bills[i], 'amount', bill.amount);
-          Vue.set(state.bills[i], 'day_due_on', bill.day_due_on);
-          Vue.set(state.bills[i], 'start_on', bill.start_on);
-          Vue.set(state.bills[i], 'end_on', bill.end_on);
-          return;
-        }
-      }
+      Vue.set(state.bills[bill.id], 'name', bill.name);
+      Vue.set(state.bills[bill.id], 'amount', bill.amount);
+      Vue.set(state.bills[bill.id], 'day_due_on', bill.day_due_on);
+      Vue.set(state.bills[bill.id], 'start_on', bill.start_on);
+      Vue.set(state.bills[bill.id], 'end_on', bill.end_on);
+      Vue.set(state.bills[bill.id], 'created_at', bill.created_at);
+      Vue.set(state.bills[bill.id], 'updated_at', bill.updated_at);
     },
     removeBill(state, bill) {
-      for(let i in state.bills) {
-        if(state.bills[i].id == bill.id) {
-          state.bills.splice(i, 1);
-          return;
-        }
-      }
-    },
-    insertBillPaycheck(state, data) {
-      let paycheckClone = cloneDeep(data.paycheck);
-      for(let i in state.bills) {
-        if(state.bills[i].id == data.bill.id) {
-          paycheckClone['bill_amount'] = data.bill_paycheck.amount;
-          paycheckClone['bill_amount_project'] = data.bill_paycheck.amount_project;
-          paycheckClone['bill_due_on'] = data.bill_paycheck.due_on;
-          paycheckClone['bill_paid_on'] = data.bill_paycheck.paid_on;
-          if(!state.bills[i].hasOwnProperty('paychecks')) {
-            Vue.set(state.bills[i], 'paychecks', []);
-          }
-          state.bills[i].paychecks.push(paycheckClone);
-          return;
-        }
-      }
-    },
-    updateBillPaycheck(state, data) {
-      for(let i in state.bills) {
-        if(state.bills[i].id == data.bill.id) {
-          for(let j in state.bills[i].paychecks) {
-            if(state.bills[i].paychecks[j].id == data.paycheck.id) {
-              Vue.set(state.bills[i].paychecks[j], 'amount', data.paycheck.amount);
-              Vue.set(state.bills[i].paychecks[j], 'amount_project', data.paycheck.amount_project);
-              Vue.set(state.bills[i].paychecks[j], 'notify_when_paid', data.paycheck.notify_when_paid);
-              Vue.set(state.bills[i].paychecks[j], 'paid_on', data.paycheck.paid_on);
-              return;
-            }
-          }
-        }
-      }
-    },
-    updateBillPaycheckPivot(state, data) {
-      for(let i in state.bills) {
-        if(state.bills[i].id == data.bill.id) {
-          for(let j in state.bills[i].paychecks) {
-            if(state.bills[i].paychecks[j].id == data.paycheck.id) {
-              Vue.set(state.bills[i].paychecks[j], 'bill_amount', data.bill_paycheck.amount);
-              Vue.set(state.bills[i].paychecks[j], 'bill_amount_project', data.bill_paycheck.amount_project);
-              Vue.set(state.bills[i].paychecks[j], 'bill_due_on', data.bill_paycheck.due_on);
-              Vue.set(state.bills[i].paychecks[j], 'bill_paid_on', data.bill_paycheck.paid_on);
-              return;
-            }
-          }
-        }
-      }
-    },
-    removeBillPaycheck(state, data) {
-      for(let i in state.bills) {
-        if(state.bills[i].id == data.bill.id) {
-          for(let j in state.bills[i].paychecks) {
-            if(state.bills[i].paychecks[j].id == data.paycheck.id) {
-              state.bills[i].paychecks.splice(j, 1);
-              return;
-            }
-          }
-        }
-      }
+      Vue.delete(state.bills, bill.id);
     },
   },
   getters: {
-    getBillsLoadStatus(state) {
-      return state.billsLoadStatus;
+    getBill: (state) => (id) => {
+      return state.bills[id];
     },
     getBills(state) {
-      return state.bills;
+      return objectToArray(state.bills);
     },
-    getBillLoadStatus(state) {
-      return state.billLoadStatus;
-    },
-    getBill(state){
-      return state.bill;
+    getBillsLoadStatus(state) {
+      return state.billsLoadStatus;
     },
     getAddBillStatus(state) {
       return state.addBillStatus;

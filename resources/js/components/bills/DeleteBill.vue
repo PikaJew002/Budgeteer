@@ -36,8 +36,10 @@
           name: "",
           amount: null,
           day_due_on: null,
-          start_on: null,
-          end_on: null,
+          start_on: "",
+          end_on: "",
+          created_at: "",
+          updated_at: "",
         },
       };
     },
@@ -49,6 +51,8 @@
         this.bill.day_due_on = obj.day_due_on;
         this.bill.start_on = obj.start_on;
         this.bill.end_on = obj.end_on;
+        this.bill.created_at = obj.created_at;
+        this.bill.updated_at = obj.updated_at;
         this.showModal = true;
       });
     },

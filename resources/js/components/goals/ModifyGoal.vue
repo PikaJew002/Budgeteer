@@ -10,13 +10,18 @@
     </b-alert>
     <b-modal v-model="showModal" ref="modify-goal-modal" id="modify-goal-modal" title="Edit Goal" centered no-close-on-backdrop>
       <div class="container-fluid">
-        <form @submit.prevent="onSave(goal)">
+        <form @submit.prevent="onSave()">
           <div class="row">
             <div class="col form-group">
               <label for="name">Name</label>
-              <input class="form-control" :class="{ 'is-invalid': $v.goal.name.$invalid && !$v.goal.name.$pending,
-                                                    'is-valid': !$v.goal.name.$invalid && !$v.goal.name.$pending }"
-                     id="name" type="text" placeholder="Goal Name" v-model="goal.name">
+              <input
+                v-model="goal.name"
+                id="name"
+                type="text"
+                placeholder="Goal Name"
+                class="form-control"
+                :class="validationClasses($v, 'goal', 'name')"
+              >
               <div v-if="!$v.goal.name.required" class="invalid-feedback">
                 Name is required
               </div>
@@ -35,10 +40,15 @@
                 <div class="input-group-prepend">
                   <div class="input-group-text">$</div>
                 </div>
-                <input class="form-control" id="amount" type="text" placeholder="Amount"
-                       v-model="goal.amount" @blur="formatAmount()"
-                       :class="{ 'is-invalid': $v.goal.amount.$invalid && !$v.goal.amount.$pending,
-                                 'is-valid': !$v.goal.amount.$invalid && !$v.goal.amount.$pending }">
+                <input
+                  v-model="goal.amount"
+                  @blur="goal.amount = formatAmount(goal.amount)"
+                  id="amount"
+                  type="text"
+                  placeholder="Amount"
+                  class="form-control"
+                  :class="validationClasses($v, 'goal', 'amount')"
+                >
               </div>
               <div v-if="!$v.goal.amount.required" class="invalid-feedback d-block">
                 Amount is required
@@ -58,10 +68,15 @@
                 <div class="input-group-prepend">
                   <div class="input-group-text">$</div>
                 </div>
-                <input class="form-control" id="initial_amount" type="text" placeholder="Amount"
-                       v-model="goal.initial_amount" @blur="formatInitialAmount()"
-                       :class="{ 'is-invalid': $v.goal.initial_amount.$invalid && !$v.goal.initial_amount.$pending,
-                                 'is-valid': !$v.goal.initial_amount.$invalid && !$v.goal.initial_amount.$pending }">
+                <input
+                  v-model="goal.initial_amount"
+                  @blur="goal.initial_amount = formatAmount(goal.initial_amount)"
+                  id="initial_amount"
+                  type="text"
+                  placeholder="Amount"
+                  class="form-control"
+                  :class="validationClasses($v, 'goal', 'initial_amount')"
+                >
               </div>
               <div v-if="!$v.goal.initial_amount.validDecimal" class="invalid-feedback d-block">
                 Initial Amount must be a valid decimal ($xx xxx xxx.xx)
@@ -72,31 +87,50 @@
             </div>
           </div>
           <div class="d-flex justify-content-between align-items-center">
-            <h6>Contributions</h6><button type="button" class="btn btn-outline-base" @click="onAddContribution()">+</button>
+            <h6>Contributions</h6>
+            <button type="button" class="btn btn-outline-base" @click="onAddContribution(goal)">+</button>
           </div>
-          <hr v-if="goal.contributions.length > 0">
+          <hr v-if="contributions.length > 0">
           <div class="d-flex flex-row flex-nowrap overflow-auto">
-            <div v-for="(contribution, index) in goal.contributions"
-                 :key="contribution.start_on"
-                 class="card p-3 mx-2 my-0 border border-base rounded-sm"
-                 style="min-width: 100px;">
-              <h6 class="card-title">{{ contribution.monthSpan[0] + (contribution.monthSpan.length > 1 ? " - " + contribution.monthSpan[1] : "") }}</h6>
-              <h6 v-if="contribution.diff > 1" class="card-subtitle mb-2 text-muted">${{ contribution.amount }} x {{ contribution.diff }} months = ${{ (contribution.diff*Number(contribution.amount)).toFixed(2) }}</h6>
-              <h6 v-else class="card-subtitle mb-2 text-muted">${{ contribution.amount }} x 1 month</h6>
-              <button class="btn btn-outline-sub1 btn-sm" @click.prevent="onEditContribution(index)">Edit</button>
-              <button class="btn btn-outline-sub1 btn-sm" @click.prevent="onDeleteContribution(index)">Delete</button>
+            <div
+              v-for="(contribution, index) in contributionsSorted"
+              :key="contribution.id"
+              class="card p-3 mx-2 my-0 border border-base rounded-sm"
+              style="min-width: 100px;"
+            >
+              <h6 class="card-title">
+                {{ getContributionMonthSpan(contribution) }}
+              </h6>
+              <h6 v-if="getContributionDiff(contribution) > 1" class="card-subtitle mb-2 text-muted">
+                ${{ contribution.amount }} x {{ getContributionDiff(contribution) }} months = ${{ (getContributionDiff(contribution)*Number(contribution.amount)).toFixed(2) }}
+              </h6>
+              <h6 v-else class="card-subtitle mb-2 text-muted">
+                ${{ contribution.amount }} x 1 month
+              </h6>
+              <button class="btn btn-outline-sub1 btn-sm" @click.prevent="onEditContribution(contribution)">Edit</button>
+              <button class="btn btn-outline-sub1 btn-sm" @click.prevent="onDeleteContribution(contribution.id)">Delete</button>
             </div>
           </div>
-          <hr v-if="goal.contributions.length > 0">
-          <template v-if="goalAmount > 0 && (contributionsTotal > 0 || goalInitialAmount > 0)">
-            <b-progress :max="goalAmount" height="2rem" class="mb-1">
-              <b-progress-bar :value="goal.initial_amount" v-if="goalInitialAmount > 0"></b-progress-bar>
-              <template v-for="(contribution, index) in goal.contributions">
-                <b-progress-bar :value="getContributionPaycheckPaidTotal(contribution)" striped :variant="legend_key[index % 6]"></b-progress-bar>
-                <b-progress-bar :value="getContributionTotal(contribution) - getContributionPaycheckPaidTotal(contribution)" :variant="legend_key[index % 6]"></b-progress-bar>
+          <hr v-if="contributions.length > 0">
+          <template v-if="amountToNumber(goal.amount) > 0 && (contributionsTotal > 0 || amountToNumber(goal.initial_amount) > 0)">
+            <b-progress :max="amountToNumber(goal.amount)" height="2rem" class="mb-1">
+              <b-progress-bar v-if="amountToNumber(goal.initial_amount) > 0" :value="goal.initial_amount"></b-progress-bar>
+              <template v-for="(contribution, index) in contributionsSorted">
+                <b-progress-bar
+                  v-if="getContributionPaycheckPaidTotal(contribution) > 0"
+                  :key="`paid-${contribution.start_on}`"
+                  :value="getContributionPaycheckPaidTotal(contribution)"
+                  :variant="legend_key[index % 6]"
+                  striped
+                ></b-progress-bar>
+                <b-progress-bar
+                  :key="`total-${contribution.start_on}`"
+                  :value="getContributionTotal(contribution) - getContributionPaycheckPaidTotal(contribution)"
+                  :variant="legend_key[index % 6]"
+                ></b-progress-bar>
               </template>
             </b-progress>
-            <template v-if="goalInitialAmount > 0">
+            <template v-if="amountToNumber(goal.initial_amount) > 0">
               <h5 class="text-center">
                 <span class="badge badge-primary">Initial Amount</span>
               </h5>
@@ -105,14 +139,14 @@
                   ${{ goal.initial_amount }}
                 </div>
                 <div>
-                  {{ ((goalInitialAmount / goalAmount)*100).toFixed(2) }}%
+                  {{ ((amountToNumber(goal.initial_amount) / amountToNumber(goal.amount))*100).toFixed(2) }}%
                 </div>
               </div>
             </template>
-            <template v-for="(contribution, index) in goal.contributions">
+            <div v-for="(contribution, index) in contributionsSorted" :key="contribution.id">
               <h5 class="text-center">
                 <span :class="'badge badge-'+legend_key[index % 6]" class="text-wrap">
-                  {{ contribution.monthSpan[0] + (contribution.monthSpan.length > 1 ? " - " + contribution.monthSpan[1] : "") }}
+                  {{ getContributionMonthSpan(contribution) }}
                 </span>
               </h5>
               <div class="d-flex justify-content-between">
@@ -125,19 +159,19 @@
                   ${{ getContributionPaycheckPaidTotal(contribution).toFixed(2)}} ({{ ((getContributionPaycheckPaidTotal(contribution) / getContributionTotal(contribution))*100).toFixed(2) }}%)
                 </div>
               </div>
-            </template>
-            <template v-if="contributionsTotal > 0 || goalInitialAmount > 0">
+            </div>
+            <template v-if="contributionsTotal > 0 || amountToNumber(goal.initial_amount) > 0">
               <h5 class="text-center">
                 <span class="badge badge-base">Goal</span>
               </h5>
               <div class="d-flex justify-content-between">
                 <div>
                   Scheduled<br>
-                  ${{ (contributionsTotal + goalInitialAmount).toFixed(2) }} ({{ (((contributionsTotal + goalInitialAmount) / goalAmount)*100).toFixed(2) }}%)
+                  ${{ (contributionsTotal + amountToNumber(goal.initial_amount)).toFixed(2) }} ({{ (((contributionsTotal + amountToNumber(goal.initial_amount)) / amountToNumber(goal.amount))*100).toFixed(2) }}%)
                 </div>
                 <div>
                   Paid<br>
-                  ${{ (paychecksPaidTotal).toFixed(2) }} ({{ ((paychecksPaidTotal / goalAmount)*100).toFixed(2) }}%)
+                  ${{ (paychecksPaidTotal).toFixed(2) }} ({{ ((paychecksPaidTotal / amountToNumber(goal.amount))*100).toFixed(2) }}%)
                 </div>
               </div>
             </template>
@@ -145,13 +179,13 @@
         </form>
       </div>
       <template slot="modal-footer">
-        <b-button size="sm" variant="danger" @click="onDelete(goal)">
+        <b-button size="sm" variant="danger" @click="onDelete()">
           Delete
         </b-button>
         <b-button size="sm" variant="sub1" @click="$emit('close')">
           Cancel
         </b-button>
-        <b-button size="sm" variant="base" @click="onSave(goal)">
+        <b-button size="sm" variant="base" @click="onSave()">
           Save
         </b-button>
       </template>
@@ -166,6 +200,8 @@
   import { cloneDeep } from 'lodash';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { otherIfNull, numberToString, dateToFormatedString, copyObjectPropertiesAndApply } from '../../utils/main.js';
+  import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,8}(\.\d{0,2})?$/);
   export default {
     components: {
@@ -192,10 +228,9 @@
           name: "",
           amount: null,
           initial_amount: null,
-          contributions: [],
+          created_at: "",
+          updated_at: "",
         },
-        contributionsDeleted: [],
-        paychecksDeleted: [],
         legend_key: [
           'success',
           'danger',
@@ -217,177 +252,77 @@
           amount: {
             required,
             validDecimal,
-            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)),
+            notZero,
           },
           initial_amount: {
             validDecimal,
-            notZero: (initial_amount) => ((initial_amount == "" || initial_amount == null) || (Number(initial_amount) > 0)),
+            notZero,
           },
         },
       };
     },
     created() {
-      EventBus.$on('modify-goal', goal => {
-        this.goal.id = goal.id;
-        this.goal.name = goal.name;
-        this.goal.amount = goal.amount;
-        this.goal.initial_amount = goal.initial_amount;
-        this.goal.contributions = [];
-        for(let i in goal.contributions) {
-          let contribution = cloneDeep(goal.contributions[i]);
-          if(moment(contribution.start_on).isSame(contribution.end_on, 'month')) {
-            contribution.monthSpan = [moment(contribution.start_on).format('MMM YYYY')];
-          } else {
-            contribution.monthSpan = [moment(contribution.start_on).format('MMM YYYY'), moment(contribution.end_on).format('MMM YYYY')]
-          }
-          contribution.diff = Math.ceil(moment(contribution.end_on).diff(contribution.start_on, 'months', true))
-          this.goal.contributions.push(contribution);
-        }
-        this.goal.contributions.sort(function(a, b) {
-          return (moment(a.start_on).isBefore(b.start_on, 'month') ? -1 : 1);
-        });
-        this.contributionsDeleted = [];
-        this.paychecksDeleted = [];
+      EventBus.$on('modify-goal', (goal) => {
+        copyObjectPropertiesAndApply(goal, this.goal, this.formatAmount, ['amount', 'initial_amount']);
         this.showModal = true;
       });
       EventBus.$on('delete-goal-confirm', () => {
         this.$emit('close');
       });
-      EventBus.$on('delete-contribution-confirm', (data) => {
-        this.contributionsDeleted.push(data.contribution);
-        this.goal.contributions.splice(data.index, 1);
-      });
-      EventBus.$on('save-make-contribution', (data) => {
-        if(data.type != 'modify-goal') {
-          return;
-        }
-        if(data.contribution.goal_id == null) {
-          data.contribution.goal_id = this.goal.id;
-        }
-        this.onSaveContribution(data.contribution);
-      });
-      EventBus.$on('save-modify-contribution', (data) => {
-        if(data.type != 'modify-goal') {
-          return;
-        }
-        for(let i in data.paychecksToRemove) {
-          this.paychecksDeleted.push(data.paychecksToRemove[i]);
-        }
-        this.goal.contributions.splice(data.index, 1);
-        this.onSaveContribution(data.contribution);
-      });
-      EventBus.$on('save-modify-goal-confirm', () => {
-        this.onSaveConfirm();
-      });
     },
     beforeDestroy() {
       EventBus.$off('modify-goal');
       EventBus.$off('delete-goal-confirm');
-      EventBus.$off('delete-contribution-confirm');
-      EventBus.$off('save-make-contribution');
-      EventBus.$off('save-modify-contribution');
     },
     methods: {
-      onAddContribution() {
-        EventBus.$emit('make-contribution', {
-          type: 'modify-goal',
-          contributions: this.goal.contributions,
-        });
+      onAddContribution(goal) {
+        EventBus.$emit('make-contribution', goal);
       },
-      onDeleteContribution(index) {
-        if(this.goal.contributions[index].hasOwnProperty('paychecks') && this.goal.contributions[index].paychecks.length > 0) {
-          EventBus.$emit('delete-contribution', {
-            index: index,
-            contribution: this.goal.contributions[index],
-          });
-        } else {
-          if(this.goal.contributions[index].hasOwnProperty('id')) {
-            this.contributionsDeleted.push(this.goal.contributions[index]);
-          }
-          this.goal.contributions.splice(index, 1);
-        }
+      onDeleteContribution(id) {
+        EventBus.$emit('delete-contribution', id);
       },
-      onEditContribution(index) {
-        EventBus.$emit('modify-contribution', {
-          type: 'modify-goal',
-          contributions: this.goal.contributions,
-          index: index,
-          paychecks: this.paychecksDeleted,
-        });
+      onEditContribution(contribution) {
+        EventBus.$emit('modify-contribution', contribution);
       },
-      onSave(goal) {
+      onSave() {
         if(!this.$v.goal.$invalid) {
-          if(this.contributionsDeleted.length > 0) {
-            for(let i in this.contributionsDeleted) {
-              if(this.contributionsDeleted[i].hasOwnProperty('paychecks') && this.contributionsDeleted[i].paychecks.length > 0) {
-                EventBus.$emit('save-modify-goal', {
-                  goal: this.goal,
-                  paychecksDeleted: this.paychecksDeleted,
-                  contributionsDeleted: this.contributionsDeleted,
-                });
-                return;
-              }
-            }
-          }
-          if(this.paychecksDeleted.length > 0) {
-            EventBus.$emit('save-modify-goal', {
-              goal: this.goal,
-              paychecksDeleted: this.paychecksDeleted,
-              contributionsDeleted: this.contributionsDeleted,
-            });
-            return;
-          }
-          this.onSaveConfirm();
+          this.$store.dispatch('editGoal', this.goal);
+          this.$emit('close');
         }
       },
-      onSaveConfirm() {
-        this.$store.dispatch('editGoal', {
-          goal: this.goal,
-          paychecksDeleted: this.paychecksDeleted,
-          contributionsDeleted: this.contributionsDeleted,
-        });
-        this.$emit('close');
-        return;
+      onDelete() {
+        EventBus.$emit('delete-goal', this.goal);
       },
-      onSaveContribution(contribution) {
-        for(let i in this.goal.contributions) {
-          if(moment(contribution.start_on).isBefore(this.goal.contributions[i].start_on, 'month')) {
-            this.goal.contributions.splice(i, 0, contribution);
-            return;
-          }
-        }
-        this.goal.contributions.push(contribution);
+      formatAmount(amount) {
+        return numberToString(amount);
       },
-      onDelete(goal) {
-        EventBus.$emit('delete-goal', {
-          goal: goal,
-          contributionsDeleted: this.contributionsDeleted,
-        });
+      amountToNumber(amount) {
+        return (amount === '' || amount === null) ? 0 : Number(amount);
       },
-      formatInitialAmount() {
-        if(Number(this.goal.initial_amount).toFixed(2) != "NaN" && this.goal.initial_amount != '' && this.goal.initial_amount != null) {
-          this.goal.initial_amount = Number(this.goal.initial_amount).toFixed(2);
-        }
+      /* @TODO extract (along with input) into amount-input component */
+      validationClasses(v$, obj, attr) {
+        return validationInputClasses(v$, obj, attr);
       },
-      formatAmount() {
-        if(Number(this.goal.amount).toFixed(2) != "NaN" && this.goal.amount != '' && this.goal.amount != null) {
-          this.goal.amount = Number(this.goal.amount).toFixed(2);
-        }
+      getContributionMonthSpan(contribution) {
+        return (
+          moment(contribution.start_on).isSame(contribution.end_on, 'month')
+          ? dateToFormatedString(contribution.start_on, 'MMM YYYY')
+          : dateToFormatedString(contribution.start_on, 'MMM YYYY') + " - " + dateToFormatedString(contribution.end_on, 'MMM YYYY')
+        );
+      },
+      getContributionDiff(contribution) {
+        return Math.ceil(moment(contribution.end_on).diff(contribution.start_on, 'months', true));
       },
       getContributionTotal(contribution) {
-        return Number(contribution.amount)*contribution.diff;
+        return Number(contribution.amount)*this.getContributionDiff(contribution);
       },
       getContributionPaycheckPaidTotal(contribution) {
-        if(!contribution.hasOwnProperty('paychecks')) {
-          return 0;
-        }
-        let total = 0;
-        for(let i in contribution.paychecks) {
-          if(contribution.paychecks[i].contribution_paid_on != null) {
-            total += (contribution.paychecks[i].contribution_amount == null ? contribution.paychecks[i].contribution_amount_project : contribution.paychecks[i].contribution_amount);
+        return this.goalContributionPaychecks.reduce((sum, contributionPaycheck) => {
+          if(contributionPaycheck.contribution_id !== contribution.id || contributionPaycheck.paid_on === null) {
+            return sum;
           }
-        }
-        return total;
+          return sum + Number(otherIfNull(contributionPaycheck, 'amount', 'amount_project'));
+        }, 0);
       },
     },
     computed: {
@@ -403,38 +338,32 @@
           }
         }
       },
-      goalAmount() {
-        if(this.goal.amount == '' || this.goal.amount == null) {
-          return 0;
-        }
-        return Number(this.goal.amount);
+      contributions() {
+        return this.$store.getters.getContributions.filter((contribution) => {
+          return contribution.goal_id === this.goal.id;
+        });
       },
-      goalInitialAmount() {
-        if(this.goal.initial_amount == '' || this.goal.initial_amount == null) {
-          return 0;
-        }
-        return Number(this.goal.initial_amount);
+      contributionsSorted() {
+        return this.contributions.sort((a, b) => {
+          return moment(a.start_on).isBefore(b.start_on, 'month') ? -1 : 1;
+        });
+      },
+      goalContributionPaychecks() {
+        return this.$store.getters.getContributionPaychecks.filter((contributionPaycheck) => {
+          return this.contributions.map((contribution) => {
+            return contribution.id;
+          }).includes(contributionPaycheck.contribution_id);
+        });
       },
       contributionsTotal() {
-        let total = 0;
-        for(let i in this.goal.contributions) {
-          total += Number(this.goal.contributions[i].amount)*this.goal.contributions[i].diff;
-        }
-        return total;
+        return this.contributions.reduce((sum, contribution) => {
+          return sum + Number(contribution.amount)*this.getContributionDiff(contribution);
+        }, 0);
       },
       paychecksPaidTotal() {
-        let total = 0;
-        for(let i in this.goal.contributions) {
-          if(!this.goal.contributions[i].hasOwnProperty('paychecks')) {
-            continue;
-          }
-          for(let j in this.goal.contributions[i].paychecks) {
-            if(this.goal.contributions[i].paychecks[j].contribution_paid_on != null) {
-              total += (this.goal.contributions[i].paychecks[j].contribution_amount == null ? this.goal.contributions[i].paychecks[j].contribution_amount_project : this.goal.contributions[i].paychecks[j].contribution_amount);
-            }
-          }
-        }
-        return total;
+        return this.contributions.reduce((sum, contribution) => {
+          return sum + this.getContributionPaycheckPaidTotal(contribution);
+        }, 0);
       },
     },
   };

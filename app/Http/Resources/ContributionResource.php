@@ -5,6 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\GoalResource;
 use App\Http\Resources\PaycheckResource;
+use App\Http\Resources\ContributionPaycheckResource;
 
 class ContributionResource extends JsonResource
 {
@@ -21,17 +22,8 @@ class ContributionResource extends JsonResource
             'goal_id' => $this->goal_id,
             'goal' => new GoalResource($this->whenLoaded('goal')),
             'paychecks' => PaycheckResource::collection($this->whenLoaded('paychecks')),
-            'pivot_amount' => $this->whenPivotLoaded('contribution_paycheck', function() {
-                return $this->pivot->amount;
-            }),
-            'pivot_amount_project' => $this->whenPivotLoaded('contribution_paycheck', function() {
-                return $this->pivot->amount_project;
-            }),
-            'pivot_due_on' => $this->whenPivotLoaded('contribution_paycheck', function() {
-                return $this->pivot->due_on;
-            }),
-            'pivot_paid_on' => $this->whenPivotLoaded('contribution_paycheck', function() {
-                return $this->pivot->paid_on;
+            'paycheck' => $this->whenPivotLoaded('contribution_paycheck', function() {
+              return new ContributionPaycheckResource($this->pivot);
             }),
             'amount' => $this->amount,
             'day_due_on' => $this->day_due_on,

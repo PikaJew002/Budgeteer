@@ -12,42 +12,37 @@ export const users = {
     user: {},
     userLoadStatus: 0
   },
-
   actions: {
     loadUser({ commit }) {
       commit('setUserLoadStatus', 1);
-
       UserAPI.getUser()
-        .then(res => {
+        .then((res) => {
           commit('setUser', res.data.data);
           commit('setUserLoadStatus', 2);
         })
-        .catch(err => {
+        .catch((err) => {
           commit('setUser', {});
           commit('setUserLoadStatus', 3);
+          throw err;
         });
-    }
+    },
   },
-
   mutations: {
     setUserLoadStatus(state, status) {
       state.userLoadStatus = status;
     },
-
     setUser(state, user) {
       state.user = user;
-    }
+    },
   },
-
   getters: {
     getUserLoadStatus(state) {
       return function() {
         return state.userLoadStatus;
       }
     },
-
     getUser(state) {
       return state.user;
-    }
-  }
+    },
+  },
 }

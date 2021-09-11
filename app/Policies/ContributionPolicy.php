@@ -107,7 +107,7 @@ class ContributionPolicy
      */
     public function attachPaycheck(User $user, Contribution $contribution, Paycheck $paycheck)
     {
-        return $user->id == $contribution->user_id && $user->id == $paycheck->income->user_id;
+        return $user->id == $contribution->goal->user_id && $user->id == $paycheck->income->user_id;
     }
 
     /**
@@ -121,7 +121,7 @@ class ContributionPolicy
 
     public function updatePivotPaycheck(User $user, Contribution $contribution, Paycheck $paycheck)
     {
-        return $user->id == $contribution->user_id && $user->id == $paycheck->income->user_id;
+        return $user->id == $contribution->goal->user_id && $user->id == $paycheck->income->user_id;
     }
 
     /**
@@ -134,6 +134,6 @@ class ContributionPolicy
      */
     public function detachPaycheck(User $user, Contribution $contribution, Paycheck $paycheck)
     {
-        return $user->id == $contribution->user_id && $user->id == $paycheck->income->user_id;
+        return $user->id == $contribution->goal->user_id && $user->id == $paycheck->income->user_id;
     }
 }

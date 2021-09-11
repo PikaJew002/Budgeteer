@@ -13,5 +13,5 @@
 Homestead.json
 Homestead.yaml
 npm-debug.log
-pushcomplied.sh
+*.sh
 yarn-error.log

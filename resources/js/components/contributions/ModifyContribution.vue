@@ -10,7 +10,7 @@
         {{message.message}}
       </b-alert>
       <form @submit.prevent="onSave(contribution)">
-        <h3>{{ monthSpanToString }}</h3>
+        <h3>{{ monthSpan }}</h3>
         <div class="row">
           <div class="col form-group">
             <label for="amount">Amount</label>
@@ -18,10 +18,13 @@
               <div class="input-group-prepend">
                 <div class="input-group-text">$</div>
               </div>
-              <input class="form-control" id="amount" type="text" placeholder="Amount"
-                     v-model="contribution.amount" @blur="formatAmount()"
-                     :class="{ 'is-invalid': $v.contribution.amount.$invalid && !$v.contribution.amount.$pending,
-                               'is-valid': !$v.contribution.amount.$invalid && !$v.contribution.amount.$pending }">
+              <input class="form-control"
+                     id="amount"
+                     type="text"
+                     placeholder="Amount"
+                     v-model="contribution.amount"
+                     @blur="contribution.amount = formatAmount(contribution.amount)"
+                     :class="validationClasses($v, 'contribution', 'amount')">
             </div>
             <div v-if="!$v.contribution.amount.required" class="invalid-feedback d-block">
               Amount is required
@@ -36,12 +39,11 @@
           <div class="col form-group">
             <label for="day_due_on">Day Due: </label>
             <input class="form-control"
-                    :class="{ 'is-invalid': $v.contribution.day_due_on.$invalid && !$v.contribution.day_due_on.$pending,
-                              'is-valid': !$v.contribution.day_due_on.$invalid && !$v.contribution.day_due_on.$pending }"
-                    id="day_due_on"
-                    type="number"
-                    placeholder="Day Due"
-                    v-model.number="contribution.day_due_on">
+                   id="day_due_on"
+                   type="number"
+                   placeholder="Day Due"
+                   v-model.number="contribution.day_due_on"
+                   :class="validationClasses($v, 'contribution', 'day_due_on')">
             <div v-if="!$v.contribution.day_due_on.integer || !$v.contribution.day_due_on.minValue || !$v.contribution.day_due_on.maxValue" class="invalid-feedback">
               Day Due On must be a valid integer day (1-31)
             </div>
@@ -51,12 +53,11 @@
           <div class="col form-group">
             <label for="start_on">Start On Date: </label>
             <input class="form-control"
-                   :class="{ 'is-invalid': $v.contribution.start_on.$invalid && !$v.contribution.start_on.$pending,
-                             'is-valid': !$v.contribution.start_on.$invalid && !$v.contribution.start_on.$pending }"
                    id="start_on"
                    type="date"
                    placeholder="mm/dd/yyyy"
-                   v-model="contribution.start_on">
+                   v-model="contribution.start_on"
+                   :class="validationClasses($v, 'contribution', 'start_on')">
             <div v-if="!$v.contribution.start_on.required" class="invalid-feedback">
               Start On is required (valid date)
             </div>
@@ -70,12 +71,11 @@
           <div class="col form-group">
             <label for="end_on">End On Date: </label>
             <input class="form-control"
-                   :class="{ 'is-invalid': $v.contribution.end_on.$invalid && !$v.contribution.end_on.$pending,
-                             'is-valid': !$v.contribution.end_on.$invalid && !$v.contribution.end_on.$pending }"
                    id="end_on"
                    type="date"
                    placeholder="mm/dd/yyyy"
-                   v-model="contribution.end_on">
+                   v-model="contribution.end_on"
+                   :class="validationClasses($v, 'contribution', 'end_on')">
             <div v-if="!$v.contribution.end_on.required" class="invalid-feedback">
               End On is required (valid date)
             </div>
@@ -110,6 +110,8 @@
   import moment from 'moment';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { numberToString, emptyStringToNull, dateToFormatedString, copyObjectProperties } from '../../utils/main.js';
+  import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,6}(\.\d{0,2})?$/); // double(8,2)
   export default {
     components: {
@@ -135,14 +137,11 @@
           goal_id: null,
           amount: null,
           day_due_on: null,
-          diff: null,
-          monthSpan: null,
-          start_on: null,
-          end_on: null,
-          paychecks: [],
+          start_on: "",
+          end_on: "",
+          created_at: "",
+          updated_at: "",
         },
-        contributions: [],
-        paychecksDeleted: [],
       };
     },
     validations() {
@@ -151,7 +150,7 @@
           amount: {
             required,
             validDecimal,
-            notZero: (amount) => ((amount == "" || amount == null) || (Number(amount) > 0)),
+            notZero: (amount) => ((amount === "" || amount === null) || (Number(amount) > 0)),
           },
           day_due_on: {
             integer,
@@ -173,128 +172,58 @@
       };
     },
     created() {
-      EventBus.$on('modify-contribution', (data) => {
-        this.type = data.type;
-        this.index = data.index;
-        if(data.contributions[this.index].hasOwnProperty('id')) {
-          this.contribution.id = data.contributions[this.index].id;
-        }
-        if(data.contributions[this.index].hasOwnProperty('goal_id')) {
-          this.contribution.goal_id = data.contributions[this.index].goal_id;
-        }
-        this.contribution.amount = data.contributions[this.index].amount;
-        this.contribution.day_due_on = data.contributions[this.index].day_due_on;
-        this.contribution.diff = data.contributions[this.index].diff;
-        if(data.contributions[this.index].monthSpan.length > 1) {
-          this.contribution.monthSpan = [];
-          this.contribution.monthSpan.push(data.contributions[this.index].monthSpan[0]);
-          this.contribution.monthSpan.push(data.contributions[this.index].monthSpan[1]);
-        } else {
-          this.contribution.monthSpan = [];
-          this.contribution.monthSpan.push(data.contributions[this.index].monthSpan[0]);
-        }
-        this.contribution.monthSpan = data.contributions[this.index].monthSpan;
-        this.contribution.start_on = data.contributions[this.index].start_on;
-        this.contribution.end_on = data.contributions[this.index].end_on;
-        this.contribution.paychecks = [];
-        if(data.contributions[this.index].hasOwnProperty('paychecks')) {
-          for(let i in data.contributions[this.index].paychecks) {
-            this.contribution.paychecks.push(data.contributions[this.index].paychecks[i]);
-          }
-        }
-        if(data.hasOwnProperty('paychecks')) {
-          this.paychecksDeleted = [];
-          for(let i in data.paychecks) {
-            this.paychecksDeleted.push(data.paychecks[i]);
-          }
-        }
-        this.contributions = [];
-        for(let j in data.contributions) {
-          this.contributions.push(data.contributions[j]);
-        }
+      EventBus.$on('modify-contribution', (contribution) => {
+        copyObjectProperties(contribution, this.contribution);
         this.showModal = true;
       });
-      EventBus.$on('save-modify-contribution-confirm-save', (data) => {
-        this.onSaveConfirm(data.paychecksToRemove);
+      EventBus.$on('save-modify-contribution-confirm', (contributionPaychecksToRemove) => {
+        this.onSaveConfirm(this.contribution, contributionPaychecksToRemove);
       });
     },
     beforeDestroy() {
       EventBus.$off('modify-contribution');
-      EventBus.$off('save-modify-contribution-confirm-save');
+      EventBus.$off('save-modify-contribution-confirm');
     },
     methods: {
       onSave(contribution) {
         if(!this.$v.contribution.$invalid) {
-          if(this.type == 'modify-goal') {
-            let paychecksToRemove = [];
-            for(let i in contribution.paychecks) {
-              if(!moment(contribution.paychecks[i].paid_on).isBetween(contribution.start_on, contribution.end_on, 'month', '[]')) {
-                var found = false;
-                for(let j in this.paychecksDeleted) {
-                  if(contribution.paychecks[i].id == this.paychecksDeleted[j].id) {
-                    found = true;
-                    break;
-                  }
-                }
-                if(!found) {
-                  paychecksToRemove.push(contribution.paychecks[i]);
-                }
-              }
-            }
-            if(paychecksToRemove.length > 0) {
-              EventBus.$emit('save-modify-contribution-confirm', {
-                paychecksToRemove: paychecksToRemove,
-                index: this.index,
-                contribution: contribution,
-              });
-              return;
-            }
+          contribution.day_due_on = emptyStringToNull(contribution.day_due_on);
+          if(this.contributionPaychecksToRemove.length === 0) {
+            this.onSaveConfirm(contribution);
+            return;
           }
-          this.onSaveConfirm([]);
+          EventBus.$emit('save-modify-contribution', this.contributionPaychecksToRemove);
         }
       },
-      onSaveConfirm(paychecksToRemove) {
-        if(this.contribution.day_due_on == "") {
-          this.contribution.day_due_on = null;
-        }
-        let newContribution = cloneDeep(this.contribution);
-        newContribution.monthSpan = this.monthSpan;
-        newContribution.diff = Math.ceil(moment(newContribution.end_on).diff(newContribution.start_on, 'months', true));
-        EventBus.$emit('save-modify-contribution', {
-          type: this.type,
-          index: this.index,
-          contribution: newContribution,
-          paychecksToRemove: paychecksToRemove,
+      onSaveConfirm(contribution, contributionPaychecksToRemove = []) {
+        Promise.all(contributionPaychecksToRemove.map(async (contributionPaycheck) => {
+          return await this.$store.dispatch('detachContributionPaycheck', contributionPaycheck);
+        })).then(() => {
+          this.$store.dispatch('editContribution', contribution);
         });
+        // @TODO loading state to show while API call finishes removing/editing
         this.showModal = false;
       },
-      formatAmount() {
-        if(Number(this.contribution.amount).toFixed(2) != "NaN" && this.contribution.amount != "" && this.contribution.amount != null) {
-          this.contribution.amount = Number(this.contribution.amount).toFixed(2);
-        }
+      getPaycheck(paycheck_id) {
+        return this.$store.getters.getPaycheck(paycheck_id) || { paid_on: '' };
+      },
+      formatAmount(amount) {
+        return numberToString(amount);
+      },
+      /* @TODO extract (along with input) into amount-input component */
+      validationClasses(v$, obj, attr) {
+        return validationInputClasses(v$, obj, attr);
       },
       noOverlap(any_on) {
-        for(let i in this.contributions) {
-          if(this.contributions[i].monthSpan[0] == this.contribution.monthSpan[0]) {
-            continue;
-          }
-          if(moment(any_on).isBetween(this.contributions[i].start_on, this.contributions[i].end_on, 'month', "[]")) {
-            return false;
-          }
-        }
-        return true;
+        return !this.otherContributions.some((contribution) => {
+          return moment(any_on).isBetween(contribution.start_on, contribution.end_on, 'month', "[]")
+        });
       },
       noInterlap(start_on, end_on) {
-        for(let i in this.contributions) {
-          if(this.contributions[i].monthSpan[0] == this.contribution.monthSpan[0]) {
-            continue;
-          }
-          if(moment(this.contributions[i].start_on).isBetween(start_on, end_on, 'month', "[]")
-          || moment(this.contributions[i].end_on).isBetween(start_on, end_on, 'month', "[]")) {
-            return false;
-          }
-        }
-        return true;
+        return !this.otherContributions.some((contribution) => {
+          return moment(contribution.start_on).isBetween(start_on, end_on, 'month', "[]")
+          || moment(contribution.end_on).isBetween(start_on, end_on, 'month', "[]");
+        });
       },
     },
     computed: {
@@ -310,25 +239,36 @@
           }
         }
       },
+      /* other contributions belonging to the goal the contribution being modified
+         belongs to (not including the contribution being modified) */
+      otherContributions() {
+        return this.$store.getters.getContributions.filter((contribution) => {
+          return contribution.goal_id === this.contribution.goal_id && contribution.id !== this.contribution.id;
+        });
+      },
+      /* contribution-paychecks belonging to the contribution being modified */
+      contributionPaychecks() {
+        return this.$store.getters.getContributionPaychecks.filter((contributionPaycheck) => {
+          return contributionPaycheck.contribution_id === this.contribution.id;
+        });
+      },
+      /* contribution-paychecks belonging to the contribution being modified
+         that will be removed on save (overlap or interlap start_on or end_on) */
+      contributionPaychecksToRemove() {
+        return this.contributionPaychecks.filter((contributionPaycheck) => {
+          return !moment(this.getPaycheck(contributionPaycheck.paycheck_id).paid_on).isBetween(this.contribution.start_on, this.contribution.end_on, 'month', '[]');
+        });
+      },
       monthSpan() {
         if(!this.$v.contribution.$invalid) {
-          if(moment(this.contribution.start_on).isSame(this.contribution.end_on, 'month')) {
-            return [moment(this.contribution.start_on).format('MMM YYYY')];
-          } else {
-            return [moment(this.contribution.start_on).format('MMM YYYY'), moment(this.contribution.end_on).format('MMM YYYY')]
-          }
+          return (
+            moment(this.contribution.start_on).isSame(this.contribution.end_on, 'month')
+            ? dateToFormatedString(this.contribution.start_on, 'MMM YYYY')
+            : dateToFormatedString(this.contribution.start_on, 'MMM YYYY') + " - " + dateToFormatedString(this.contribution.end_on, 'MMM YYYY')
+          );
         } else {
-          return [];
+          return "";
         }
-      },
-      monthSpanToString() {
-        if(this.monthSpan.length > 0) {
-          if(this.monthSpan.length > 1) {
-            return this.monthSpan[0] + " - " + this.monthSpan[1];
-          }
-          return this.monthSpan[0];
-        }
-        return "";
       },
     },
   };

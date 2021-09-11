@@ -3,11 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
 use App\Contribution;
 use App\Paycheck;
 use App\Http\Resources\ContributionResource;
 use App\Http\Resources\PaycheckResource;
+use App\Http\Resources\ContributionPaycheckResource;
 
 class ContributionPaycheckController extends Controller
 {
@@ -52,14 +52,8 @@ class ContributionPaycheckController extends Controller
           'paid_on' => $request->input('paid_on'),
         ]);
 
-        /**
-         * A paycheck resource is returned only because (arbitrarily)
-         * the paycheck resource was chosen to contain 'pivot'
-         * (intermediate table) values.
-         */
-
         /* return resource */
-        return new PaycheckResource($paycheck);
+        return new ContributionPaycheckResource($paycheck->contributions()->find($request->input('contribution_id'))->pivot);
     }
 
     /**
@@ -81,7 +75,7 @@ class ContributionPaycheckController extends Controller
         ]);
         /* find models */
         $contribution = Contribution::findOrFail($request->input('contribution_id'));
-        $paycheck = Paycheck::with('income', 'contributions')->findOrFail($request->input('paycheck_id'));
+        $paycheck = Paycheck::with(['income', 'contributions'])->findOrFail($request->input('paycheck_id'));
         /* authorization */
         $this->authorize('updatePivotContribution', [$paycheck, $contribution]);
         /* save association from request */
@@ -92,14 +86,8 @@ class ContributionPaycheckController extends Controller
           'paid_on' => $request->input('paid_on'),
         ]);
 
-        /**
-         * A paycheck resource is returned only because (arbitrarily)
-         * the paycheck resource was chosen to contain 'pivot'
-         * (intermediate table) values.
-         */
-
         /* return resource */
-        return new PaycheckResource($paycheck);
+        return new ContributionPaycheckResource($paycheck->contributions()->find($request->input('contribution_id'))->pivot);
     }
 
     /**
@@ -116,17 +104,12 @@ class ContributionPaycheckController extends Controller
         $paycheck = Paycheck::findOrFail($paycheckId);
         /* authorization */
         $this->authorize('detachContribution', [$paycheck, $contribution]);
+        /* since the detach method returns null, the pivot model need to be pre-fetched for the return */
+        $returnModel = $paycheck->contributions()->find($contributionId)->pivot;
         /* delete association */
         $paycheck->contributions()->detach($contributionId);
 
-        /**
-         * A paycheck resource is returned only because (arbitrarily)
-         * the paycheck resource was chosen to contain 'pivot'
-         * (intermediate table) values. Either one will have them,
-         * paycheck resource is only picked for consistency.
-         */
-
         /* return resource */
-        return new PaycheckResource($paycheck);
+        return new ContributionPaycheckResource($returnModel);
     }
 }

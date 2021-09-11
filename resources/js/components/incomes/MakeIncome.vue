@@ -12,9 +12,14 @@
       <form @submit.prevent="onSave(income)">
         <div class="form-group">
           <label for="name">Name: </label>
-          <input class="form-control" :class="{ 'is-invalid': $v.income.name.$invalid && !$v.income.name.$pending,
-                                                'is-valid': !$v.income.name.$invalid && !$v.income.name.$pending }"
-                 id="name" type="text" placeholder="Income Name" v-model="income.name">
+          <input
+            v-model="income.name"
+            id="name"
+            type="text"
+            placeholder="Income Name"
+            class="form-control"
+            :class="validationClasses($v, 'income', 'name')"
+          >
           <div v-if="!$v.income.name.required" class="invalid-feedback">
             Name is required
           </div>
@@ -43,6 +48,7 @@
   import { required, minLength, maxLength } from 'vuelidate/lib/validators';
   import Alert from '../../api/alert.js';
   import { EventBus } from '../../event-bus.js';
+  import { validationInputClasses } from '../../utils/validation.js';
   export default {
     components: {
       'b-modal': BModal,
@@ -85,6 +91,9 @@
       EventBus.$off('make-income');
     },
     methods: {
+      validationClasses(v$, obj, attr) {
+        return validationInputClasses(v$, obj, attr);
+      },
       onSave(income) {
         if(!this.$v.income.$invalid) {
           this.$store.dispatch('addIncome', income);

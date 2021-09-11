@@ -50,11 +50,6 @@ class GoalsController extends Controller
             'name' => 'required|string|min:2|max:255',
             'amount' => 'required|numeric|between:0.01,99999.99',
             'initial_amount' => 'nullable|numeric|between:0.01,99999.99',
-            'contributions' => 'bail|array|max:10',
-            'contributions.*.amount' => 'required|numeric|between:0.01,99999.99',
-            'contributions.*.day_due_on' => 'nullable|integer|between:1,31',
-            'contributions.*.start_on' => 'required|date',
-            'contributions.*.end_on' => 'required|date|after:contributions.*.start_on',
         ]);
         /* authorization */
         $goal = new Goal;
@@ -66,16 +61,6 @@ class GoalsController extends Controller
         $goal->initial_amount = $request->input('initial_amount');
         /* save model */
         if($goal->save()) {
-            foreach($request->input('contributions') as $contribution) {
-                Contribution::create([
-                  'goal_id' => $goal->id,
-                  'amount' => $contribution['amount'],
-                  'day_due_on' => $contribution['day_due_on'],
-                  'start_on' => $contribution['start_on'],
-                  'end_on' => $contribution['end_on'],
-                ]);
-            }
-            $goal->load('contributions');
             /* return resource */
             return new GoalResource($goal);
         }
@@ -110,57 +95,14 @@ class GoalsController extends Controller
             'name' => 'nullable|string|min:2|max:255',
             'amount' => 'nullable|numeric|between:0.01,99999.99',
             'initial_amount' => 'nullable|numeric|between:0.01,99999.99',
-            'contributions' => 'bail|array|max:10',
-            'contributions.*.id' => 'nullable|integer',
-            'contributions.*.amount' => 'required|numeric|between:0.01,99999.99',
-            'contributions.*.day_due_on' => 'nullable|integer|between:1,31',
-            'contributions.*.start_on' => 'required|date',
-            'contributions.*.end_on' => 'required|date|after:contributions.*.start_on',
         ]);
-        $goal = Goal::with('contributions')->findOrFail($request->input('id'));
-        // the contributions that were present in $goal, but are not present on the $request
-        $diff = collect($goal->contributions->modelKeys())->diff(collect($request->input('contributions'))->pluck('id')->reject(function($value, $key) {
-            return $value == null;
-        }));
-        Contribution::destroy($diff);
+        $goal = Goal::findOrFail($request->input('id'));
         /* authorization */
         $this->authorize('update', $goal);
         /* create new model from request */
         $goal->name = $request->input('name');
         $goal->amount = $request->input('amount');
         $goal->initial_amount = $request->input('initial_amount');
-        foreach($request->input('contributions') as $contribution) {
-            // check if contribution exists
-            if(array_key_exists('id', $contribution) && $goal->contributions->contains($contribution['id'])) {
-                // update if exists
-                $oldContribution = Contribution::with('paychecks')->findOrFail($contribution['id']);
-                $oldContribution->amount = $contribution['amount'];
-                $oldContribution->day_due_on = $contribution['day_due_on'];
-                $oldContribution->start_on = $contribution['start_on'];
-                $oldContribution->end_on = $contribution['end_on'];
-                $paychecksToRemove = [];
-                $oldContributionStartOn = new DateTime((new DateTime($oldContribution->start_on))->format('Y-m')."-01");
-                $oldContributionEndOn = new DateTime((new DateTime($oldContribution->end_on))->format('Y-m-t'));
-                foreach($oldContribution->paychecks as $paycheck) {
-                  if($oldContributionStartOn > new DateTime($paycheck->paid_on) || $oldContributionEndOn < new DateTime($paycheck->paid_on)) {
-                    $paychecksToRemove[] = $paycheck->id;
-                  }
-                }
-                $oldContribution->paychecks()->detach($paychecksToRemove);
-                $oldContribution->save();
-            } else {
-                // or else add it
-                Contribution::create([
-                  'goal_id' => $goal->id,
-                  'amount' => $contribution['amount'],
-                  'day_due_on' => $contribution['day_due_on'],
-                  'start_on' => $contribution['start_on'],
-                  'end_on' => $contribution['end_on'],
-                ]);
-            }
-        }
-        $contributionsInput = collect($request->input('contributions'))->pluck('id');
-        $goal->load('contributions');
         /* save model */
         if($goal->save()) {
             /* return resource */

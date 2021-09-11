@@ -13,6 +13,7 @@ Vue.use( Vuex )
     Imports all of the modules used in the application to build the data store.
 */
 import { goals } from './modules/goals.js'
+import { contributions } from './modules/contributions.js'
 import { incomes } from './modules/incomes.js'
 import { paychecks } from './modules/paychecks.js'
 import { contribution_paycheck } from './modules/contribution-paycheck.js'
@@ -26,6 +27,7 @@ import { users } from './modules/users.js'
 export default new Vuex.Store({
     modules: {
       goals,
+      contributions,
       incomes,
       paychecks,
       contribution_paycheck,
