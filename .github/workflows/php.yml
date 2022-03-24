@@ -1,4 +1,4 @@
-name: PHP Composer
+name: Build and Deploy Application
 
 on:
   push:
@@ -7,33 +7,36 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
-
+  create-deployment-artifacts:
+    name: Create deployment artifacts
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup PHP
-      uses: shivammathur/setup-php@v2
+    - name: Compile CSS and JavaScript
+      run: |
+        npm install
+        npm run prod
+
+    - name: Configure PHP
+      uses: shivammathur/setup-php@master
       with:
         php-version: 7.4
-    - name: Copy .env
-      run: php -r "file_exists('.env') || copy('.env.example', '.env');"
+        extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
 
-    - name: Validate composer.json and composer.lock
-      run: composer validate --strict
-
-    - name: Cache Composer packages
-      id: composer-cache
-      uses: actions/cache@v2
+    - name: Composer install
+      run: composer install --no-dev --no-interaction --prefer-dist
+      
+    - name: Create deployment artifact
+      env:
+        GITHUB_SHA: ${{ github.sha }}
+      run: tar -czf "${GITHUB_SHA}".tar.gz --exclude=*.git --exclude=node_modules *
+      
+    - name: Store artifact for distribution
+      uses: actions/upload-artifact@v2
       with:
-        path: vendor
-        key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-        restore-keys: |
-          ${{ runner.os }}-php-
-
-    - name: Install dependencies
-      run: composer install --prefer-dist --no-progress
+        name: app-build
+        path: ${{ github.sha }}.tar.gz
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
