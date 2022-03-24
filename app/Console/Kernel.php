@@ -26,14 +26,14 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        /* check for notifications to send */
-        $notifications = new NotificationController;
-        /* fetch jobs */
-        $jobs = DB::table('jobs')->get();
-        $schedule->command('queue:work --stop-when-empty')->when(function() use ($jobs) {
-            /* process all jobs in the queue when there are jobs to process */
-            return $jobs->isNotEmpty();
-        })->withoutOverlapping();
+        // /* check for notifications to send */
+        // $notifications = new NotificationController;
+        // /* fetch jobs */
+        // $jobs = DB::table('jobs')->get();
+        // $schedule->command('queue:work --stop-when-empty')->when(function() use ($jobs) {
+        //     /* process all jobs in the queue when there are jobs to process */
+        //     return $jobs->isNotEmpty();
+        // })->withoutOverlapping();
     }
 
     /**
