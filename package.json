@@ -29,7 +29,7 @@
         "bootstrap-vue": "^2.21.2",
         "kind-of": "^6.0.3",
         "minimist": "^1.2.5",
-        "moment": "^2.29.1",
+        "moment": "^2.29.4",
         "serialize-javascript": "^3.1.0",
         "vuelidate": "^0.7.6"
     }
