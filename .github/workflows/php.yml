@@ -32,10 +32,15 @@ jobs:
       run: |
         composer install --no-dev --no-interaction --prefer-dist
       
+    - name: Download `deployer.phar`
+      run: composer global require deployer/deployer:${{vars.DEPLOYER_VERSION}} --no-interaction --verbose --ansi
+    - name: Get composer global bin-dir path
+      id: composer-bin-dir
+      run: echo "path=$(composer global config bin-dir --absolute)" >> $GITHUB_OUTPUT
     - name: Deploy
       uses: deployphp/action@v1
       with:
-        deployer-binary: "vendor/bin/dep"
+        deployer-binary: ${{ steps.composer-bin-dir.outputs.path }}/dep
         private-key: ${{ secrets.PRIVATE_KEY }}
         dep: deploy 206.189.200.129
 
