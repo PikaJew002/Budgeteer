@@ -5,7 +5,7 @@ import:
   - deploy/tasks.php
 
 config:
-  repository: 'git@github.com-budgeter:PikaJew002/Budgeteer.git'
+  repository: 'git@github.com-budgeteer:PikaJew002/Budgeteer.git'
   php_fpm_version: '7.4'
 
 hosts:
