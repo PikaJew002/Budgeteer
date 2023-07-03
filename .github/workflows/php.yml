@@ -6,13 +6,15 @@ on:
   pull_request:
     branches: [ master ]
 
+concurrency: production_environment
+
 jobs:
-  create-deployment-artifacts:
-    name: Create deployment artifacts
+  deploy:
+    name: Deploy
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Compile CSS and JavaScript
       run: |
         npm install
@@ -25,18 +27,14 @@ jobs:
         extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
 
     - name: Composer install
-      run: composer install --no-dev --no-interaction --prefer-dist
+      run: |
+      composer install --no-dev --no-interaction --prefer-dist
       
-    - name: Create deployment artifact
-      env:
-        GITHUB_SHA: ${{ github.sha }}
-      run: tar -czf "${GITHUB_SHA}".tar.gz --exclude=*.git --exclude=node_modules *
-      
-    - name: Store artifact for distribution
-      uses: actions/upload-artifact@v2
-      with:
-        name: app-build
-        path: ${{ github.sha }}.tar.gz
+    - name: Deploy
+      uses: deployphp/action@v1
+        with:
+          private-key: ${{ secrets.PRIVATE_KEY }}
+          dep: deploy 206.189.200.129
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md

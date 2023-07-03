@@ -1,0 +1,32 @@
+import: 
+  - recipe/laravel.php
+  - contrib/php-fpm.php
+  - contrib/npm.php
+
+config:
+  repository: 'git@github.com-budgeter:PikaJew002/Budgeteer.git'
+  php_fpm_version: '7.4'
+
+hosts:
+  206.189.200.129:
+    remote_user: aaron
+    deploy_path: '/var/www/budgeteer.aaroneisenberg.me'
+
+tasks:
+  deploy:
+    - deploy:prepare
+    - deploy:vendors
+    - artisan:storage:link
+    - artisan:view:cache
+    - artisan:config:cache
+    - artisan:migrate
+    - npm:install
+    - npm:run:prod
+    - deploy:publish
+    - php-fpm:reload
+  npm:run:prod:
+    script:
+      - 'cd {{release_or_current_path}} && npm run prod'
+
+after:
+  deploy:failed: deploy:unlock
