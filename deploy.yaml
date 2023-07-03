@@ -20,13 +20,16 @@ tasks:
     - artisan:view:cache
     - artisan:config:cache
     - artisan:migrate
-    - npm:install
-    - npm:run:prod
+    - npm:run:install:volta
+    - npm:run:prod:volta
     - deploy:publish
     - php-fpm:reload
-  npm:run:prod:
+  npm:run:install:volta:
     script:
-      - 'cd {{release_or_current_path}} && npm run prod'
+      - 'cd {{release_or_current_path}} && volta run npm install'
+  npm:run:prod:volta:
+    script:
+      - 'cd {{release_or_current_path}} && volta run npm run prod'
 
 after:
   deploy:failed: deploy:unlock

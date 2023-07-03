@@ -15,10 +15,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
+
+    - name: Install Volta
+      run: |
+        curl https://get.volta.sh | bash
+
     - name: Compile CSS and JavaScript
       run: |
-        npm install
-        npm run prod
+        volta run npm install
+        volta run npm run prod
 
     - name: Configure PHP
       uses: shivammathur/setup-php@master

@@ -32,5 +32,9 @@
         "moment": "^2.29.1",
         "serialize-javascript": "^3.1.0",
         "vuelidate": "^0.7.6"
+    },
+    "volta": {
+        "node": "13.14.0",
+        "yarn": "6.14.4"
     }
 }
