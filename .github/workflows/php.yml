@@ -33,7 +33,7 @@ jobs:
         composer install --no-dev --no-interaction --prefer-dist
       
     - name: Download `deployer.phar`
-      run: composer global require deployer/deployer:${{vars.DEPLOYER_VERSION}} --no-interaction --verbose --ansi
+      run: composer global require deployer/deployer:^7.3.1 --no-interaction --verbose --ansi
     - name: Get composer global bin-dir path
       id: composer-bin-dir
       run: echo "path=$(composer global config bin-dir --absolute)" >> $GITHUB_OUTPUT
