@@ -32,9 +32,9 @@ jobs:
       
     - name: Deploy
       uses: deployphp/action@v1
-        with:
-          private-key: ${{ secrets.PRIVATE_KEY }}
-          dep: deploy 206.189.200.129
+      with:
+        private-key: ${{ secrets.PRIVATE_KEY }}
+        dep: deploy 206.189.200.129
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
