@@ -22,7 +22,6 @@ tasks:
     - artisan:config:cache
     - artisan:migrate
     - volta:run:install
-    - volta:run:prod
     - deploy:publish
     - php-fpm:reload
 
