@@ -23,7 +23,6 @@ tasks:
     - artisan:migrate
     - volta:run:install
     - deploy:publish
-    - php-fpm:reload
 
 after:
   deploy:failed: deploy:unlock
