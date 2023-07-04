@@ -11,5 +11,5 @@ task('volta:run:install', function () {
 desc('volta run npm install');
 task('volta:run:prod', function () {
     cd('{{release_or_current_path}}');
-    run('volta run npm run prod');
+    run('volta run npm run production');
 });
