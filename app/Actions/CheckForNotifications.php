@@ -1,19 +1,19 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Actions;
 
-use Illuminate\Http\Request;
 use App\Notification;
 use DateTime;
 
-class NotificationController extends Controller
+class CheckForNotifications
 {
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct() {
+    public static function execute()
+    {
         // Checks for notifications that need to be sent today, sends, and then deletes
         $notifications = Notification::with(['user', 'notifiable'])->whereDate('notified_on', (new DateTime)->format('Y-m-d'))->get();
         if($notifications->isNotEmpty()) {
