@@ -13,7 +13,6 @@ use App\Policies\BillPolicy;
 use App\Policies\GoalPolicy;
 use App\Policies\ContributionPolicy;
 use Laravel\Passport\Passport;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider

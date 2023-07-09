@@ -9,28 +9,28 @@
     },
     "devDependencies": {
         "axios": "^0.18",
-        "bootstrap": "^4.6.0",
+        "bootstrap": "^4.6.2",
         "cross-env": "^5.2.1",
         "jquery": "3.4.1",
         "laravel-mix": "^6.0",
         "lodash": "^4.17.21",
         "popper.js": "^1.16.1",
         "resolve-url-loader": "^2.3.1",
-        "sass": "^1.39.2",
+        "sass": "^1.63.6",
         "sass-loader": "^7.3.1",
-        "vue": "^2.6.14",
+        "vue": "^2.7.14",
         "vue-loader": "^15.10.1",
-        "vue-router": "^3.5.2",
-        "vue-template-compiler": "^2.6.14",
+        "vue-router": "^3.6.5",
+        "vue-template-compiler": "^2.7.14",
         "vuex": "^3.6.2"
     },
     "dependencies": {
-        "bootstrap-vue": "^2.21.2",
+        "bootstrap-vue": "^2.23.1",
         "kind-of": "^6.0.3",
-        "minimist": "^1.2.5",
-        "moment": "^2.29.1",
+        "minimist": "^1.2.8",
+        "moment": "^2.29.4",
         "serialize-javascript": "^3.1.0",
-        "vuelidate": "^0.7.6"
+        "vuelidate": "^0.7.7"
     },
     "volta": {
         "node": "13.14.0",
