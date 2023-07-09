@@ -14,7 +14,7 @@ class CreatePaychecksTable extends Migration
     public function up()
     {
         Schema::create('paychecks', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
             $table->unsignedBigInteger('income_id');
             $table->double('amount', 8, 2)->nullable();
             $table->date('paid_on');
