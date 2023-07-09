@@ -14,7 +14,7 @@ class CreateContributionsTable extends Migration
     public function up()
     {
         Schema::create('contributions', function (Blueprint $table) {
-            $table->bigIncrements('id');
+            $table->id();
             $table->unsignedBigInteger('goal_id');
             $table->double('amount', 8, 2);
             $table->integer('day_due_on')->nullable();

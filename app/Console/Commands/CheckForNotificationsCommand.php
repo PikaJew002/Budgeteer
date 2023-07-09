@@ -34,10 +34,12 @@ class CheckForNotificationsCommand extends Command
     /**
      * Execute the console command.
      *
-     * @return mixed
+     * @return int
      */
     public function handle()
     {
         CheckForNotifications::execute();
+
+        return 0;
     }
 }
