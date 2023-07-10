@@ -21,9 +21,9 @@ tasks:
     - artisan:view:cache
     - artisan:config:cache
     - artisan:migrate
-    - artisan:queue:restart
     - volta:run:install
     - deploy:publish
 
 after:
   deploy:failed: deploy:unlock
+  deploy:publish: artisan:queue:restart
