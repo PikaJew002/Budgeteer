@@ -20,7 +20,7 @@ jobs:
     - name: Compile CSS and JavaScript
       run: |
         npm install
-        npm run production
+        npm run production-ci
 
     - name: Configure PHP
       uses: shivammathur/setup-php@master
