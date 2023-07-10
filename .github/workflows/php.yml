@@ -22,15 +22,6 @@ jobs:
         npm install
         npm run production
 
-    - name: Upload Build Files
-      uses: actions/upload-artifact@v3
-      with:
-        name: npm-build
-        path: |
-          public/js/app.js
-          public/css/app.css
-          public/mix-manifest.json
-
     - name: Configure PHP
       uses: shivammathur/setup-php@master
       with:
@@ -43,9 +34,11 @@ jobs:
       
     - name: Download `deployer.phar`
       run: composer global require deployer/deployer:^7.3.1 --no-interaction --verbose --ansi
+
     - name: Get composer global bin-dir path
       id: composer-bin-dir
       run: echo "path=$(composer global config bin-dir --absolute)" >> $GITHUB_OUTPUT
+
     - name: Deploy
       uses: deployphp/action@v1
       with:
@@ -53,8 +46,26 @@ jobs:
         private-key: ${{ secrets.PRIVATE_KEY }}
         dep: 'deploy 206.189.200.129'
 
+    - name: Copy Build Artifact
+      run: |
+        ls -hal
+        scp public/mix-manifest.json aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/mix-manifest.json
+
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
-
+    #
     # - name: Run test suite
     #   run: composer run-script test
+    # - name: Upload Build Files
+    #   uses: actions/upload-artifact@v3
+    #   with:
+    #     name: npm-build
+    #     path: |
+    #       public/js/app.js
+    #       public/css/app.css
+    #       public/mix-manifest.json
+    #
+    # - name: Download and Publish Build Artifacts
+    # - uses: actions/download-artifact@v3
+    #     with:
+    #       name: npm-build

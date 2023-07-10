@@ -22,7 +22,6 @@ tasks:
     - artisan:config:cache
     - artisan:migrate
     - volta:run:install
-    - gh:action:download
     - deploy:publish
 
 after:
