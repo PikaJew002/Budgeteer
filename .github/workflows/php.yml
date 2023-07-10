@@ -48,8 +48,9 @@ jobs:
 
     - name: Copy Build Artifact
       run: |
-        ls -hal
         scp public/mix-manifest.json aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/mix-manifest.json
+        scp -pr public/js/ aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/js/
+        scp -pr public/css/ aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/css/
 
     # Add a test script to composer.json, for instance: "test": "vendor/bin/phpunit"
     # Docs: https://getcomposer.org/doc/articles/scripts.md
