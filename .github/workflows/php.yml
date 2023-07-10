@@ -21,7 +21,7 @@ jobs:
       run: |
         cp .env.example .env
         npm install
-        npm run production-ci
+        npm run production
 
     - name: Configure PHP
       uses: shivammathur/setup-php@master
