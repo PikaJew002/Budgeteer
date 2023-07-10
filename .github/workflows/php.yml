@@ -19,6 +19,7 @@ jobs:
 
     - name: Compile CSS and JavaScript
       run: |
+        cp .env.example .env
         npm install
         npm run production-ci
 
