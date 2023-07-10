@@ -22,6 +22,15 @@ jobs:
         npm install
         npm run production
 
+    - name: Upload Build Files
+      uses: actions/upload-artifact@v3
+      with:
+        name: npm-build
+        path: |
+          public/js/app.js
+          public/css/app.css
+          public/mix-manifest.json
+
     - name: Configure PHP
       uses: shivammathur/setup-php@master
       with:
