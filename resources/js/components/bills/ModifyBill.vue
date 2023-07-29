@@ -111,7 +111,7 @@
   import { cloneDeep } from 'lodash';
   import moment from 'moment';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
+  
   import { emptyStringToNull, numberToString, copyObjectProperties } from '../../utils/main.js';
   import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
@@ -172,7 +172,7 @@
       };
     },
     created() {
-      EventBus.$on('modify-bill', (bill) => {
+      this.$eventBus.on('modify-bill', (bill) => {
         copyObjectProperties(bill, this.bill);
         this.bill.amount = emptyStringToNull(numberToString(bill.amount));
         this.showModal = true;
@@ -185,7 +185,7 @@
         this.$emit('close');
       },
       onDelete(bill) {
-        EventBus.$emit('delete-bill', bill);
+        this.$eventBus.emit('delete-bill', bill);
         this.$emit('close');
       },
       formatAmount(amount) {

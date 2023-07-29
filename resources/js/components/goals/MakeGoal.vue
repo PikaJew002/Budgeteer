@@ -104,10 +104,7 @@
 <script>
   import { BModal, BAlert, BButton, BProgress, BProgressBar } from 'bootstrap-vue';
   import { helpers, required, minLength, maxLength } from 'vuelidate/lib/validators';
-  import moment from 'moment';
-  import { cloneDeep } from 'lodash';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
   import { numberToString, emptyStringToNull } from '../../utils/main.js';
   import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,8}(\.\d{0,2})?$/); // double(10,2)
@@ -159,7 +156,7 @@
       };
     },
     created() {
-      EventBus.$on('make-goal', () => {
+      this.$eventBus.on('make-goal', () => {
         this.goal.name = "";
         this.goal.amount = null;
         this.goal.initial_amount = null;
@@ -167,7 +164,7 @@
       });
     },
     beforeDestroy() {
-      EventBus.$off('make-goal');
+      this.$eventBus.off('make-goal');
     },
     methods: {
       onSaveAndClose(goal) {
@@ -186,7 +183,7 @@
             goal: goal,
           }).then((newGoal) => {
             this.$emit('close');
-            EventBus.$emit('modify-goal', newGoal);
+            this.$eventBus.emit('modify-goal', newGoal);
           });
         }
       },

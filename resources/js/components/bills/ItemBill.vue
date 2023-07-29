@@ -32,7 +32,7 @@
     </div>
     <div class="d-flex justify-content-between">
       <small v-if="billPaychecks.length > 0" class="text-muted">
-        <template v-for="billPaycheck in billPaychecks">
+        <template v-for="billPaycheck in billPaychecks" >
           <span :key="amountProjectIfAmountNull(billPaycheck)">
             ${{ formatAmount(billPaycheck) }} {{ isPaid(billPaycheck) ? "Paid" : "Scheduled" }} on
             {{ formatedDate(billPaycheck.paid_on === null ? getPaycheck(billPaycheck.paycheck_id).paid_on : billPaycheck.paid_on) }}
@@ -68,7 +68,6 @@
 </template>
 
 <script>
-  import { EventBus } from '../../event-bus.js';
   import { numberToString, dateToString, otherIfNull, dateToFormatedString } from '../../utils/main.js';
   import moment from 'moment';
   export default {
@@ -99,20 +98,20 @@
       },
     },
     created() {
-      EventBus.$on('paycheck-pair-start', obj => {
+      this.$eventBus.on('paycheck-pair-start', obj => {
         this.receivingPair = true;
         this.$emit('bill-stay-highlighted', [true, 'bill']);
       });
-      EventBus.$on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
+      this.$eventBus.on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
         if(type === 'bill' && pairable.id == this.bill.id && this.month[0] == month[0] && this.month[1] == month[1]) {
           this.canStopPair = true;
         }
       });
-      EventBus.$on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
+      this.$eventBus.on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
         this.receivingPair = false;
         this.$emit('bill-stay-highlighted', [false, 'bill']);
       });
-      EventBus.$on('paycheck-pair-end', (paycheck) => {
+      this.$eventBus.on('paycheck-pair-end', (paycheck) => {
         if(this.receivingPair) {
           this.receivingPair = false;
           this.canStopPair = false;
@@ -128,11 +127,11 @@
     },
     methods: {
       onModify() {
-        EventBus.$emit('modify-bill', this.bill);
+        this.$eventBus.emit('modify-bill', this.bill);
       },
       onPairUpdate() {
         // @TODO switch from single bill-paycheck pairing to multi-pairing
-        EventBus.$emit('pair-update', {
+        this.$eventBus.emit('pair-update', {
           pairable: this.bill,
           paycheck: this.getPaycheck(this.billPaychecks[0].paycheck_id),
           type: 'bill',
@@ -143,13 +142,13 @@
           // case: the bill is selected first
           this.receivingPair = true;
           this.$emit('bill-stay-highlighted', [true, 'bill']);
-          EventBus.$emit('paycheck-pairable-pair-start', {
+          this.$eventBus.emit('paycheck-pairable-pair-start', {
             pairable: this.bill,
             month: this.month,
             type: 'bill',
           });
         } else {
-          EventBus.$emit('paycheck-pairable-pair-end', {
+          this.$eventBus.emit('paycheck-pairable-pair-end', {
             pairable: this.bill,
             month: this.month,
             type: 'bill',
@@ -158,7 +157,7 @@
       },
       onStopPair() {
         this.canStopPair = false;
-        EventBus.$emit('paycheck-pair-end', null);
+        this.$eventBus.emit('paycheck-pair-end', null);
       },
       getPaycheck(id) {
         return this.$store.getters.getPaycheck(id) || { paid_on: null };

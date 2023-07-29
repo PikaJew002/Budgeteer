@@ -49,9 +49,7 @@
 <script>
   import { BModal, BAlert, BButton } from 'bootstrap-vue';
   import { required, minLength, maxLength } from 'vuelidate/lib/validators';
-  import { cloneDeep } from 'lodash';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
   import { copyObjectProperties } from '../../utils/main.js';
   import { validationInputClasses } from '../../utils/validation.js';
   export default {
@@ -91,13 +89,13 @@
       },
     },
     created() {
-      EventBus.$on('modify-income', (income) => {
+      this.$eventBus.on('modify-income', (income) => {
         copyObjectProperties(income, this.income);
         this.showModal = true;
       });
     },
     beforeDestroy() {
-      EventBus.$off('modify-income');
+      this.$eventBus.off('modify-income');
     },
     methods: {
       validationClasses(v$, obj, attr) {
@@ -110,7 +108,7 @@
         }
       },
       onDelete(income) {
-        EventBus.$emit('delete-income', income);
+        this.$eventBus.emit('delete-income', income);
         this.$emit('close');
       },
     },

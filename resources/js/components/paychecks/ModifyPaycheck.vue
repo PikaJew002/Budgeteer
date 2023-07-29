@@ -127,8 +127,7 @@
   import { helpers, required, requiredIf, minValue } from 'vuelidate/lib/validators';
   import moment from 'moment';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
-  import { emptyStringToNull, numberToString, copyObjectProperties } from '../../utils/main.js';
+  import { numberToString, copyObjectProperties } from '../../utils/main.js';
   import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
   export default {
@@ -191,7 +190,7 @@
       };
     },
     created() {
-      EventBus.$on('modify-paycheck', (paycheck) => {
+      this.$eventBus.on('modify-paycheck', (paycheck) => {
         copyObjectProperties(paycheck, this.paycheck);
         if(paycheck.amount == null) {
           this.projected = true;
@@ -211,7 +210,7 @@
         }
       },
       onDelete(paycheck) {
-        EventBus.$emit('delete-paycheck', paycheck);
+        this.$eventBus.emit('delete-paycheck', paycheck);
         this.$emit('close');
       },
       formatAmount(amount) {

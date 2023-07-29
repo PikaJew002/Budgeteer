@@ -116,7 +116,6 @@
   import { BAlert, BButton, BModal } from 'bootstrap-vue';
   import { helpers, required, requiredIf, maxValue } from 'vuelidate/lib/validators';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
   import { dateToFormatedString, dateToString, capitalize, emptyStringToNull, numberToString, otherIfNull } from '../../utils/main.js';
   import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
@@ -128,20 +127,20 @@
     },
     mixins: [Alert],
     created() {
-      EventBus.$on('paycheck-pair-start', (paycheck) => {
+      this.$eventBus.on('paycheck-pair-start', (paycheck) => {
         this.paycheck = { ...paycheck };
         this.pair.paycheck_id = paycheck.id;
         this.type = ""; // paycheck was selected first
         this.showPairAlert = true;
       });
-      EventBus.$on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
+      this.$eventBus.on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
         this.type = type; // bill or contribution (pairable) was selected first
         this[this.type] = { ...pairable };
         this.month = month;
         this.pair[this.type + '_id'] = this[this.type].id;
         this.showPairAlert = true;
       });
-      EventBus.$on('paycheck-pair-end', (paycheck) => {
+      this.$eventBus.on('paycheck-pair-end', (paycheck) => {
         if(paycheck == null) {
           this.showPairAlert = false;
           this.onHideModal();
@@ -154,7 +153,7 @@
         this.pair.paid_on = "";
         this.showPairAlert = false;
       });
-      EventBus.$on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
+      this.$eventBus.on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
         // arr: 0: pairableObj, 1: month, 2: pairableType (bill or contribution)
         if(type === null) {
           this.showPairAlert = false;
@@ -169,7 +168,7 @@
         this.pair.due_on = dateToString(this.month[1], this.month[0], this[this.type].day_due_on == null ? 1 : this[this.type].day_due_on);
         this.showPairAlert = false;
       });
-      EventBus.$on('pair-update', ({ pairable, paycheck, type }) => {
+      this.$eventBus.on('pair-update', ({ pairable, paycheck, type }) => {
         this.isUpdate = true;
         this.type = type; // is bill or contribution
         this[this.type] = { ...pairable };
@@ -188,11 +187,11 @@
       });
     },
     beforeDestroy() {
-      EventBus.$off('paycheck-pair-start');
-      EventBus.$off('bill-pair-start');
-      EventBus.$off('paycheck-pair-end');
-      EventBus.$off('bill-pair-end');
-      EventBus.$off('pair-update');
+      this.$eventBus.off('paycheck-pair-start');
+      this.$eventBus.off('bill-pair-start');
+      this.$eventBus.off('paycheck-pair-end');
+      this.$eventBus.off('bill-pair-end');
+      this.$eventBus.off('pair-update');
     },
     data() {
       return {
@@ -249,13 +248,13 @@
         // if paycheck is null
         if(this.paycheck === null) {
           this.onHideModal();
-          EventBus.$emit('paycheck-pair-end', null);
+          this.$eventBus.emit('paycheck-pair-end', null);
           return;
         }
         // if pairable entity (bill or contribution) is null
         if(this[this.type] === null) {
           this.onHideModal();
-          EventBus.$emit('paycheck-pairable-pair-end', { type: null });
+          this.$eventBus.emit('paycheck-pairable-pair-end', { type: null });
           return;
         }
         // if the pairable entity (bill or contribution) is already paired to the paycheck

@@ -47,7 +47,6 @@
   import { BModal, BAlert, BButton } from 'bootstrap-vue';
   import { required, minLength, maxLength } from 'vuelidate/lib/validators';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
   import { validationInputClasses } from '../../utils/validation.js';
   export default {
     components: {
@@ -82,13 +81,13 @@
       },
     },
     created() {
-      EventBus.$on('make-income', () => {
+      this.$eventBus.on('make-income', () => {
         this.income.name = "";
         this.showModal = true;
       });
     },
     beforeDestroy() {
-      EventBus.$off('make-income');
+      this.$eventBus.off('make-income');
     },
     methods: {
       validationClasses(v$, obj, attr) {

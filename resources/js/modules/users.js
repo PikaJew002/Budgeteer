@@ -9,21 +9,41 @@ import UserAPI from '../api/user.js';
 
 export const users = {
   state: {
-    user: {},
-    userLoadStatus: 0
+    user: null,
+    userLoadStatus: 0, // 0 is unloaded, 1 is pending, 2 is loaded, 3 is error loading
   },
   actions: {
-    loadUser({ commit }) {
+    loadUser: async function({ commit }) {
       commit('setUserLoadStatus', 1);
-      UserAPI.getUser()
+      return UserAPI.getUser()
         .then((res) => {
           commit('setUser', res.data.data);
           commit('setUserLoadStatus', 2);
+          return { success: true, errors: {} };
         })
         .catch((err) => {
           commit('setUser', {});
           commit('setUserLoadStatus', 3);
           throw err;
+        });
+    },
+    loginUser: async function({ dispatch }, credentials) {
+      return UserAPI.login(credentials.email, credentials.password, credentials.remember)
+        .then((result) => {
+          if(result.success) {
+            return dispatch('loadUser');
+          }
+          return result;
+        });
+    },
+    logoutUser: async function ({ commit }) {
+      return UserAPI.logout()
+        .then((successful) => {
+          if (successful) {
+            commit('setUserLoadStatus', 0);
+            commit('setUser', null);
+          }
+          return successful;
         });
     },
   },

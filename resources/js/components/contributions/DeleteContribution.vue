@@ -26,7 +26,7 @@
   import { BModal, BButton } from 'bootstrap-vue';
   import { cloneDeep } from 'lodash';
   import moment from 'moment';
-  import { EventBus } from '../../event-bus.js';
+  
   import { otherIfNull, dateToFormatedString } from '../../utils/main.js';
 
   export default {
@@ -48,13 +48,13 @@
       };
     },
     created() {
-      EventBus.$on('delete-contribution', (id) => {
+      this.$eventBus.on('delete-contribution', (id) => {
         this.contribution.id = id;
         this.showModal = true;
       });
     },
     beforeDestroy() {
-      EventBus.$off('delete-contribution');
+      this.$eventBus.off('delete-contribution');
     },
     methods: {
       onDelete(contribution) {

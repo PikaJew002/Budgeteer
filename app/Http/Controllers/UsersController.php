@@ -17,7 +17,7 @@ class UsersController extends Controller
      */
     public function __construct()
     {
-        $this->middleware('auth:api')->except(['verify', 'verified']);
+        $this->middleware('auth:sanctum');
     }
 
     /**

@@ -17,7 +17,6 @@
 <script>
   import Calendar from '../components/Calendar.vue';
   import { EventBus } from '../event-bus.js';
-  import moment from 'moment';
   export default {
     components: {
       Calendar,
@@ -48,16 +47,16 @@
           with: ['paychecks'],
         })
       }
-      EventBus.$on('paycheck-pairable-pair-start', ({ pairable, month, type}) => this.disableSelector = true);
-      EventBus.$on('paycheck-pair-start', id => this.disableSelector = true);
-      EventBus.$on('paycheck-pairable-pair-end', ({ pairable, month, type }) => this.disableSelector = false);
-      EventBus.$on('paycheck-pair-end', (paycheck) => this.disableSelector = false);
+      this.$eventBus.on('paycheck-pairable-pair-start', ({ pairable, month, type}) => this.disableSelector = true);
+      this.$eventBus.on('paycheck-pair-start', id => this.disableSelector = true);
+      this.$eventBus.on('paycheck-pairable-pair-end', ({ pairable, month, type }) => this.disableSelector = false);
+      this.$eventBus.on('paycheck-pair-end', (paycheck) => this.disableSelector = false);
     },
     beforeDestroy() {
-      EventBus.$off('paycheck-pairable-pair-start');
-      EventBus.$off('paycheck-pair-start');
-      EventBus.$off('paycheck-pairable-pair-end');
-      EventBus.$off('paycheck-pair-end');
+      this.$eventBus.off('paycheck-pairable-pair-start');
+      this.$eventBus.off('paycheck-pair-start');
+      this.$eventBus.off('paycheck-pairable-pair-end');
+      this.$eventBus.off('paycheck-pair-end');
     },
     computed: {
       /**

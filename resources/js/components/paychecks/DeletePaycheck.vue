@@ -17,7 +17,6 @@
 
 <script>
   import { BModal, BButton } from 'bootstrap-vue';
-  import { EventBus } from '../../event-bus.js';
   export default {
     components: {
       'b-modal': BModal,
@@ -41,7 +40,7 @@
       };
     },
     created() {
-      EventBus.$on('delete-paycheck', obj => {
+      this.$eventBus.on('delete-paycheck', obj => {
         this.paycheck.id = obj.id;
         this.paycheck.income_id = obj.income_id;
         this.paycheck.amount = obj.amount;

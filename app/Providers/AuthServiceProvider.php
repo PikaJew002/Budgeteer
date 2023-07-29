@@ -12,7 +12,6 @@ use App\Policies\PaycheckPolicy;
 use App\Policies\BillPolicy;
 use App\Policies\GoalPolicy;
 use App\Policies\ContributionPolicy;
-use Laravel\Passport\Passport;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 
 class AuthServiceProvider extends ServiceProvider
@@ -38,7 +37,5 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-
-        Passport::routes();
     }
 }

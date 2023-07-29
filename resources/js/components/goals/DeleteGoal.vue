@@ -28,7 +28,7 @@
 <script>
   import { BModal, BButton } from 'bootstrap-vue';
   import { cloneDeep } from 'lodash';
-  import { EventBus } from '../../event-bus.js';
+  
   import { otherIfNull, dateToFormatedString } from '../../utils/main.js';
   export default {
     components: {
@@ -52,7 +52,7 @@
       };
     },
     created() {
-      EventBus.$on('delete-goal', (goal) => {
+      this.$eventBus.on('delete-goal', (goal) => {
         this.goal.id = goal.id;
         this.goal.name = goal.name;
         this.goal.amount = goal.amount;
@@ -62,7 +62,7 @@
     },
     methods: {
       onDelete() {
-        EventBus.$emit('delete-goal-confirm');
+        this.$eventBus.emit('delete-goal-confirm');
         this.$store.dispatch('deleteGoal', this.goal);
         this.$emit('close');
       },

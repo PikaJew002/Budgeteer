@@ -109,7 +109,7 @@
   import { cloneDeep } from 'lodash';
   import moment from 'moment';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
+  
   import { numberToString, emptyStringToNull, dateToFormatedString } from '../../utils/main.js';
   import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,6}(\.\d{0,2})?$/); // double(8,2)
@@ -168,7 +168,7 @@
       };
     },
     created() {
-      EventBus.$on('make-contribution', (goal) => {
+      this.$eventBus.on('make-contribution', (goal) => {
         this.contribution.goal_id = goal.id;
         this.contribution.amount = null;
         this.contribution.day_due_on = null;
@@ -178,7 +178,7 @@
       });
     },
     beforeDestroy() {
-      EventBus.$off('make-contribution');
+      this.$eventBus.off('make-contribution');
     },
     methods: {
       onSave(contribution) {

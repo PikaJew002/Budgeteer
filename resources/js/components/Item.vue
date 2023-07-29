@@ -57,7 +57,6 @@
 </style>
 
 <script>
-  import { EventBus } from '../event-bus.js';
   import ItemBill from './bills/ItemBill.vue';
   import ItemPaycheck from './paychecks/ItemPaycheck.vue';
   import ItemIncome from './incomes/ItemIncome.vue';

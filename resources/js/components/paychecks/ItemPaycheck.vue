@@ -89,9 +89,7 @@
 </style>
 
 <script>
-  import { EventBus } from '../../event-bus.js';
   import { numberToString, otherIfNull, dateToFormatedString } from '../../utils/main.js';
-  import moment from 'moment';
   export default {
     props: {
       paycheck: {
@@ -116,20 +114,20 @@
       },
     },
     created() {
-      EventBus.$on('paycheck-pairable-pair-start',  ({ pairable, month, type}) => {
+      this.$eventBus.on('paycheck-pairable-pair-start',  ({ pairable, month, type}) => {
         this.receivingPair = true;
         this.$emit('paycheck-stay-highlighted', [true, 'paycheck']);
       });
-      EventBus.$on('paycheck-pair-start', obj => {
+      this.$eventBus.on('paycheck-pair-start', obj => {
         if(obj.id == this.paycheck.id) {
           this.canStopPair = true;
         }
       });
-      EventBus.$on('paycheck-pair-end', (paycheck) => {
+      this.$eventBus.on('paycheck-pair-end', (paycheck) => {
         this.receivingPair = false;
         this.$emit('paycheck-stay-highlighted', [false, 'paycheck']);
       });
-      EventBus.$on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
+      this.$eventBus.on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
         if(this.receivingPair) {
           this.receivingPair = false;
           this.canStopPair = false;
@@ -147,28 +145,28 @@
     },
     methods: {
       onModify() {
-        EventBus.$emit('modify-paycheck', this.paycheck);
+        this.$eventBus.emit('modify-paycheck', this.paycheck);
       },
       onPairUpdateBill(bill) {
-        EventBus.$emit('pair-update', { pairable: bill, paycheck: this.paycheck, type: 'bill' });
+        this.$eventBus.emit('pair-update', { pairable: bill, paycheck: this.paycheck, type: 'bill' });
       },
       onPairUpdateContribution(contribution) {
-        EventBus.$emit('pair-update', { pairable: contribution, paycheck: this.paycheck, type: 'contribution' });
+        this.$eventBus.emit('pair-update', { pairable: contribution, paycheck: this.paycheck, type: 'contribution' });
       },
       onPair() {
         if(!this.receivingPair) {
           // case: the paycheck is selected first
           this.receivingPair = true;
           this.$emit('paycheck-stay-highlighted', [true, 'paycheck']);
-          EventBus.$emit('paycheck-pair-start', this.paycheck);
+          this.$eventBus.emit('paycheck-pair-start', this.paycheck);
         } else {
           // case: the paycheck is selected last
-          EventBus.$emit('paycheck-pair-end', this.paycheck);
+          this.$eventBus.emit('paycheck-pair-end', this.paycheck);
         }
       },
       onStopPair() {
         this.canStopPair = false;
-        EventBus.$emit('paycheck-pairable-pair-end', { type: null });
+        this.$eventBus.emit('paycheck-pairable-pair-end', { type: null });
       },
       dateToFormatedString(date, format) {
         return dateToFormatedString(date, format);

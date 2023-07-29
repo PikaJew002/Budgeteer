@@ -12,7 +12,6 @@
 </template>
 
 <script>
-  import { EventBus } from '../../event-bus.js';
   import moment from 'moment';
   export default {
     props: {
@@ -39,7 +38,7 @@
     },
     methods: {
       onModify() {
-        EventBus.$emit('modify-income', this.income);
+        this.$eventBus.emit('modify-income', this.income);
       },
     },
   }
