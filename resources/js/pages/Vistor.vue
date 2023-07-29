@@ -10,7 +10,7 @@
             We're glad you stopped by to check us out! If you'd like to take this app for a test-drive, go ahead and register.
             After registering, we'll be notified, an admin will approve your account, and you'll get an email with a few instructions to get the most out of Budgeteer as documentation is still in the works.
           </p>
-          <a class="btn btn-base btn-lg" href="/register" role="button">Register</a>
+          <router-link class="btn btn-base btn-lg" :to="{ name: 'register' }">Register</router-link>
         </div>
         <div class="card bg-cardbg border-cardbg">
           <div class="card-body m-2">
