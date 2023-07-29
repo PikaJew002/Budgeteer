@@ -114,10 +114,10 @@
         return comparison;
       },
       makeBill() {
-        EventBus.$emit('make-bill', this.startDate);
+        this.$eventBus.emit('make-bill', this.startDate);
       },
       makePaycheck() {
-        EventBus.$emit('make-paycheck', [this.incomesshown, this.startDate]);
+        this.$eventBus.emit('make-paycheck', [this.incomesshown, this.startDate]);
       },
     },
     computed: {

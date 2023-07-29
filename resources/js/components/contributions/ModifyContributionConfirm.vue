@@ -23,7 +23,7 @@
 <script>
   import { BModal, BButton } from 'bootstrap-vue';
   import { cloneDeep } from 'lodash';
-  import { EventBus } from '../../event-bus.js';
+  
   import { otherIfNull, dateToFormatedString } from '../../utils/main.js';
   export default {
     components: {
@@ -42,17 +42,17 @@
       };
     },
     created() {
-      EventBus.$on('save-modify-contribution', (contributionPaychecksToRemove) => {
+      this.$eventBus.on('save-modify-contribution', (contributionPaychecksToRemove) => {
         this.contributionPaychecksToRemove = contributionPaychecksToRemove;
         this.showModal = true;
       });
     },
     beforeDestroy() {
-      EventBus.$off('save-modify-contribution');
+      this.$eventBus.off('save-modify-contribution');
     },
     methods: {
       onConfirm(contributionPaychecksToRemove) {
-        EventBus.$emit('save-modify-contribution-confirm', contributionPaychecksToRemove);
+        this.$eventBus.emit('save-modify-contribution-confirm', contributionPaychecksToRemove);
         this.$emit('close');
       },
       getIncomeFromPaycheckId(paycheck_id) {

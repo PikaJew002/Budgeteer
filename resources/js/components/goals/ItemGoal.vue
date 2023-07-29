@@ -25,7 +25,7 @@
 </style>
 
 <script>
-  import { EventBus } from '../../event-bus.js';
+  
   import moment from 'moment';
   export default {
     props: {
@@ -52,7 +52,7 @@
     },
     methods: {
       onModify() {
-        EventBus.$emit('modify-goal', this.goal);
+        this.$eventBus.emit('modify-goal', this.goal);
       },
     },
   }

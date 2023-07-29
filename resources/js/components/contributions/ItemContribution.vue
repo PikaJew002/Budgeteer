@@ -54,7 +54,7 @@
 </template>
 
 <script>
-  import { EventBus } from '../../event-bus.js';
+  
   import { numberToString, dateToString, otherIfNull, dateToFormatedString } from '../../utils/main.js';
   import moment from 'moment';
   export default {
@@ -85,20 +85,20 @@
       },
     },
     created() {
-      EventBus.$on('paycheck-pair-start', obj => {
+      this.$eventBus.on('paycheck-pair-start', obj => {
         this.receivingPair = true;
         this.$emit('contribution-stay-highlighted', [true, 'contribution']);
       });
-      EventBus.$on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
+      this.$eventBus.on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
         if(type === 'contribution' && pairable.id == this.contribution.id && this.month[0] == month[0] && this.month[1] == month[1]) {
           this.canStopPair = true;
         }
       });
-      EventBus.$on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
+      this.$eventBus.on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
         this.receivingPair = false;
         this.$emit('contribution-stay-highlighted', [false, 'contribution']);
       });
-      EventBus.$on('paycheck-pair-end', (paycheck) => {
+      this.$eventBus.on('paycheck-pair-end', (paycheck) => {
         if(this.receivingPair) {
           this.receivingPair = false;
           this.canStopPair = false;
@@ -114,7 +114,7 @@
     },
     methods: {
       onPairUpdate() {
-        EventBus.$emit('pair-update', {
+        this.$eventBus.emit('pair-update', {
           pairable: this.contribution,
           paycheck: this.getPaycheck(this.contributionPaychecks[0].paycheck_id),
           type: 'contribution',
@@ -125,13 +125,13 @@
           // case: the contribution is selected first
           this.receivingPair = true;
           this.$emit('contribution-stay-highlighted', [true, 'contribution']);
-          EventBus.$emit('paycheck-pairable-pair-start', {
+          this.$eventBus.emit('paycheck-pairable-pair-start', {
             pairable: this.contribution,
             month: this.month,
             type: 'contribution',
           });
         } else {
-          EventBus.$emit('paycheck-pairable-pair-end', {
+          this.$eventBus.emit('paycheck-pairable-pair-end', {
             pairable: this.contribution,
             month: this.month,
             type: 'contribution',
@@ -140,7 +140,7 @@
       },
       onStopPair() {
         this.canStopPair = false;
-        EventBus.$emit('paycheck-pair-end', null);
+        this.$eventBus.emit('paycheck-pair-end', null);
       },
       getPaycheck(id) {
         return this.$store.getters.getPaycheck(id) || { paid_on: null };

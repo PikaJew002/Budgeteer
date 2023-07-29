@@ -199,7 +199,7 @@
   import moment from 'moment';
   import { cloneDeep } from 'lodash';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
+  
   import { otherIfNull, numberToString, dateToFormatedString, copyObjectPropertiesAndApply } from '../../utils/main.js';
   import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,8}(\.\d{0,2})?$/);
@@ -262,27 +262,27 @@
       };
     },
     created() {
-      EventBus.$on('modify-goal', (goal) => {
+      this.$eventBus.on('modify-goal', (goal) => {
         copyObjectPropertiesAndApply(goal, this.goal, this.formatAmount, ['amount', 'initial_amount']);
         this.showModal = true;
       });
-      EventBus.$on('delete-goal-confirm', () => {
+      this.$eventBus.on('delete-goal-confirm', () => {
         this.$emit('close');
       });
     },
     beforeDestroy() {
-      EventBus.$off('modify-goal');
-      EventBus.$off('delete-goal-confirm');
+      this.$eventBus.off('modify-goal');
+      this.$eventBus.off('delete-goal-confirm');
     },
     methods: {
       onAddContribution(goal) {
-        EventBus.$emit('make-contribution', goal);
+        this.$eventBus.emit('make-contribution', goal);
       },
       onDeleteContribution(id) {
-        EventBus.$emit('delete-contribution', id);
+        this.$eventBus.emit('delete-contribution', id);
       },
       onEditContribution(contribution) {
-        EventBus.$emit('modify-contribution', contribution);
+        this.$eventBus.emit('modify-contribution', contribution);
       },
       onSave() {
         if(!this.$v.goal.$invalid) {
@@ -291,7 +291,7 @@
         }
       },
       onDelete() {
-        EventBus.$emit('delete-goal', this.goal);
+        this.$eventBus.emit('delete-goal', this.goal);
       },
       formatAmount(amount) {
         return numberToString(amount);

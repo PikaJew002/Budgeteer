@@ -113,7 +113,7 @@
   import { helpers, required, minValue, maxValue, integer, minLength, maxLength } from 'vuelidate/lib/validators';
   import moment from 'moment';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
+  
   import { emptyStringToNull, numberToString } from '../../utils/main.js';
   import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
@@ -173,7 +173,7 @@
       };
     },
     created() {
-      EventBus.$on('make-bill', (start_on) => {
+      this.$eventBus.on('make-bill', (start_on) => {
         this.bill.name = "";
         this.bill.amount = null;
         this.bill.day_due_on = null;

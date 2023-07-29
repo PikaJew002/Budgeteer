@@ -110,7 +110,6 @@
   import { helpers, required, requiredIf, minValue } from 'vuelidate/lib/validators';
   import moment from 'moment';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
   import { numberToString, emptyStringToNull } from '../../utils/main.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
   export default {
@@ -169,7 +168,7 @@
       };
     },
     created() {
-      EventBus.$on('make-paycheck', arr => {
+      this.$eventBus.on('make-paycheck', arr => {
         this.paycheck.income_id = arr[0];
         this.paycheck.amount_project = null;
         this.paycheck.amount = null;

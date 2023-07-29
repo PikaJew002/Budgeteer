@@ -109,7 +109,7 @@
   import { cloneDeep } from 'lodash';
   import moment from 'moment';
   import Alert from '../../api/alert.js';
-  import { EventBus } from '../../event-bus.js';
+  
   import { numberToString, emptyStringToNull, dateToFormatedString, copyObjectProperties } from '../../utils/main.js';
   import { notZero, validationInputClasses } from '../../utils/validation.js';
   const validDecimal = helpers.regex('validDecimal', /^\d{0,6}(\.\d{0,2})?$/); // double(8,2)
@@ -172,17 +172,17 @@
       };
     },
     created() {
-      EventBus.$on('modify-contribution', (contribution) => {
+      this.$eventBus.on('modify-contribution', (contribution) => {
         copyObjectProperties(contribution, this.contribution);
         this.showModal = true;
       });
-      EventBus.$on('save-modify-contribution-confirm', (contributionPaychecksToRemove) => {
+      this.$eventBus.on('save-modify-contribution-confirm', (contributionPaychecksToRemove) => {
         this.onSaveConfirm(this.contribution, contributionPaychecksToRemove);
       });
     },
     beforeDestroy() {
-      EventBus.$off('modify-contribution');
-      EventBus.$off('save-modify-contribution-confirm');
+      this.$eventBus.off('modify-contribution');
+      this.$eventBus.off('save-modify-contribution-confirm');
     },
     methods: {
       onSave(contribution) {
@@ -192,7 +192,7 @@
             this.onSaveConfirm(contribution);
             return;
           }
-          EventBus.$emit('save-modify-contribution', this.contributionPaychecksToRemove);
+          this.$eventBus.emit('save-modify-contribution', this.contributionPaychecksToRemove);
         }
       },
       onSaveConfirm(contribution, contributionPaychecksToRemove = []) {

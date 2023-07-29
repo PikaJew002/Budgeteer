@@ -50,10 +50,10 @@
 </template>
 
 <script>
-  export default {
-    beforeRouteLeave(to, from, next) {
-      window.$('.collapse').collapse('hide');
-      next();
-    },
-  }
+export default {
+  beforeRouteLeave(to, from, next) {
+    window.$('.collapse').collapse('hide');
+    next();
+  },
+}
 </script>

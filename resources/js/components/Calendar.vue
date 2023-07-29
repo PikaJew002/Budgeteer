@@ -54,7 +54,6 @@
   import DeletePaycheck from './paychecks/DeletePaycheck.vue';
   import PairPaycheck from './paychecks/PairPaycheck.vue';
   import { cloneDeep } from 'lodash';
-  import moment from 'moment';
   export default {
     components: {
       Month,

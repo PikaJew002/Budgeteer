@@ -24,11 +24,17 @@ require('./bootstrap');
  */
 
 import Vue from 'vue';
-import Vuelidate from 'vuelidate'
-import router from './routes.js'
-import store from './store.js'
+import mitt from 'mitt';
+import Vuelidate from 'vuelidate';
+import router from './routes.js';
+import store from './store.js';
+import Layout from './pages/Layout.vue';
+
+Vue.prototype.$eventBus = mitt();
 
 Vue.use(Vuelidate);
+
+Vue.component('layout', Layout);
 
 new Vue({
   router,

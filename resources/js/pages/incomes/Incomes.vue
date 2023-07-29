@@ -37,7 +37,6 @@
   import MakeIncome from '../../components/incomes/MakeIncome.vue';
   import ModifyIncome from '../../components/incomes/ModifyIncome.vue';
   import DeleteIncome from '../../components/incomes/DeleteIncome.vue';
-  import { EventBus } from '../../event-bus.js';
   export default {
     components: {
       Collection,
@@ -75,7 +74,7 @@
     },
     methods: {
       makeIncome() {
-        EventBus.$emit('make-income');
+        this.$eventBus.emit('make-income');
       },
     },
     computed: {

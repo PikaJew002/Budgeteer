@@ -53,7 +53,6 @@
   import MakeGoal from '../../components/goals/MakeGoal.vue';
   import ModifyGoal from '../../components/goals/ModifyGoal.vue';
   import DeleteGoal from '../../components/goals/DeleteGoal.vue';
-  import { EventBus } from '../../event-bus.js';
   export default {
     components: {
       Collection,
@@ -99,7 +98,7 @@
     },
     methods: {
       makeGoal() {
-        EventBus.$emit('make-goal');
+        this.$eventBus.emit('make-goal');
       },
     },
     computed: {
