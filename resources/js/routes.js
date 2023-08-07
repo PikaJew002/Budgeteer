@@ -8,19 +8,20 @@
 /*
     Imports Vue and VueRouter to extend with the routes.
 */
-import Vue from 'vue';
-import VueRouter from 'vue-router';
-import store from './store.js';
-
-/*
-    Extends Vue to use Vue Router
-*/
-Vue.use(VueRouter);
+import { createRouter, createWebHashHistory } from 'vue-router';
+import { store } from './store.js';
+import Visitor from './pages/Vistor.vue';
+import Login from './pages/Login.vue';
+import Register from './pages/Register.vue';
+import ResetPassword from './pages/ResetPassword.vue';
+import ResetPasswordLink from './pages/ResetPasswordLink.vue';
+import Home from './pages/Home.vue';
+import Incomes from './pages/Incomes.vue';
 
 /*
     This will cehck to see if the user is authenticated or not.
 */
-function requireAuth(to, from, next) {
+function requireAuth(to, from) {
   /*
   Determines where we should send the user.
   */
@@ -36,86 +37,77 @@ function requireAuth(to, from, next) {
         send the user back to the home page.
       */
       if(store.getters.getUser != null) {
-        next();
-      } else {
-        next('/');
+        return true;
       }
-    } else {
-      next('/');
     }
+    return false;
   }
 
   if(store.getters.getUserLoadStatus() != 2) {
     store.dispatch('loadUser');
     store.watch(store.getters.getUserLoadStatus, function() {
       if(store.getters.getUserLoadStatus() == 2 || store.getters.getUserLoadStatus() == 3) {
-        proceed();
+        return proceed();
       }
     });
   } else {
-    proceed();
+    return proceed();
   }
 }
 
-function redirectIfAuthenticated(to, from, next) {
+function redirectIfAuthenticated(to, from) {
   if(store.getters.getUserLoadStatus() == 2) {
-    next('/home');
+    return false;
   }
-  next();
 }
 
 /*
     Makes a new VueRouter that we will use to run all of the routes
     for the app.
 */
-export default new VueRouter({
-    routes: [
-      {
-        path: '/',
-        name: 'vistor',
-        component: Vue.component('Visitor', require('./pages/Vistor.vue').default),
-      },
-      {
-        path: '/login',
-        name: 'login',
-        component: Vue.component('Login', require('./pages/Login.vue').default),
-        beforeEnter: redirectIfAuthenticated,
-      },
-      {
-        path: '/register',
-        name: 'register',
-        component: Vue.component('Register', require('./pages/Register.vue').default),
-        beforeEnter: redirectIfAuthenticated,
-      },
-      {
-        path: '/reset-password',
-        name: 'reset-password',
-        component: Vue.component('ResetPassword', require('./pages/ResetPassword.vue').default),
-        beforeEnter: redirectIfAuthenticated,
-      },
-      {
-        path: '/reset-password-link/:token',
-        name: 'reset-password-link',
-        component: Vue.component('ResetPasswordLink', require('./pages/ResetPasswordLink.vue').default),
-        beforeEnter: redirectIfAuthenticated,
-      },
-      {
-        path: '/home',
-        name: 'home',
-        component: Vue.component('Home', require('./pages/Home.vue').default),
-        beforeEnter: requireAuth,
-      },
-      {
-        path: '/incomes',
-        name: 'incomes',
-        component: Vue.component('Incomes', require('./pages/incomes/Incomes.vue').default),
-        beforeEnter: requireAuth,
-      },
-      {
-        path: '/goals',
-        name: 'goals',
-        component: Vue.component('Goals', require('./pages/goals/Goals.vue').default),
-        beforeEnter: requireAuth,
-      },
-    ],
+export const router = createRouter({
+  history: createWebHashHistory(),
+  routes: [
+    {
+      path: '/',
+      name: 'vistor',
+      component: Visitor,
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: Login,
+      beforeEnter: redirectIfAuthenticated,
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: Register,
+      beforeEnter: redirectIfAuthenticated,
+    },
+    {
+      path: '/reset-password',
+      name: 'reset-password',
+      component: ResetPassword,
+      beforeEnter: redirectIfAuthenticated,
+    },
+    {
+      path: '/reset-password-link/:token',
+      name: 'reset-password-link',
+      component: ResetPasswordLink,
+      beforeEnter: redirectIfAuthenticated,
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: Home,
+      beforeEnter: requireAuth,
+    },
+    {
+      path: '/incomes',
+      name: 'incomes',
+      component: Incomes,
+      beforeEnter: requireAuth,
+    },
+  ],
 });

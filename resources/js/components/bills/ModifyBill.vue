@@ -1,14 +1,6 @@
 <template>
   <div id="modify-bill">
-    <b-alert :show="message.countDown"
-             dismissible
-             :variant="message.type"
-             fade
-             @dismissed="message.countDown=0"
-             @dismiss-count-down="countDownChanged">
-      {{message.message}}
-    </b-alert>
-    <b-modal v-model="showModal" ref="modify-bill-modal" id="modify-bill-modal" title="Edit Bill" centered no-close-on-backdrop>
+    <Modal :show="show" @hide="$emit('close')" id="modify-bill-modal" title="Edit Bill">
       <form @submit.prevent="onSave(bill)">
         <div class="form-group">
           <label for="name">Name: </label>
@@ -17,8 +9,8 @@
                  type="text"
                  placeholder="Name"
                  v-model="bill.name"
-                 :class="validationClasses($v, 'bill', 'name')">
-          <div v-if="!$v.bill.name.required" class="invalid-feedback">
+                 :class="validationClasses(v$, 'bill', 'name')">
+          <div v-if="!v$.bill.name.required" class="invalid-feedback">
             Name is required
           </div>
         </div>
@@ -35,15 +27,15 @@
                      placeholder="Amount"
                      v-model="bill.amount"
                      @blur="bill.amount = formatAmount(bill.amount)"
-                     :class="validationClasses($v, 'bill', 'amount')">
+                     :class="validationClasses(v$, 'bill', 'amount')">
             </div>
-            <div v-if="!$v.bill.amount.required" class="invalid-feedback">
+            <div v-if="!v$.bill.amount.required" class="invalid-feedback">
               Amount is required
             </div>
-            <div v-if="!$v.bill.amount.validDecimal" class="invalid-feedback d-block">
+            <div v-if="!v$.bill.amount.validDecimal" class="invalid-feedback d-block">
               Amount must be a valid decimal ($xxxx.xx)
             </div>
-            <div v-if="$v.bill.amount.validDecimal && !$v.bill.amount.notZero" class="invalid-feedback d-block">
+            <div v-if="v$.bill.amount.validDecimal && !v$.bill.amount.notZero" class="invalid-feedback d-block">
               Amount must be greater than zero (0)
             </div>
           </div>
@@ -54,8 +46,8 @@
                    type="number"
                    placeholder="Day Due"
                    v-model.number="bill.day_due_on"
-                   :class="validationClasses($v, 'bill', 'day_due_on')">
-            <div v-if="!$v.bill.day_due_on.integer || !$v.bill.day_due_on.minValue || !$v.bill.day_due_on.maxValue" class="invalid-feedback">
+                   :class="validationClasses(v$, 'bill', 'day_due_on')">
+            <div v-if="!v$.bill.day_due_on.integer || !v$.bill.day_due_on.minValue || !v$.bill.day_due_on.maxValue" class="invalid-feedback">
               Day Due On must be a valid integer day (1-31)
             </div>
           </div>
@@ -68,8 +60,8 @@
                    type="date"
                    placeholder="mm/dd/yyyy"
                    v-model="bill.start_on"
-                   :class="validationClasses($v, 'bill', 'start_on')">
-            <div v-if="!$v.bill.start_on.required" class="invalid-feedback">
+                   :class="validationClasses(v$, 'bill', 'start_on')">
+            <div v-if="!v$.bill.start_on.required" class="invalid-feedback">
               Start On is required (valid date)
             </div>
           </div>
@@ -80,135 +72,119 @@
                    type="date"
                    placeholder="mm/dd/yyyy"
                    v-model="bill.end_on"
-                   :class="validationClasses($v, 'bill', 'end_on')">
-            <div v-if="!$v.bill.end_on.required" class="invalid-feedback">
+                   :class="validationClasses(v$, 'bill', 'end_on')">
+            <div v-if="!v$.bill.end_on.required" class="invalid-feedback">
               End On is required (valid date)
             </div>
-            <div v-if="!$v.bill.end_on.minDate" class="invalid-feedback">
+            <div v-if="!v$.bill.end_on.minDate" class="invalid-feedback">
               End On Date must be after the Start On Date
             </div>
           </div>
         </div>
       </form>
-      <template slot="modal-footer">
-        <b-button size="sm" variant="danger" @click="onDelete(bill)">
+      <template v-slot:modal-footer>
+        <button class="btn btn-danger btn-sm" @click="onDelete(bill)">
           Delete
-        </b-button>
-        <b-button size="sm" variant="sub1" @click="$emit('close')">
+        </button>
+        <button class="btn btn-sub1 btn-sm" @click="$emit('close')">
           Cancel
-        </b-button>
-        <b-button size="sm" variant="base" @click="onSave(bill)">
+        </button>
+        <button class="btn btn-base btn-sm" @click="onSave(bill)">
           Save
-        </b-button>
+        </button>
       </template>
-    </b-modal>
+    </Modal>
   </div>
 </template>
 
 <script>
-  import { BModal, BAlert, BButton } from 'bootstrap-vue';
-  import { helpers, required, minValue, maxValue, integer } from 'vuelidate/lib/validators';
-  import { cloneDeep } from 'lodash';
-  import moment from 'moment';
-  import Alert from '../../api/alert.js';
-  
-  import { emptyStringToNull, numberToString, copyObjectProperties } from '../../utils/main.js';
-  import { notZero, validationInputClasses } from '../../utils/validation.js';
-  const validDecimal = helpers.regex('validDecimal', /^\d{0,4}(\.\d{0,2})?$/);
-  export default {
-    components: {
-      'b-modal': BModal,
-      'b-alert': BAlert,
-      'b-button': BButton,
+import { useVuelidate } from '@vuelidate/core';
+import { helpers, required, minValue, maxValue, integer } from '@vuelidate/validators';
+import moment from 'moment';
+import Alert from '../Alert.vue';
+import Modal from '../Modal.vue';
+import { emptyStringToNull, numberToString, copyObjectProperties } from '../../utils/main.js';
+import { notZero, validationInputClasses } from '../../utils/validation.js';
+const validDecimal = helpers.regex(/^\d{0,4}(\.\d{0,2})?$/);
+export default {
+  components: {
+    Alert,
+    Modal,
+  },
+  props: {
+    show: {
+      type: Boolean,
+      required: true,
     },
-    props: {
-      user: {
-        type: Object,
+  },
+  emits: ['open', 'close'],
+  setup() {
+    return { v$: useVuelidate() }
+  },
+  data() {
+    return {
+      bill: {
+        id: null,
+        name: "",
+        amount: null,
+        day_due_on: null,
+        start_on: "",
+        end_on: "",
+        created_at: "",
+        updated_at: "",
       },
-      show: {
-        type: Boolean,
-        required: true,
-      },
-    },
-    mixins: [Alert],
-    data() {
-      return {
-        bill: {
-          id: null,
-          name: "",
-          amount: null,
-          day_due_on: null,
-          start_on: "",
-          end_on: "",
-          created_at: "",
-          updated_at: "",
+    };
+  },
+  validations() {
+    return {
+      bill: {
+        name: {
+          required,
         },
-      };
-    },
-    validations() {
-      return {
-        bill: {
-          name: {
-            required,
-          },
-          amount: {
-            required,
-            validDecimal,
-            notZero,
-          },
-          day_due_on: {
-            integer,
-            minValue: minValue(1),
-            maxValue: maxValue(31),
-          },
-          start_on: {
-            required,
-          },
-          end_on: {
-            required,
-            minDate: (end_on) => (end_on == "" || moment(end_on).isAfter(this.bill.start_on)),
-          },
+        amount: {
+          required,
+          validDecimal,
+          notZero,
         },
-      };
-    },
-    created() {
-      this.$eventBus.on('modify-bill', (bill) => {
-        copyObjectProperties(bill, this.bill);
-        this.bill.amount = emptyStringToNull(numberToString(bill.amount));
-        this.showModal = true;
-      });
-    },
-    methods: {
-      onSave(bill) {
-        this.bill.day_due_on = emptyStringToNull(this.bill.day_due_on);
-        this.$store.dispatch('editBill', bill);
-        this.$emit('close');
-      },
-      onDelete(bill) {
-        this.$eventBus.emit('delete-bill', bill);
-        this.$emit('close');
-      },
-      formatAmount(amount) {
-        return numberToString(amount);
-      },
-      /* @TODO extract (along with input) into amount-input component */
-      validationClasses(v$, obj, attr) {
-        return validationInputClasses(v$, obj, attr);
-      },
-    },
-    computed: {
-      showModal: {
-        get() {
-          return this.show;
+        day_due_on: {
+          integer,
+          minValue: minValue(1),
+          maxValue: maxValue(31),
         },
-        set(value) {
-          if(value) {
-            this.$emit('open');
-          } else {
-            this.$emit('close');
-          }
-        }
+        start_on: {
+          required,
+        },
+        end_on: {
+          required,
+          minDate: (end_on) => (end_on == "" || moment(end_on).isAfter(this.bill.start_on)),
+        },
       },
-    }
-  };
+    };
+  },
+  created() {
+    this.$eventBus.on('modify-bill', (bill) => {
+      copyObjectProperties(bill, this.bill);
+      this.bill.amount = emptyStringToNull(numberToString(bill.amount));
+      this.$emit('open');
+    });
+  },
+  methods: {
+    onSave(bill) {
+      this.bill.day_due_on = emptyStringToNull(this.bill.day_due_on);
+      this.$store.dispatch('editBill', bill);
+      this.$emit('close');
+    },
+    onDelete(bill) {
+      this.$eventBus.emit('delete-bill', bill);
+      this.$emit('close');
+    },
+    formatAmount(amount) {
+      return numberToString(amount);
+    },
+    /* @TODO extract (along with input) into amount-input component */
+    validationClasses(v$, obj, attr) {
+      return validationInputClasses(v$, obj, attr);
+    },
+  },
+}
 </script>

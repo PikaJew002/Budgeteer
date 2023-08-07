@@ -18,9 +18,6 @@
                   <li class="nav-item">
                       <router-link class="nav-link" :to="{ name: 'incomes' }">Incomes</router-link>
                   </li>
-                  <li class="nav-item">
-                      <router-link class="nav-link" :to="{ name: 'goals' }">Goals</router-link>
-                  </li>
               </template>
           </ul>
 
@@ -58,11 +55,6 @@
 
 <script>
 export default {
-  data() {
-    return {
-      name: this.$store.getters.getUser,
-    };
-  },
   methods: {
     logout() {
       this.$store.dispatch('logoutUser').then(() => {

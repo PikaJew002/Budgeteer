@@ -17,9 +17,12 @@ $theme-colors: (
 
 // Bootstrap
 @import '~bootstrap/scss/bootstrap';
-@import '~bootstrap-vue/src/index.scss';
 
 @import 'transparent-styles';
+
+// .modal {
+//   overflow-y: auto !important;
+// }
 
 // Generate `.bg-*` color utilities
 // @each $color, $value in $theme-colors {

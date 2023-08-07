@@ -4,7 +4,7 @@
  * building robust, powerful web applications using Vue and Laravel.
  */
 
-require('./bootstrap');
+import './bootstrap.js';
 
 /**
  * The following block of code may be used to automatically register your
@@ -23,20 +23,20 @@ require('./bootstrap');
  * or customize the JavaScript scaffolding to fit your unique needs.
  */
 
-import Vue from 'vue';
+import { createApp } from 'vue';
+import { router } from './routes.js';
+import { store } from './store.js';
 import mitt from 'mitt';
-import Vuelidate from 'vuelidate';
-import router from './routes.js';
-import store from './store.js';
-import Layout from './pages/Layout.vue';
+import App from './App.vue';
+import moment from 'moment';
 
-Vue.prototype.$eventBus = mitt();
+window.moment = moment;
 
-Vue.use(Vuelidate);
+const app = createApp(App);
 
-Vue.component('layout', Layout);
+app.use(router);
+app.use(store);
 
-new Vue({
-  router,
-  store
-}).$mount("#app");
+app.config.globalProperties.$eventBus = mitt();
+
+app.mount('#app');

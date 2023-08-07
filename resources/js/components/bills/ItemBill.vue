@@ -32,8 +32,8 @@
     </div>
     <div class="d-flex justify-content-between">
       <small v-if="billPaychecks.length > 0" class="text-muted">
-        <template v-for="billPaycheck in billPaychecks" >
-          <span :key="amountProjectIfAmountNull(billPaycheck)">
+        <template v-for="billPaycheck in billPaychecks" :key="amountProjectIfAmountNull(billPaycheck)">
+          <span>
             ${{ formatAmount(billPaycheck) }} {{ isPaid(billPaycheck) ? "Paid" : "Scheduled" }} on
             {{ formatedDate(billPaycheck.paid_on === null ? getPaycheck(billPaycheck.paycheck_id).paid_on : billPaycheck.paid_on) }}
           </span>
@@ -68,129 +68,130 @@
 </template>
 
 <script>
-  import { numberToString, dateToString, otherIfNull, dateToFormatedString } from '../../utils/main.js';
-  import moment from 'moment';
-  export default {
-    props: {
-      bill: {
-        type: Object,
-        required: true,
-      },
-      highlight: {
-        type: Boolean,
-        required: true,
-      },
-      month: {
-        type: Array,
-        required: true,
-      },
-      open: {
-        type: Boolean,
-        default: false,
-      },
-      remove: {
-        type: Boolean,
-        default: false,
-      },
-      edit: {
-        type: Boolean,
-        default: false,
-      },
+import moment from 'moment';
+import { numberToString, dateToString, otherIfNull, dateToFormatedString } from '../../utils/main.js';
+export default {
+  props: {
+    bill: {
+      type: Object,
+      required: true,
     },
-    created() {
-      this.$eventBus.on('paycheck-pair-start', obj => {
+    highlight: {
+      type: Boolean,
+      required: true,
+    },
+    month: {
+      type: Array,
+      required: true,
+    },
+    open: {
+      type: Boolean,
+      default: false,
+    },
+    remove: {
+      type: Boolean,
+      default: false,
+    },
+    edit: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  emits: ['bill-stay-highlighted'],
+  mounted() {
+    this.$eventBus.on('paycheck-pair-start', obj => {
+      this.receivingPair = true;
+      this.$emit('bill-stay-highlighted', [true, 'bill']);
+    });
+    this.$eventBus.on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
+      if(type === 'bill' && pairable.id == this.bill.id && this.month[0] == month[0] && this.month[1] == month[1]) {
+        this.canStopPair = true;
+      }
+    });
+    this.$eventBus.on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
+      this.receivingPair = false;
+      this.$emit('bill-stay-highlighted', [false, 'bill']);
+    });
+    this.$eventBus.on('paycheck-pair-end', (paycheck) => {
+      if(this.receivingPair) {
+        this.receivingPair = false;
+        this.canStopPair = false;
+        this.$emit('bill-stay-highlighted', [false, 'bill']);
+      }
+    });
+  },
+  data() {
+    return {
+      receivingPair: false,
+      canStopPair: false,
+    };
+  },
+  methods: {
+    onModify() {
+      this.$eventBus.emit('modify-bill', this.bill);
+    },
+    onPairUpdate() {
+      // @TODO switch from single bill-paycheck pairing to multi-pairing
+      this.$eventBus.emit('pair-update', {
+        pairable: this.bill,
+        paycheck: this.getPaycheck(this.billPaychecks[0].paycheck_id),
+        type: 'bill',
+      });
+    },
+    onPair() {
+      if(!this.receivingPair) {
+        // case: the bill is selected first
         this.receivingPair = true;
         this.$emit('bill-stay-highlighted', [true, 'bill']);
-      });
-      this.$eventBus.on('paycheck-pairable-pair-start', ({ pairable, month, type}) => {
-        if(type === 'bill' && pairable.id == this.bill.id && this.month[0] == month[0] && this.month[1] == month[1]) {
-          this.canStopPair = true;
-        }
-      });
-      this.$eventBus.on('paycheck-pairable-pair-end', ({ pairable, month, type }) => {
-        this.receivingPair = false;
-        this.$emit('bill-stay-highlighted', [false, 'bill']);
-      });
-      this.$eventBus.on('paycheck-pair-end', (paycheck) => {
-        if(this.receivingPair) {
-          this.receivingPair = false;
-          this.canStopPair = false;
-          this.$emit('bill-stay-highlighted', [false, 'bill']);
-        }
-      });
-    },
-    data() {
-      return {
-        receivingPair: false,
-        canStopPair: false,
-      };
-    },
-    methods: {
-      onModify() {
-        this.$eventBus.emit('modify-bill', this.bill);
-      },
-      onPairUpdate() {
-        // @TODO switch from single bill-paycheck pairing to multi-pairing
-        this.$eventBus.emit('pair-update', {
+        this.$eventBus.emit('paycheck-pairable-pair-start', {
           pairable: this.bill,
-          paycheck: this.getPaycheck(this.billPaychecks[0].paycheck_id),
+          month: this.month,
           type: 'bill',
         });
-      },
-      onPair() {
-        if(!this.receivingPair) {
-          // case: the bill is selected first
-          this.receivingPair = true;
-          this.$emit('bill-stay-highlighted', [true, 'bill']);
-          this.$eventBus.emit('paycheck-pairable-pair-start', {
-            pairable: this.bill,
-            month: this.month,
-            type: 'bill',
-          });
-        } else {
-          this.$eventBus.emit('paycheck-pairable-pair-end', {
-            pairable: this.bill,
-            month: this.month,
-            type: 'bill',
-          });
-        }
-      },
-      onStopPair() {
-        this.canStopPair = false;
-        this.$eventBus.emit('paycheck-pair-end', null);
-      },
-      getPaycheck(id) {
-        return this.$store.getters.getPaycheck(id) || { paid_on: null };
-      },
-      isPaid(bill_paycheck) {
-        return bill_paycheck.paid_on !== null;
-      },
-      formatAmount(obj) {
-        return numberToString(otherIfNull(obj, 'amount', 'amount_project'));
-      },
-      amountProjectIfAmountNull(obj) {
-        return otherIfNull(obj, 'amount', 'amount_project');
-      },
-      formatedDate(date) {
-        return moment(date).format('ddd, MMM D');
-      },
-    },
-    computed: {
-      billPaychecks() {
-        return this.$store.getters.getBillPaychecks.filter((bill_paycheck) => {
-          return bill_paycheck.bill_id === this.bill.id;
-        }).filter((bill_paycheck) => {
-          return bill_paycheck.due_on.substr(0, 7) === dateToString(this.month[1], this.month[0]);
+      } else {
+        this.$eventBus.emit('paycheck-pairable-pair-end', {
+          pairable: this.bill,
+          month: this.month,
+          type: 'bill',
         });
-      },
-      billDueOn() {
-        return dateToFormatedString(dateToString(this.month[1], this.month[0], this.bill.day_due_on));
-      },
-      isAllPaid() {
-        return this.billPaychecks.length > 0 ? this.billPaychecks.reduce((acc, bill_paycheck) => {
-          return acc && bill_paycheck.paid_on !== null;
-        }, true) : false;
-      },
+      }
     },
-  }
+    onStopPair() {
+      this.canStopPair = false;
+      this.$eventBus.emit('paycheck-pair-end', null);
+    },
+    getPaycheck(id) {
+      return this.$store.getters.getPaycheck(id) || { paid_on: null };
+    },
+    isPaid(bill_paycheck) {
+      return bill_paycheck.paid_on !== null;
+    },
+    formatAmount(obj) {
+      return numberToString(otherIfNull(obj, 'amount', 'amount_project'));
+    },
+    amountProjectIfAmountNull(obj) {
+      return otherIfNull(obj, 'amount', 'amount_project');
+    },
+    formatedDate(date) {
+      return moment(date).format('ddd, MMM D');
+    },
+  },
+  computed: {
+    billPaychecks() {
+      return this.$store.getters.getBillPaychecks.filter((bill_paycheck) => {
+        return bill_paycheck.bill_id === this.bill.id;
+      }).filter((bill_paycheck) => {
+        return bill_paycheck.due_on.substr(0, 7) === dateToString(this.month[1], this.month[0]);
+      });
+    },
+    billDueOn() {
+      return dateToFormatedString(dateToString(this.month[1], this.month[0], this.bill.day_due_on));
+    },
+    isAllPaid() {
+      return this.billPaychecks.length > 0 ? this.billPaychecks.reduce((acc, bill_paycheck) => {
+        return acc && bill_paycheck.paid_on !== null;
+      }, true) : false;
+    },
+  },
+}
 </script>

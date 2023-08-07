@@ -7,7 +7,6 @@
 
 import BillAPI from '../api/bill.js';
 import { objectToArray } from '../utils/main.js';
-import Vue from 'vue';
 import { cloneDeep } from 'lodash';
 
 export const bills = {
@@ -95,19 +94,19 @@ export const bills = {
       state.deleteBillStatus = status;
     },
     insertBill(state, bill) {
-      Vue.set(state.bills, bill.id, cloneDeep(bill));
+      state.bills[bill.id] = cloneDeep(bill);
     },
     updateBill(state, bill) {
-      Vue.set(state.bills[bill.id], 'name', bill.name);
-      Vue.set(state.bills[bill.id], 'amount', bill.amount);
-      Vue.set(state.bills[bill.id], 'day_due_on', bill.day_due_on);
-      Vue.set(state.bills[bill.id], 'start_on', bill.start_on);
-      Vue.set(state.bills[bill.id], 'end_on', bill.end_on);
-      Vue.set(state.bills[bill.id], 'created_at', bill.created_at);
-      Vue.set(state.bills[bill.id], 'updated_at', bill.updated_at);
+      state.bills[bill.id].name = bill.name;
+      state.bills[bill.id].amount = bill.amount;
+      state.bills[bill.id].day_due_on = bill.day_due_on;
+      state.bills[bill.id].start_on = bill.start_on;
+      state.bills[bill.id].end_on = bill.end_on;
+      state.bills[bill.id].created_at = bill.created_at;
+      state.bills[bill.id].updated_at = bill.updated_at;
     },
     removeBill(state, bill) {
-      Vue.delete(state.bills, bill.id);
+      delete state.bills[bill.id];
     },
   },
   getters: {

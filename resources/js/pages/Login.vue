@@ -99,9 +99,8 @@ export default {
       });
     },
   },
-  beforeRouteLeave(to, from, next) {
-    window.$('.collapse').collapse('hide');
-    next();
+  beforeRouteLeave(to, from) {
+    $('.collapse').collapse('hide');
   },
 }
 </script>

@@ -11,5 +11,38 @@ const mix = require('laravel-mix');
  |
  */
 
-mix.js('resources/js/app.js', 'public/js').vue({ version: 2 }).version()
-    .sass('resources/sass/app.scss', 'public/css').disableNotifications();
+mix.js('resources/js/app.js', 'public/js').vue({
+    version: 3,
+    options: {
+        compilerOptions: {
+            compatConfig: {
+                MODE: 3,
+            },
+        },
+    },
+}).version()
+    .sass('resources/sass/app.scss', 'public/css');
+
+mix.webpackConfig({
+    resolve: {
+        alias: {
+            vue: '@vue/compat',
+            "@vue/composition-api": "@vue/compat",
+        }
+    },
+    module: {
+        rules: [
+            {
+                test: /\.vue$/,
+                loader: 'vue-loader',
+                options: {
+                    compilerOptions: {
+                        compatConfig: {
+                            MODE: 3,
+                        },
+                    },
+                },
+            },
+        ],
+    },
+});
