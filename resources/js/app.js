@@ -28,9 +28,6 @@ import { router } from './routes.js';
 import { store } from './store.js';
 import mitt from 'mitt';
 import App from './App.vue';
-import moment from 'moment';
-
-window.moment = moment;
 
 const app = createApp(App);
 
