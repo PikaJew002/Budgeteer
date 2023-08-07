@@ -12,34 +12,33 @@
 </template>
 
 <script>
-  import moment from 'moment';
-  export default {
-    props: {
-      income: {
-        type: Object,
-        required: true,
-      },
-      highlight: {
-        type: Boolean,
-        required: true,
-      },
-      open: {
-        type: Boolean,
-        default: false,
-      },
-      remove: {
-        type: Boolean,
-        default: false,
-      },
-      edit: {
-        type: Boolean,
-        default: false,
-      },
+export default {
+  props: {
+    income: {
+      type: Object,
+      required: true,
     },
-    methods: {
-      onModify() {
-        this.$eventBus.emit('modify-income', this.income);
-      },
+    highlight: {
+      type: Boolean,
+      required: true,
     },
-  }
+    open: {
+      type: Boolean,
+      default: false,
+    },
+    remove: {
+      type: Boolean,
+      default: false,
+    },
+    edit: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  methods: {
+    onModify() {
+      this.$eventBus.emit('modify-income', this.income);
+    },
+  },
+}
 </script>

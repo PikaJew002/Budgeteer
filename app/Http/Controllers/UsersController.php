@@ -68,7 +68,7 @@ class UsersController extends Controller
                 try {
                     $user->notify(new UserVerified);
                 } finally {
-                    return redirect()->route('user.verified', ['user' => $user->id]);
+                    return redirect()->route('user.verified', ['user' => $user]);
                 }
             }
             return redirect()->route('app');

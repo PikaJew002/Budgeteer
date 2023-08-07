@@ -7,7 +7,6 @@
 
 import PaycheckAPI from '../api/paycheck.js';
 import { objectToArray } from '../utils/main.js';
-import Vue from 'vue';
 import { cloneDeep } from 'lodash';
 
 export const paychecks = {
@@ -68,12 +67,6 @@ export const paychecks = {
       }).map(async (bill_paycheck) => {
         return await dispatch('detachBillPaycheck', bill_paycheck);
       }));
-      // delete ContributionPaychecks before deleting Paycheck
-      await Promise.all(getters.getContributionPaychecks.filter((contribution_paycheck) => {
-        return contribution_paycheck.paycheck_id === paycheck.id;
-      }).map(async (contribution_paycheck) => {
-        return await dispatch('detachContributionPaycheck', contribution_paycheck);
-      }));
       await PaycheckAPI.deletePaycheck(paycheck.id)
         .then((res) => {
           commit('removePaycheck', res.data.data);
@@ -100,18 +93,18 @@ export const paychecks = {
       state.deletePaycheckStatus = status;
     },
     insertPaycheck(state, paycheck) {
-      Vue.set(state.paychecks, paycheck.id, cloneDeep(paycheck));
+      state.paychecks[paycheck.id] = cloneDeep(paycheck);
     },
     updatePaycheck(state, paycheck) {
-      Vue.set(state.paychecks[paycheck.id], 'amount', paycheck.amount);
-      Vue.set(state.paychecks[paycheck.id], 'amount_project', paycheck.amount_project);
-      Vue.set(state.paychecks[paycheck.id], 'notify_when_paid', paycheck.notify_when_paid);
-      Vue.set(state.paychecks[paycheck.id], 'paid_on', paycheck.paid_on);
-      Vue.set(state.paychecks[paycheck.id], 'created_at', paycheck.created_at);
-      Vue.set(state.paychecks[paycheck.id], 'updated_at', paycheck.updated_at);
+      state.paychecks[paycheck.id].amount = paycheck.amount;
+      state.paychecks[paycheck.id].amount_project = paycheck.amount_project;
+      state.paychecks[paycheck.id].notify_when_paid = paycheck.notify_when_paid;
+      state.paychecks[paycheck.id].paid_on = paycheck.paid_on;
+      state.paychecks[paycheck.id].created_at = paycheck.created_at;
+      state.paychecks[paycheck.id].updated_at = paycheck.updated_at;
     },
     removePaycheck(state, paycheck) {
-      Vue.delete(state.paychecks, paycheck.id);
+      delete state.paychecks[paycheck.id];
     },
   },
   getters: {

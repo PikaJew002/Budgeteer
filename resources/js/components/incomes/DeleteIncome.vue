@@ -1,67 +1,53 @@
 <template>
   <div id="delete-income">
-    <b-modal v-model="showModal" ref="delete-income-modal" id="delete-income-modal" title="Delete Income" centered no-close-on-backdrop>
+    <Modal :show="show" @hide="$emit('close')" id="delete-income-modal" title="Delete Income">
       Are you sure you want to delete the {{ income.name }} source of income? <br>
       All paychecks associated with that source of income will be deleted as well.
-      <template slot="modal-footer">
-        <b-button size="sm" variant="danger" @click="onDelete(income)">
+      <template v-slot:modal-footer>
+        <button class="btn btn-danger btn-sm" @click="onDelete(income)">
           Delete
-        </b-button>
-        <b-button size="sm" variant="base" @click="$emit('close')">
+        </button>
+        <button class="btn btn-base btn-sm" @click="$emit('close')">
           Cancel
-        </b-button>
+        </button>
       </template>
-    </b-modal>
+    </Modal>
   </div>
 </template>
 
 <script>
-  import { BModal, BButton } from 'bootstrap-vue';
-  export default {
-    components: {
-      'b-modal': BModal,
-      'b-button': BButton,
+import Modal from '../Modal.vue';
+export default {
+  components: {
+    Modal,
+  },
+  props: {
+    show: {
+      type: Boolean,
+      required: true,
     },
-    props: {
-      show: {
-        type: Boolean,
-        required: true,
+  },
+  emits: ['open', 'close'],
+  data() {
+    return {
+      income: {
+        id: null,
+        name: "",
       },
+    };
+  },
+  created() {
+    this.$eventBus.on('delete-income', obj => {
+      this.income.id = obj.id;
+      this.income.name = obj.name;
+      this.$emit('close');
+    });
+  },
+  methods: {
+    onDelete() {
+      this.$store.dispatch('deleteIncome', this.income);
+      this.$emit('close');
     },
-    data() {
-      return {
-        income: {
-          id: null,
-          name: "",
-        },
-      };
-    },
-    created() {
-      this.$eventBus.on('delete-income', obj => {
-        this.income.id = obj.id;
-        this.income.name = obj.name;
-        this.showModal = true;
-      });
-    },
-    methods: {
-      onDelete() {
-        this.$store.dispatch('deleteIncome', this.income);
-        this.$emit('close');
-      },
-    },
-    computed: {
-      showModal: {
-        get() {
-          return this.show;
-        },
-        set(value) {
-          if(value) {
-            this.$emit('open');
-          } else {
-            this.$emit('close');
-          }
-        }
-      },
-    },
-  }
+  },
+}
 </script>

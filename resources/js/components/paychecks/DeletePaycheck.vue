@@ -1,73 +1,59 @@
 <template>
   <div id="delete-paycheck">
-    <b-modal v-model="showModal" ref="delete-paycheck-modal" id="delete-paycheck-modal" title="Delete Paycheck" centered no-close-on-backdrop>
+    <Modal :show="show" @hide="$emit('close')" id="delete-paycheck-modal" title="Delete Paycheck">
       Are you sure you want to delete this paycheck? <br>
       All bill-paycheck pairing's will also be deleted.
-      <template slot="modal-footer">
-        <b-button size="sm" variant="danger" @click="onDelete(paycheck)">
+      <template v-slot:modal-footer>
+        <button class="btn btn-danger btn-sm" @click="onDelete(paycheck)">
           Delete
-        </b-button>
-        <b-button size="sm" variant="base" @click="$emit('close')">
+        </button>
+        <button class="btn btn-base btn-sm" @click="$emit('close')">
           Cancel
-        </b-button>
+        </button>
       </template>
-    </b-modal>
+    </Modal>
   </div>
 </template>
 
 <script>
-  import { BModal, BButton } from 'bootstrap-vue';
-  export default {
-    components: {
-      'b-modal': BModal,
-      'b-button': BButton,
+import Modal from '../Modal.vue';
+export default {
+  components: {
+    Modal,
+  },
+  props: {
+    show: {
+      type: Boolean,
+      required: true,
     },
-    props: {
-      show: {
-        type: Boolean,
-        required: true,
+  },
+  emits: ['open', 'close'],
+  data() {
+    return {
+      paycheck: {
+        id: null,
+        income_id: null,
+        amount: null,
+        amount_project: null,
+        paid_on: null,
       },
+    };
+  },
+  created() {
+    this.$eventBus.on('delete-paycheck', obj => {
+      this.paycheck.id = obj.id;
+      this.paycheck.income_id = obj.income_id;
+      this.paycheck.amount = obj.amount;
+      this.paycheck.amount_project = obj.amount_project;
+      this.paycheck.paid_on = obj.paid_on;
+      this.$emit('open');
+    });
+  },
+  methods: {
+    onDelete() {
+      this.$store.dispatch('deletePaycheck', this.paycheck);
+      this.$emit('close');
     },
-    data() {
-      return {
-        paycheck: {
-          id: null,
-          income_id: null,
-          amount: null,
-          amount_project: null,
-          paid_on: null,
-        },
-      };
-    },
-    created() {
-      this.$eventBus.on('delete-paycheck', obj => {
-        this.paycheck.id = obj.id;
-        this.paycheck.income_id = obj.income_id;
-        this.paycheck.amount = obj.amount;
-        this.paycheck.amount_project = obj.amount_project;
-        this.paycheck.paid_on = obj.paid_on;
-        this.showModal = true;
-      });
-    },
-    methods: {
-      onDelete() {
-        this.$store.dispatch('deletePaycheck', this.paycheck);
-        this.$emit('close');
-      },
-    },
-    computed: {
-      showModal: {
-        get() {
-          return this.show;
-        },
-        set(value) {
-          if(value) {
-            this.$emit('open');
-          } else {
-            this.$emit('close');
-          }
-        }
-      },
-    },
-  }
+  },
+}
 </script>

@@ -33,10 +33,10 @@
 </style>
 
 <script>
-  import Collection from '../../components/Collection.vue';
-  import MakeIncome from '../../components/incomes/MakeIncome.vue';
-  import ModifyIncome from '../../components/incomes/ModifyIncome.vue';
-  import DeleteIncome from '../../components/incomes/DeleteIncome.vue';
+  import Collection from '../components/Collection.vue';
+  import MakeIncome from '../components/incomes/MakeIncome.vue';
+  import ModifyIncome from '../components/incomes/ModifyIncome.vue';
+  import DeleteIncome from '../components/incomes/DeleteIncome.vue';
   export default {
     components: {
       Collection,
@@ -97,9 +97,8 @@
         return this.$store.getters.getContributionsLoadStatus;
       },
     },
-    beforeRouteLeave(to, from, next) {
-      window.$('.collapse').collapse('hide');
-      next();
+    beforeRouteLeave(to, from) {
+      $('.collapse').collapse('hide');
     },
   }
 </script>

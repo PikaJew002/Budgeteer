@@ -10,7 +10,7 @@ import UserAPI from '../api/user.js';
 export const users = {
   state: {
     user: null,
-    userLoadStatus: 0, // 0 is unloaded, 1 is pending, 2 is loaded, 3 is error loading
+    userLoadStatus: 0, // 0 is not loaded, 1 is pending, 2 is loaded, 3 is error loading
   },
   actions: {
     loadUser: async function({ commit }) {

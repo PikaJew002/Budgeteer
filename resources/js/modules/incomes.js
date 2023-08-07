@@ -7,7 +7,6 @@
 
 import IncomeAPI from '../api/income.js';
 import { objectToArray } from '../utils/main.js';
-import Vue from 'vue';
 import { cloneDeep } from 'lodash';
 
 export const incomes = {
@@ -93,15 +92,15 @@ export const incomes = {
       state.deleteIncomeStatus = status;
     },
     insertIncome(state, income) {
-      Vue.set(state.incomes, income.id, cloneDeep(income));
+      state.incomes[income.id] = cloneDeep(income);
     },
     updateIncome(state, income) {
-      Vue.set(state.incomes[income.id], 'name', income.name);
-      Vue.set(state.incomes[income.id], 'created_at', income.created_at);
-      Vue.set(state.incomes[income.id], 'updated_at', income.updated_at);
+      state.incomes[income.id].name = income.name;
+      state.incomes[income.id].created_at = income.created_at;
+      state.incomes[income.id].updated_at = income.updated_at;
     },
     removeIncome(state, income) {
-      Vue.delete(state.incomes, income.id);
+      delete state.incomes[income.id];
     },
   },
   getters: {

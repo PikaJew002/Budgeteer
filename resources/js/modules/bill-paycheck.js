@@ -7,9 +7,7 @@
 
 import BillPaycheckAPI from '../api/bill-paycheck.js';
 import { objectToArray } from '../utils/main.js';
-import Vue from 'vue';
 import { cloneDeep } from 'lodash';
-import moment from 'moment';
 
 export const bill_paycheck = {
   state: {
@@ -75,18 +73,18 @@ export const bill_paycheck = {
       state.detachBillPaycheckStatus = status;
     },
     insertBillPaycheck(state, bill_paycheck) {
-      Vue.set(state.bill_paychecks, `${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`, cloneDeep(bill_paycheck));
+      state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`] = cloneDeep(bill_paycheck);
     },
     updateBillPaycheck(state, bill_paycheck) {
-      Vue.set(state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`], 'amount', bill_paycheck.amount);
-      Vue.set(state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`], 'amount_project', bill_paycheck.amount_project);
-      Vue.set(state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`], 'due_on', bill_paycheck.due_on);
-      Vue.set(state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`], 'paid_on', bill_paycheck.paid_on);
-      Vue.set(state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`], 'created_at', bill_paycheck.created_at);
-      Vue.set(state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`], 'updated_at', bill_paycheck.updated_at);
+      state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`]['amount'] = bill_paycheck.amount;
+      state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`]['amount_project'] = bill_paycheck.amount_project;
+      state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`]['due_on'] = bill_paycheck.due_on;
+      state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`]['paid_on'] = bill_paycheck.paid_on;
+      state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`]['created_at'] = bill_paycheck.created_at;
+      state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`]['updated_at'] = bill_paycheck.updated_at;
     },
     removeBillPaycheck(state, bill_paycheck) {
-      Vue.delete(state.bill_paychecks, `${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`);
+      delete state.bill_paychecks[`${bill_paycheck.bill_id}_${bill_paycheck.paycheck_id}`];
     },
   },
   getters: {
