@@ -1,12 +1,12 @@
 <template>
-  <layout></layout>
+  <Layout/>
 </template>
 
 <script>
 import Layout from './pages/Layout.vue';
 export default {
   components: {
-    'layout': Layout,
+    Layout,
   }
 }
 </script>
