@@ -49,6 +49,6 @@ jobs:
 
     - name: Copy Build Artifact
       run: |
-        scp -pr public/build/manifest.json aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/build/manifest.json
+        scp public/build/manifest.json aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/build/manifest.json
         scp -pr public/build/assets/app.js aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/build/assets/app.js
         scp -pr public/build/assets/app.css aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/build/assets/app.css
