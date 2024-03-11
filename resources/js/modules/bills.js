@@ -10,12 +10,14 @@ import { objectToArray } from '../utils/main.js';
 import { cloneDeep } from 'lodash';
 
 export const bills = {
-  state: {
-    bills: {},
-    billsLoadStatus: 0,
-    addBillStatus: 0,
-    editBillStatus: 0,
-    deleteBillStatus: 0,
+  state() {
+    return {
+      bills: {},
+      billsLoadStatus: 0,
+      addBillStatus: 0,
+      editBillStatus: 0,
+      deleteBillStatus: 0,
+    };
   },
   actions: {
     loadBills({ commit, dispatch }, options) {
@@ -60,15 +62,15 @@ export const bills = {
           throw err;
         });
     },
-    async deleteBill({ commit, dispatch, getters }, bill) {
+    async deleteBill({ commit, dispatch, getters }, bill_id) {
       commit('setDeleteBillStatus', 1);
       // delete BillPaychecks before deleting Bill
       await Promise.all(getters.getBillPaychecks.filter((bill_paycheck) => {
-        return bill_paycheck.bill_id === bill.id;
+        return bill_paycheck.bill_id === bill_id;
       }).map(async (bill_paycheck) => {
         return await dispatch('detachBillPaycheck', bill_paycheck);
       }));
-      await BillAPI.deleteBill(bill.id)
+      await BillAPI.deleteBill(bill_id)
         .then((res) => {
           commit('removeBill', res.data.data);
           commit('setDeleteBillStatus', 2);

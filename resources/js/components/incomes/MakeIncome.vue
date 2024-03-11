@@ -1,7 +1,7 @@
 <template>
   <div id="make-income">
     <Modal :show="show" @hide="$emit('close')" id="make-income-modal" title="Make Income">
-      <form @submit.prevent="onSave(income)">
+      <form @submit.prevent="onSave()">
         <div class="form-group">
           <label for="name">Name: </label>
           <input
@@ -10,15 +10,15 @@
             type="text"
             placeholder="Income Name"
             class="form-control"
-            :class="validationClasses(v$, 'income', 'name')"
+            :class="validationInputClasses(v$, 'income', 'name')"
           >
-          <div v-if="!v$.income.name.required" class="invalid-feedback">
+          <div v-if="!v$.name.required" class="invalid-feedback">
             Name is required
           </div>
-          <div v-if="!v$.income.name.minLength" class="invalid-feedback">
+          <div v-if="!v$.name.minLength" class="invalid-feedback">
             Name must be at least 2 characters
           </div>
-          <div v-if="!v$.income.name.maxLength" class="invalid-feedback">
+          <div v-if="!v$.name.maxLength" class="invalid-feedback">
             Name cannot be more than 50 characters
           </div>
         </div>
@@ -27,7 +27,7 @@
         <button class="btn btn-sub1 btn-sm" @click="$emit('close')">
           Cancel
         </button>
-        <button class="btn btn-base btn-sm" @click="onSave(income)">
+        <button class="btn btn-base btn-sm" @click="onSave()">
           Save
         </button>
       </template>
@@ -35,60 +35,50 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { reactive, inject, onBeforeUnmount } from 'vue';
 import { useVuelidate } from '@vuelidate/core';
 import { required, minLength, maxLength } from '@vuelidate/validators';
 import Modal from '../Modal.vue';
 import { validationInputClasses } from '../../utils/validation.js';
-export default {
-  components: {
-    Modal,
+
+let props = defineProps({
+  show: {
+    type: Boolean,
+    required: true,
   },
-  props: {
-    show: {
-      type: Boolean,
-      required: true,
-    },
+});
+
+let emit = defineEmits(['open', 'close']);
+
+let eventBus = inject('eventBus');
+
+let income = reactive({ name: '' });
+
+let v$ = useVuelidate({
+  name: {
+    required,
+    minLength: minLength(2),
+    maxLength: maxLength(50),
   },
-  emits: ['open', 'close'],
-  setup() {
-    return { v$: useVuelidate() }
-  },
-  data() {
-    return {
-      income: {
-        name: "",
-      },
-    };
-  },
-  validations: {
-    income: {
-      name: {
-        required,
-        minLength: minLength(2),
-        maxLength: maxLength(50),
-      },
-    },
-  },
-  created() {
-    this.$eventBus.on('make-income', () => {
-      this.income.name = "";
-      this.$emit('open');
-    });
-  },
-  beforeUnmount() {
-    this.$eventBus.off('make-income');
-  },
-  methods: {
-    validationClasses(v$, obj, attr) {
-      return validationInputClasses(v$, obj, attr);
-    },
-    onSave(income) {
-      if(!this.v$.income.$invalid) {
-        this.$store.dispatch('addIncome', income);
-        this.$emit('close');
-      }
-    },
-  },
-}
+}, income);
+
+function validationClasses(v$, obj, attr) {
+  return validationInputClasses(v$, obj, attr);
+};
+function onSave() {
+  if (!v$.$invalid) {
+    store.dispatch('addIncome', income);
+    emit('close');
+  }
+};
+
+eventBus.on('make-income', () => {
+  income.name = '';
+  emit('open');
+});
+
+onBeforeUnmount(() => {
+  eventBus.off('make-income');
+});
 </script>

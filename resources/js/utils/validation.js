@@ -1,12 +1,13 @@
-function validationInputClasses(v$, obj, attr) {
+function validationInputClasses(v) {
+  
   return {
-    'is-invalid': v$[obj][attr].$invalid && !v$[obj][attr].$pending,
-    'is-valid': !v$[obj][attr].$invalid && !v$[obj][attr].$pending,
+    'is-invalid': v.$invalid && !v.$pending,
+    'is-valid': !v.$invalid && !v.$pending,
   };
 }
 
 function notZero(amount) {
-  return (amount == "" || amount == null) || (Number(amount) > 0);
+  return (amount == '' || amount == null) || (Number(amount) > 0);
 }
 
 export {

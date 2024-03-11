@@ -10,11 +10,13 @@ import { objectToArray } from '../utils/main.js';
 import { cloneDeep } from 'lodash';
 
 export const bill_paycheck = {
-  state: {
-    bill_paychecks: {},
-    attachBillPaycheckStatus: 0,
-    modifyBillPaycheckStatus: 0,
-    detachBillPaycheckStatus: 0,
+  state() {
+    return {
+      bill_paychecks: {},
+      attachBillPaycheckStatus: 0,
+      modifyBillPaycheckStatus: 0,
+      detachBillPaycheckStatus: 0,
+    };
   },
   actions: {
     loadBillPaychecks({ commit }, bill_paychecks) {

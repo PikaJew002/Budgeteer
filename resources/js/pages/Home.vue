@@ -1,77 +1,48 @@
 <template>
   <main class="py-4">
     <div id="home" class="container-fluid">
-      <Calendar
-        :total-months="3"
-        :incomes="incomesSelected"
-      />
+      <Calendar/>
     </div>
   </main>
 </template>
 
-<script>
-  import Calendar from '../components/Calendar.vue';
-  export default {
-    components: {
-      Calendar,
-    },
-    data() {
-      return {
-        incomesSelected: 0,
-        disableSelector: false,
-      };
-    },
-    created() {
-      if(this.billsLoadStatus < 2) {
-        this.$store.dispatch('loadBills', {
-          with: ['paychecks'],
-        });
-      }
-      if(this.incomesLoadStatus < 2) {
-        this.$store.dispatch('loadIncomes');
-      }
-      if(this.paychecksLoadStatus < 2) {
-        this.$store.dispatch('loadPaychecks');
-      }
-      this.$eventBus.on('paycheck-pairable-pair-start', ({ pairable, month, type}) => this.disableSelector = true);
-      this.$eventBus.on('paycheck-pair-start', id => this.disableSelector = true);
-      this.$eventBus.on('paycheck-pairable-pair-end', ({ pairable, month, type }) => this.disableSelector = false);
-      this.$eventBus.on('paycheck-pair-end', (paycheck) => this.disableSelector = false);
-    },
-    beforeUnmount() {
-      this.$eventBus.off('paycheck-pairable-pair-start');
-      this.$eventBus.off('paycheck-pair-start');
-      this.$eventBus.off('paycheck-pairable-pair-end');
-      this.$eventBus.off('paycheck-pair-end');
-    },
-    computed: {
-      /**
-        Gets the incomes
-        */
-      incomes() {
-        return this.$store.getters.getIncomes;
-      },
-      incomesLoadStatus() {
-        return this.$store.getters.getIncomesLoadStatus;
-      },
-      paychecksLoadStatus() {
-        return this.$store.getters.getPaychecksLoadStatus;
-      },
-      billsLoadStatus() {
-        return this.$store.getters.getBillsLoadStatus;
-      },
-      /**
-        Gets currently selected incomes
-        */
-      incomesSelect() {
-        return this.incomes.filter((income, id) => {
-          if(this.incomesSelected == 0) return true;
-          return id == this.incomesSelected;
-        });
-      },
-    },
-    beforeRouteLeave(to, from) {
-      $('.collapse').collapse('hide');
-    },
-  }
+<script setup>
+import { computed } from 'vue';
+import { useStore } from 'vuex';
+import { onBeforeRouteLeave } from 'vue-router';
+import Calendar from '../components/Calendar.vue';
+
+let store = useStore();
+
+let incomesLoadStatus = computed(() => {
+  return store.getters.getIncomesLoadStatus;
+});
+
+let paychecksLoadStatus = computed(() => {
+  return store.getters.getPaychecksLoadStatus;
+});
+
+let billsLoadStatus = computed(() => {
+  return store.getters.getBillsLoadStatus;
+});
+
+let collapse = computed(() => {
+  return store.getters.getNavCollapse;
+});
+
+if (billsLoadStatus.value < 2) {
+  store.dispatch('loadBills', {
+    with: ['paychecks'],
+  });
+}
+if (incomesLoadStatus.value < 2) {
+  store.dispatch('loadIncomes');
+}
+if (paychecksLoadStatus.value < 2) {
+  store.dispatch('loadPaychecks');
+}
+
+onBeforeRouteLeave(() => {
+  collapse.value.hide();
+});
 </script>

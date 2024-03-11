@@ -15,39 +15,37 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { inject, reactive } from 'vue';
 import Modal from '../Modal.vue';
-export default {
-  components: {
-    Modal,
+import { useStore } from 'vuex';
+
+let props = defineProps({
+  show: {
+    type: Boolean,
+    required: true,
   },
-  props: {
-    show: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  emits: ['open', 'close'],
-  data() {
-    return {
-      income: {
-        id: null,
-        name: "",
-      },
-    };
-  },
-  created() {
-    this.$eventBus.on('delete-income', obj => {
-      this.income.id = obj.id;
-      this.income.name = obj.name;
-      this.$emit('close');
-    });
-  },
-  methods: {
-    onDelete() {
-      this.$store.dispatch('deleteIncome', this.income);
-      this.$emit('close');
-    },
-  },
+});
+
+let emit = defineEmits(['open', 'close']);
+
+let eventBus = inject('eventBus');
+
+let store = useStore();
+
+let income = reactive({
+  id: null,
+  name: '',
+});
+
+function onDelete() {
+  store.dispatch('deleteIncome', income.id);
+  emit('close');
 }
+
+eventBus.on('delete-income', (incomeObj) => {
+  income.id = incomeObj.id;
+  income.name = incomeObj.name;
+  emit('close');
+});
 </script>

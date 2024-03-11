@@ -10,12 +10,14 @@ import { objectToArray } from '../utils/main.js';
 import { cloneDeep } from 'lodash';
 
 export const incomes = {
-  state: {
-    incomes: {},
-    incomesLoadStatus: 0,
-    addIncomeStatus: 0,
-    editIncomeStatus: 0,
-    deleteIncomeStatus: 0,
+  state() {
+    return {
+      incomes: {},
+      incomesLoadStatus: 0,
+      addIncomeStatus: 0,
+      editIncomeStatus: 0,
+      deleteIncomeStatus: 0,
+    };
   },
   actions: {
     loadIncomes({ commit }, options) {
@@ -59,14 +61,14 @@ export const incomes = {
           throw err;
         });
     },
-    async deleteIncome({ commit, dispatch, getters }, income) {
+    async deleteIncome({ commit, dispatch, getters }, income_id) {
       commit('setDeleteIncomeStatus', 1);
       await Promise.all(getters.getPaychecks.filter((paycheck) => {
-        return paycheck.income_id === income.id;
+        return paycheck.income_id === income_id;
       }).map(async (paycheck) => {
         return await dispatch('deletePaycheck', paycheck);
       }));
-      await IncomeAPI.deleteIncome(income.id)
+      await IncomeAPI.deleteIncome(income_id)
         .then((res) => {
           commit('removeIncome', res.data.data);
           commit('setDeleteIncomeStatus', 2);
