@@ -4,7 +4,7 @@
       Are you sure you want to delete the bill {{ bill.name }}? <br>
       All bill-paycheck pairing's will also be deleted.
       <template v-slot:modal-footer>
-        <button class="btn btn-danger btn-sm" @click="onDelete(bill)">
+        <button class="btn btn-danger btn-sm" @click="onDelete()">
           Delete
         </button>
         <button class="btn btn-base btn-sm" @click="$emit('close')">
@@ -15,51 +15,37 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { inject, reactive } from 'vue';
+import { useStore } from 'vuex';
 import Modal from '../Modal.vue';
-export default {
-  components: {
-    Modal,
+
+let props = defineProps({
+  show: {
+    type: Boolean,
+    required: true,
   },
-  props: {
-    show: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  emits: ['open', 'close'],
-  data() {
-    return {
-      bill: {
-        id: null,
-        name: "",
-        amount: null,
-        day_due_on: null,
-        start_on: "",
-        end_on: "",
-        created_at: "",
-        updated_at: "",
-      },
-    };
-  },
-  created() {
-    this.$eventBus.on('delete-bill', obj => {
-      this.bill.id = obj.id;
-      this.bill.name = obj.name;
-      this.bill.amount = obj.amount;
-      this.bill.day_due_on = obj.day_due_on;
-      this.bill.start_on = obj.start_on;
-      this.bill.end_on = obj.end_on;
-      this.bill.created_at = obj.created_at;
-      this.bill.updated_at = obj.updated_at;
-      this.$emit('open');
-    });
-  },
-  methods: {
-    onDelete() {
-      this.$store.dispatch('deleteBill', this.bill);
-      this.$emit('close');
-    },
-  },
+});
+
+let emit = defineEmits(['open', 'close']);
+
+let eventBus = inject('eventBus');
+
+let store = useStore();
+
+let bill = reactive({
+  id: null,
+  name: "",
+});
+
+eventBus.on('delete-bill', (billObj) => {
+  bill.id = billObj.id;
+  bill.name = billObj.name;
+  emit('open');
+});
+
+function onDelete() {
+  store.dispatch('deleteBill', bill.id);
+  emit('close');
 }
 </script>

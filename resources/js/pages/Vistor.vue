@@ -2,15 +2,17 @@
   <div id="vistor">
     <main class="py-4">
       <div class="container">
-        <div class="jumbotron">
-          <h1 class="display-4">Budgeteer</h1>
-          <p class="lead">This web application is perfect for people looking for a great, lightweight application to help them get ahold of their finances.</p>
-          <hr class="my-4">
-          <p>
-            We're glad you stopped by to check us out! If you'd like to take this app for a test-drive, go ahead and register.
-            After registering, we'll be notified, an admin will approve your account, and you'll get an email with a few instructions to get the most out of Budgeteer as documentation is still in the works.
-          </p>
-          <router-link class="btn btn-base btn-lg" :to="{ name: 'register' }">Register</router-link>
+        <div class="p-5 mb-4 bg-cardbg rounded-3">
+          <div class="container-fluid py5">
+            <h1 class="display-5 fw-bold">Budgeteer</h1>
+            <p class="col-md-8 fs-4">This web application is perfect for people looking for a great, lightweight application to help them get ahold of their finances.</p>
+            <hr class="my-4">
+            <p>
+              We're glad you stopped by to check us out! If you'd like to take this app for a test-drive, go ahead and register.
+              After registering, we'll be notified, an admin will approve your account, and you'll get an email with a few instructions to get the most out of Budgeteer as documentation is still in the works.
+            </p>
+            <router-link class="btn btn-base btn-lg" :to="{ name: 'register' }">Register</router-link>
+          </div>
         </div>
         <div class="card bg-cardbg border-cardbg">
           <div class="card-body m-2">
@@ -49,10 +51,18 @@
   </div>
 </template>
 
-<script>
-export default {
-  beforeRouteLeave(to, from) {
-    $('.collapse').collapse('hide');
-  },
-}
+<script setup>
+import { computed } from 'vue';
+import { useStore } from 'vuex';
+import { onBeforeRouteLeave } from 'vue-router';
+
+let store = useStore();
+
+let collapse = computed(() => {
+  return store.getters.getNavCollapse;
+});
+
+onBeforeRouteLeave(() => {
+  collapse.value.hide();
+});
 </script>

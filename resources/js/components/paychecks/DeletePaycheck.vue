@@ -4,7 +4,7 @@
       Are you sure you want to delete this paycheck? <br>
       All bill-paycheck pairing's will also be deleted.
       <template v-slot:modal-footer>
-        <button class="btn btn-danger btn-sm" @click="onDelete(paycheck)">
+        <button class="btn btn-danger btn-sm" @click="onDelete()">
           Delete
         </button>
         <button class="btn btn-base btn-sm" @click="$emit('close')">
@@ -15,45 +15,35 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { reactive, inject } from 'vue';
+import { useStore } from 'vuex';
 import Modal from '../Modal.vue';
-export default {
-  components: {
-    Modal,
+
+let props = defineProps({
+  show: {
+    type: Boolean,
+    required: true,
   },
-  props: {
-    show: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  emits: ['open', 'close'],
-  data() {
-    return {
-      paycheck: {
-        id: null,
-        income_id: null,
-        amount: null,
-        amount_project: null,
-        paid_on: null,
-      },
-    };
-  },
-  created() {
-    this.$eventBus.on('delete-paycheck', obj => {
-      this.paycheck.id = obj.id;
-      this.paycheck.income_id = obj.income_id;
-      this.paycheck.amount = obj.amount;
-      this.paycheck.amount_project = obj.amount_project;
-      this.paycheck.paid_on = obj.paid_on;
-      this.$emit('open');
-    });
-  },
-  methods: {
-    onDelete() {
-      this.$store.dispatch('deletePaycheck', this.paycheck);
-      this.$emit('close');
-    },
-  },
+});
+
+let emit = defineEmits(['open', 'close']);
+
+let eventBus = inject('eventBus');
+
+let store = useStore();
+
+let paycheck = reactive({
+  id: null,
+});
+
+eventBus.on('delete-paycheck', (paycheckObj) => {
+  paycheck.id = paycheckObj.id;
+  emit('open');
+});
+
+function onDelete() {
+  store.dispatch('deletePaycheck', paycheck.id);
+  emit('close');
 }
 </script>

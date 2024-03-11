@@ -46,3 +46,8 @@ $colors: (
   "cardbg": $cardbg,
   "navtext": $navtext
 ) !default;
+
+$success: $green !default;
+$info: $cyan !default;
+$warning: $yellow !default;
+$danger: $red !default;

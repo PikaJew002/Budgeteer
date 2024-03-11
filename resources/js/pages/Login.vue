@@ -74,33 +74,41 @@
   </main>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      email: '',
-      password: '',
-      remember: false,
-      errors: {},
-    };
-  },
-  methods: {
-    login() {
-      this.$store.dispatch('loginUser', {
-        email: this.email,
-        password: this.password,
-        remember: this.remember,
-      }).then((result) => {
-        if(result.success) {
-          this.$router.push({ name: 'home' });
-        } else {
-          this.errors = { ...result.errors };
-        }
-      });
-    },
-  },
-  beforeRouteLeave(to, from) {
-    $('.collapse').collapse('hide');
-  },
+<script setup>
+import { ref, reactive, computed } from 'vue';
+import { useStore } from 'vuex';
+import { useRouter, onBeforeRouteLeave } from 'vue-router';
+
+let email = ref('');
+let password = ref('');
+let remember = ref(false);
+
+let errors = reactive({
+  all: {},
+});
+
+let store = useStore();
+let router = useRouter();
+
+let collapse = computed(() => {
+  return store.getters.getNavCollapse;
+});
+
+function login() {
+  store.dispatch('loginUser', {
+    email: email.value,
+    password: password.value,
+    remember: remember.value,
+  }).then((result) => {
+    if (result.success) {
+      router.push({ name: 'home' });
+    } else {
+      errors.all = result.errors;
+    }
+  });
 }
+
+onBeforeRouteLeave(() => {
+  collapse.value.hide();
+});
 </script>

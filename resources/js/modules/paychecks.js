@@ -10,12 +10,14 @@ import { objectToArray } from '../utils/main.js';
 import { cloneDeep } from 'lodash';
 
 export const paychecks = {
-  state: {
-    paychecks: {},
-    paychecksLoadStatus: 0,
-    addPaycheckStatus: 0,
-    editPaycheckStatus: 0,
-    deletePaycheckStatus: 0,
+  state() {
+    return {
+      paychecks: {},
+      paychecksLoadStatus: 0,
+      addPaycheckStatus: 0,
+      editPaycheckStatus: 0,
+      deletePaycheckStatus: 0,
+    };
   },
   actions: {
     loadPaychecks({ commit }, options) {
@@ -59,15 +61,15 @@ export const paychecks = {
           throw err;
         });
     },
-    async deletePaycheck({ commit, dispatch, getters }, paycheck) {
+    async deletePaycheck({ commit, dispatch, getters }, paycheck_id) {
       commit('setDeletePaycheckStatus', 1);
       // delete BillPaychecks before deleting Paycheck
       await Promise.all(getters.getBillPaychecks.filter((bill_paycheck) => {
-        return bill_paycheck.paycheck_id === paycheck.id;
+        return bill_paycheck.paycheck_id === paycheck_id;
       }).map(async (bill_paycheck) => {
         return await dispatch('detachBillPaycheck', bill_paycheck);
       }));
-      await PaycheckAPI.deletePaycheck(paycheck.id)
+      await PaycheckAPI.deletePaycheck(paycheck_id)
         .then((res) => {
           commit('removePaycheck', res.data.data);
           commit('setDeletePaycheckStatus', 2);

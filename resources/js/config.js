@@ -1,10 +1,10 @@
 /*
     Defines the API route we are using.
 */
-var url = process.env.MIX_APP_URL;
+var url = import.meta.env.VITE_APP_URL;
 var api_url = url + '/api';
 
-switch( process.env.NODE_ENV ){
+switch( import.meta.env ){
   case 'development':
     api_url = url + '/api';
   break;

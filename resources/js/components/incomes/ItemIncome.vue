@@ -1,44 +1,37 @@
 <template>
-  <div class="card-body">
-    <div class="text-center">
-      <h5 class="card-title">
-        {{ income.name }}
-      </h5>
-    </div>
-    <div class="text-center mt-2">
-      <button class="btn btn-outline-sub1 btn-sm" @click="onModify()">Edit</button>
+  <div
+    :class="['card', highlight ? 'border-base shadow-lg' : '']"
+    @mouseover="highlight = true"
+    @mouseleave="highlight = false"
+  >
+    <div class="card-body">
+      <div class="text-center">
+        <h5 class="card-title">
+          {{ income.name }}
+        </h5>
+      </div>
+      <div class="text-center mt-2">
+        <button class="btn btn-outline-sub1 btn-sm" @click="onModify()">Edit</button>
+      </div>
     </div>
   </div>
 </template>
 
-<script>
-export default {
-  props: {
-    income: {
-      type: Object,
-      required: true,
-    },
-    highlight: {
-      type: Boolean,
-      required: true,
-    },
-    open: {
-      type: Boolean,
-      default: false,
-    },
-    remove: {
-      type: Boolean,
-      default: false,
-    },
-    edit: {
-      type: Boolean,
-      default: false,
-    },
+<script setup>
+import { ref, inject } from 'vue';
+
+let props = defineProps({
+  income: {
+    type: Object,
+    required: true,
   },
-  methods: {
-    onModify() {
-      this.$eventBus.emit('modify-income', this.income);
-    },
-  },
+});
+
+let eventBus = inject('eventBus');
+
+let highlight = ref(false);
+
+function onModify() {
+  eventBus.emit('modify-income', props.income);
 }
 </script>

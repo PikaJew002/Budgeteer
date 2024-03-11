@@ -6,9 +6,6 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    <!-- Scripts -->
-    <script src="{{ mix('js/app.js') }}" defer></script>
-
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
@@ -19,7 +16,16 @@
       }
     </style>
     <!-- Styles -->
-    <link href="{{ mix('css/app.css') }}" rel="stylesheet">
+    @production
+      @php
+        $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
+      @endphp
+      <script type="module" src="/public/build/{$manifest['resources/js/app.js']['file']}"></script>
+      <link rel="stylesheet" href="/public/build/{$manifest['resources/js/app.js']['css'][0]}">
+    @else
+      <script type="module" src="http://localhost:5173/@vite/client"></script>
+      <script type="module" src="http://localhost:5173/resources/js/app.js"></script>
+    @endproduction
 </head>
 <body>
     <div id="app"></div>

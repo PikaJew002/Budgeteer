@@ -1,171 +1,107 @@
 <template>
   <div>
-    <div v-if="allowSizeChange" class="d-none d-sm-flex align-items-center mb-3">
-      <select v-model="deckSize" class="custom-select" style="width: 50px;">
-        <option v-for="n in 4" :value="n" :selected="deckSize === n">{{ n }}</option>
-        <option :value="6" :selected="deckSize === 6">6</option>
-      </select>
-      <div class="ml-2">
-        {{ capitalize(type) }} per row
-      </div>
-    </div>
-    <div v-for="row in rowsFull" class="card-deck mb-4">
-      <Item
-        v-for="col in deckSize"
-        :key="col"
-        :value="items[(row - 1)*deckSize + col - 1]"
-        :type="type"
-        :month="month ? month : null"
-        :open="canOpen((row - 1)*deckSize + col - 1)"
-        :remove="remove"
-        :edit="edit"
-        @open="openItem((row - 1)*deckSize + col - 1)"
-        @delete="deleteItem((row - 1)*deckSize + col - 1)"
-        @edit="editItem((row - 1)*deckSize + col - 1)"
-      />
+    <div v-for="row in rowsFull" :key="row" class="card-deck mb-4">
+      <template v-for="col in deckSize">
+        <ItemBill
+          v-if="type === 'bill'"
+          :key="col + 'bill'"
+          :bill="items[(row - 1) * deckSize + col - 1]"
+          :month="month ? month : null"
+        />
+        <ItemPaycheck
+          v-else-if="type === 'paycheck'"
+          :key="col + 'paycheck'"
+          :paycheck="items[(row - 1) * deckSize + col - 1]"
+        />
+        <ItemIncome
+          v-else
+          :key="col + 'income'"
+          :income="items[(row - 1) * deckSize + col - 1]"
+        />
+      </template>
     </div>
     <div class="row">
       <div v-if="colsInPartialRow > 0" :class="'col-md-' + (12/deckSize)*colsInPartialRow">
         <div class="card-deck mb-4">
-          <Item
-            v-for="col in colsInPartialRow"
-            :key="col"
-            :value="items[rowsFull*deckSize + col - 1]"
-            :type="type"
-            :month="month ? month : null"
-            :open="canOpen(rowsFull*deckSize + col - 1)"
-            :remove="remove"
-            :edit="edit"
-            @open="openItem(rowsFull*deckSize + col - 1)"
-            @delete="deleteItem(rowsFull*deckSize + col - 1)"
-            @edit="editItem(rowsFull*deckSize + col - 1)"
-          />
+          <template v-for="col in colsInPartialRow">
+            <ItemBill
+              v-if="type === 'bill'"
+              :key="col + 'bill'"
+              :bill="items[rowsFull * deckSize + col - 1]"
+              :month="month ? month : null"
+            />
+            <ItemPaycheck
+              v-else-if="type === 'paycheck'"
+              :key="col + 'paycheck'"
+              :paycheck="items[rowsFull * deckSize + col - 1]"
+            />
+            <ItemIncome
+              v-else
+              :key="col + 'income'"
+              :income="items[rowsFull * deckSize + col - 1]"
+            />
+          </template>
         </div>
       </div>
     </div>
   </div>
 </template>
 
-<script>
-import Item from './Item.vue';
-import { capitalize } from '../utils/main.js';
-export default {
-  components: {
-    Item,
+<script setup>
+import { ref, computed } from 'vue';
+import ItemBill from './bills/ItemBill.vue';
+import ItemPaycheck from './paychecks/ItemPaycheck.vue';
+import ItemIncome from './incomes/ItemIncome.vue';
+
+let props = defineProps({
+  items: {
+    type: Array,
+    required: true,
   },
-  props: {
-    items: {
-      type: Array,
-      required: true,
-    },
-    type: {
-      type: String,
-      required: true,
-    },
-    month: {
-      type: Array,
-      required: false,
-    },
-    open: {
-      type: Boolean,
-      default: false,
-    },
-    allowOpen: {
-      type: Array,
-      default: function() {
-        return [];
-      },
-    },
-    allowOpenIf: {
-      type: Array,
-      default: function() {
-        return [];
-      },
-    },
-    allowEdit: {
-      type: Array,
-      default: function() {
-        return [];
-      },
-    },
-    allowRemove: {
-      type: Array,
-      default: function() {
-        return [];
-      },
-    },
-    remove: {
-      type: Boolean,
-      default: false,
-    },
-    edit: {
-      type: Boolean,
-      default: false,
-    },
-    size: {
-      type: Number,
-      default: 4, // defaults to 4 items per row
-    },
-    allowSizeChange: {
-      type: Boolean,
-      default: false,
-    },
+  type: {
+    type: String,
+    required: true,
   },
-  emits: ['add-item', 'open-item', 'delete-item', 'edit-item'],
-  data() {
-    return {
-      deckSize: this.size,
-    };
+  month: {
+    type: Array,
+    required: false,
   },
-  methods: {
-    getItemIndex(row, col) {
-      return (row - 1)*this.deckSize + col - 1;
-    },
-    addItem() {
-      this.$emit('add-item');
-    },
-    openItem(index) {
-      this.$emit('open-item', index);
-    },
-    deleteItem(index) {
-      this.$emit('delete-item', index);
-    },
-    editItem(index) {
-      this.$emit('edit-item', index);
-    },
-    canOpen(index) {
-      for(let i in this.allowOpen) {
-        if(this.allowOpen[i].id == this.items[index].id) {
-          return true;
-        }
-      }
-      return this.open;
-    },
-    canEdit(index) {
-      for(let i in this.allowEdit) {
-        if(this.allowEdit[i].id == this.items[index].id) {
-          return true;
-        }
-      }
-      return this.edit;
-    },
-    canRemove(index) {
-      for(let i in this.allowRemove) {
-        if(this.allowRemove[i].id == this.items[index].id) {
-          return true;
-        }
-      }
-      return this.remove;
-    },
-    capitalize,
+  size: {
+    type: Number,
+    default: 4, // defaults to 4 items per row
   },
-  computed: {
-    rowsFull() {
-      return Math.floor(this.items.length / this.deckSize);
-    },
-    colsInPartialRow() {
-      return (this.items.length % this.deckSize);
-    },
-  },
+});
+
+let emit = defineEmits(['add-item', 'open-item', 'delete-item', 'edit-item']);
+
+let deckSize = ref(props.size);
+
+let rowsFull = computed(() => {
+  return Math.floor(props.items.length / deckSize.value);
+});
+
+let colsInPartialRow = computed(() => {
+  return (props.items.length % deckSize.value);
+});
+
+function openItem(index) {
+  emit('open-item', index);
+}
+
+function deleteItem(index) {
+  emit('delete-item', index);
+}
+
+function editItem(index) {
+  emit('edit-item', index);
+}
+
+function canOpen(index) {
+  for(let i in props.allowOpen) {
+    if(props.allowOpen[i].id == props.items[index].id) {
+      return true;
+    }
+  }
+  return props.open;
 }
 </script>
