@@ -50,4 +50,3 @@ jobs:
     - name: Copy Build Artifact
       run: |
         scp -pr public/build/ aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/build/
-        scp -pr public/build/assets/ aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/build/assets/
