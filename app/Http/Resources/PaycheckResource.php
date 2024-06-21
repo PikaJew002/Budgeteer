@@ -5,8 +5,6 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\JsonResource;
 use App\Http\Resources\IncomeResource;
 use App\Http\Resources\BillResource;
-use App\Http\Resources\ContributionResource;
-use App\Http\Resources\ContributionPaycheckResource;
 use App\Http\Resources\BillPaycheckResource;
 
 class PaycheckResource extends JsonResource
@@ -26,10 +24,6 @@ class PaycheckResource extends JsonResource
             'bills' => BillResource::collection($this->whenLoaded('bills')),
             'bill' => $this->whenPivotLoaded('bill_paycheck', function() {
               return new BillPaycheckResource($this->pivot);
-            }),
-            'contributions' => ContributionResource::collection($this->whenLoaded('contributions')),
-            'contribution' => $this->whenPivotLoaded('contribution_paycheck', function() {
-              return new ContributionPaycheckResource($this->pivot);
             }),
             'amount' => $this->amount,
             'amount_project' => $this->amount_project,

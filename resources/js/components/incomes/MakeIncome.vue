@@ -37,6 +37,7 @@
 
 <script setup>
 import { reactive, inject, onBeforeUnmount } from 'vue';
+import { useStore } from 'vuex';
 import { useVuelidate } from '@vuelidate/core';
 import { required, minLength, maxLength } from '@vuelidate/validators';
 import Modal from '../Modal.vue';
@@ -53,6 +54,8 @@ let emit = defineEmits(['open', 'close']);
 
 let eventBus = inject('eventBus');
 
+let store = useStore();
+
 let income = reactive({ name: '' });
 
 let v$ = useVuelidate({
@@ -63,9 +66,6 @@ let v$ = useVuelidate({
   },
 }, income);
 
-function validationClasses(v$, obj, attr) {
-  return validationInputClasses(v$, obj, attr);
-};
 function onSave() {
   if (!v$.$invalid) {
     store.dispatch('addIncome', income);

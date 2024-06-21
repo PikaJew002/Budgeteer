@@ -24,13 +24,13 @@
 <style>
 .modal .modal-dialog {
   margin-top: 0;
-  margin-left: 0;
-  margin-right: 0;
   margin-bottom: 1rem;
 }
 
-.modal .modal-dialog-centered {
-  align-items: end;
+@media (max-width: 576px) {
+  .modal .modal-dialog-centered {
+    align-items: end;
+  }
 }
 </style>
 

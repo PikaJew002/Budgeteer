@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddDueOnColumnBillsTable extends Migration
+return new class extends Migration
 {
     /**
      * Run the migrations.
@@ -37,4 +37,4 @@ class AddDueOnColumnBillsTable extends Migration
             $table->timestamp('start_at')->after('amount')->nullable();
         });
     }
-}
+};

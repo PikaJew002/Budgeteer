@@ -16,16 +16,7 @@
       }
     </style>
     <!-- Vite generated files -->
-    @production
-      @php
-        $manifest = json_decode(file_get_contents(public_path('build/manifest.json')), true);
-      @endphp
-      <script type="module" src="/build/{{ $manifest['resources/js/app.js']['file'] }}"></script>
-      <link rel="stylesheet" href="/build/{{ $manifest['resources/js/app.js']['css'][0] }}">
-    @else
-      <script type="module" src="http://localhost:5173/@vite/client"></script>
-      <script type="module" src="http://localhost:5173/resources/js/app.js"></script>
-    @endproduction
+    @vite('resources/js/app.js')
 </head>
 <body>
     <div id="app"></div>

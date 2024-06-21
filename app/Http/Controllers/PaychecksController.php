@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use App\Paycheck;
-use App\Bill;
 use App\Income;
 use App\Notification;
 use App\Http\Resources\PaycheckResource;
@@ -59,8 +58,6 @@ class PaychecksController extends Controller
             'notify_when_paid' => 'nullable|boolean',
             'paid_on' => 'required|date'
         ]);
-        /* find model */
-        $income = Income::findOrFail($request->input('income_id'));
         /* authorization */
         $paycheck = new Paycheck;
         $paycheck->income_id = $request->input('income_id');

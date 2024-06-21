@@ -20,10 +20,6 @@
                 <router-link class="nav-link" :to="{ name: 'incomes' }">Incomes</router-link>
               </li>
             </template>
-          </ul>
-
-          <!-- Right Side Of Navbar -->
-          <ul class="navbar-nav ml-auto">
             <!-- Authentication Links -->
             <template v-if="!isLoggedin">
               <li class="nav-item">
@@ -34,17 +30,10 @@
               </li>
             </template>
             <template v-else>
-              <li class="nav-item dropdown">
-                <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button"
-                  data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  {{ userName }} <span class="caret"></span>
+              <li class="nav-item">
+                <a class="nav-link" href="#" @click.prevent="logout()">
+                  Logout
                 </a>
-
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
-                  <a class="dropdown-item" href="#" @click.prevent="logout()">
-                    Logout
-                  </a>
-                </div>
               </li>
             </template>
           </ul>
@@ -68,9 +57,8 @@ let router = useRouter();
 
 let isLoggedin = computed(() => store.getters.getUserLoadStatus() === 2 && store.getters.getUser != null);
 
-let userName = computed(() => store.getters.getUser.name);
-
 onMounted(() => {
+  store.dispatch('loadUser');
   store.dispatch('setNavCollapse', collapse.value);
 });
 

@@ -3,7 +3,6 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Income;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\PaycheckResource;
 
