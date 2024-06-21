@@ -5,8 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Bill;
 use App\Paycheck;
-use App\Http\Resources\BillResource;
-use App\Http\Resources\PaycheckResource;
 use App\Http\Resources\BillPaycheckResource;
 
 class BillPaycheckController extends Controller

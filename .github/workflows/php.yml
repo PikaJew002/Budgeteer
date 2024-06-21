@@ -26,7 +26,7 @@ jobs:
     - name: Configure PHP
       uses: shivammathur/setup-php@master
       with:
-        php-version: 7.4
+        php-version: 8.1
         extensions: mbstring, ctype, fileinfo, openssl, PDO, bcmath, json, tokenizer, xml
 
     - name: Composer install
@@ -49,4 +49,4 @@ jobs:
 
     - name: Copy Build Artifact
       run: |
-        scp -pr public/build/ aaron@206.189.200.129:/var/www/budgeteer.aaroneisenberg.me/current/public/build/
+        scp -pr public/build/ ${{ vars.DEPLOY_SERVER_USER }}@${{ vars.DEPLOY_SERVER_IP }}:${{ vars.DEPLOY_SERVER_BUILD_PATH }}

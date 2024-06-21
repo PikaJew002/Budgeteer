@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\UsersController;
+use App\Http\Controllers\Web\AppController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -21,8 +23,10 @@ Route::get('/pasword/reset/{token}', function (Request $request, $token) {
     return response()->redirectTo('/#/reset-password-link/'.$token.'?email='.$request->email);
 })->name('password.reset');
 
-Route::get('/', 'Web\AppController@getApp')->name('app');
-Route::get('/logout', 'Web\AppController@getLogout')->name('logout');
+Route::get('/', [AppController::class, 'getApp'])->name('app');
+Route::get('/logout', [AppController::class, 'getLogout'])->name('logout');
 
-Route::get('/user/verify/{user}', ['as' => 'user.verify', 'uses' => 'UsersController@verify'])->middleware('auth');
-Route::get('/user_verified/{user}', ['as' => 'user.verified', 'uses' => 'UsersController@verified'])->middleware('auth');
+Route::middleware('auth')->name('user.')->group(function () {
+    Route::get('/user/verify/{user}', [UsersController::class, 'verify'])->name('verify');
+    Route::get('/user_verified/{user}', [UsersController::class, 'verified'])->name('verified');
+});

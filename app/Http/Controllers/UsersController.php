@@ -32,33 +32,12 @@ class UsersController extends Controller
      }
 
     /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        //
-    }
-
-    /**
      * Change resource verified column from false to true.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function verify(Request $request, $id)
+    public function verify($id)
     {
         $user = User::findOrFail($id);
         if(Auth::user()->id == 1) {
@@ -87,27 +66,5 @@ class UsersController extends Controller
     {
         $user = User::findOrFail($id);
         return view('user_verified', ['user' => $user]);
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\User  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function show(User $user)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\User  $user
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(User $user)
-    {
-        //
     }
 }

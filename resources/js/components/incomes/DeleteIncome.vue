@@ -17,8 +17,8 @@
 
 <script setup>
 import { inject, reactive } from 'vue';
-import Modal from '../Modal.vue';
 import { useStore } from 'vuex';
+import Modal from '../Modal.vue';
 
 let props = defineProps({
   show: {
@@ -46,6 +46,6 @@ function onDelete() {
 eventBus.on('delete-income', (incomeObj) => {
   income.id = incomeObj.id;
   income.name = incomeObj.name;
-  emit('close');
+  emit('open');
 });
 </script>
