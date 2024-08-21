@@ -5,6 +5,7 @@ use App\Http\Controllers\Web\AppController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\View;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,4 +30,9 @@ Route::get('/logout', [AppController::class, 'getLogout'])->name('logout');
 Route::middleware('auth')->name('user.')->group(function () {
     Route::get('/user/verify/{user}', [UsersController::class, 'verify'])->name('verify');
     Route::get('/user_verified/{user}', [UsersController::class, 'verified'])->name('verified');
+    Route::get('/user/create-token', function (Request $request) {
+        $token = $request->user()->createToken('paychecks-leftover', ['fetch-leftover']);
+
+        return view('create_token', ['token' => $token->plainTextToken]);
+    });
 });

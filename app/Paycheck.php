@@ -6,6 +6,22 @@ use Illuminate\Database\Eloquent\Model;
 
 class Paycheck extends Model
 {
+    protected function casts(): array
+    {
+        return [
+            'amount' => 'float',
+        ];
+    }
+
+    public function leftover()
+    {
+        $totalBills = $this->bills->reduce(function (float $carry, Bill $bill): float {
+            return $carry + $bill->pivot->amount;
+        }, 0.00);
+
+        return $this->amount - $totalBills;
+    }
+
     public function income() {
         return $this->belongsTo('App\Income');
     }
