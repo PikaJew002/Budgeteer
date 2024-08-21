@@ -35,6 +35,18 @@ class PaycheckPolicy
     }
 
     /**
+     * Determine whether the user can view the leftover amout from the paycheck.
+     *
+     * @param  \App\User  $user
+     * @param  \App\Paycheck  $paycheck
+     * @return mixed
+     */
+    public function viewLeftover(User $user, Paycheck $paycheck)
+    {
+        return $user->id == $paycheck->income->user_id && $user->tokenCan('fetch-leftover');
+    }
+
+    /**
      * Determine whether the user can create paychecks.
      *
      * @param  \App\User  $user

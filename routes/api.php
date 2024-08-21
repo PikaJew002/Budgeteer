@@ -37,6 +37,7 @@ Route::name('bill.')->controller(BillsController::class)->group(function () {
 Route::name('paycheck.')->controller(PaychecksController::class)->group(function () {
     Route::get('paycheck', 'index')->name('index');
     Route::get('paycheck/{paycheck}', 'show')->name('show');
+    Route::get('paycheck/leftover/{year}/{month}', 'leftover')->name('leftover');
     Route::post('paycheck', 'store')->name('store');
     Route::put('paycheck', 'update')->name('update');
     Route::delete('paycheck/{paycheck}', 'destroy')->name('destroy');

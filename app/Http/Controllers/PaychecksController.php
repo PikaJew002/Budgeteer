@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\LeftoverPaycheckResource;
 use Illuminate\Http\Request;
 use Illuminate\Database\Eloquent\Builder;
 use App\Paycheck;
-use App\Income;
 use App\Notification;
 use App\Http\Resources\PaycheckResource;
 use DateTime;
@@ -20,6 +20,7 @@ class PaychecksController extends Controller
     public function __construct()
     {
         $this->middleware('auth:sanctum');
+        $this->middleware('ability:fetch-leftover')->only('leftover');
     }
 
     /**
@@ -40,6 +41,27 @@ class PaychecksController extends Controller
         })->with($optionsArr['with'])->get();
         /* return resource collection */
         return PaycheckResource::collection($paychecks);
+    }
+
+    /**
+     * Show leftover amount of paycheck after bills have been taken out
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function leftover($year, $month, Request $request)
+    {
+        $year = (int) $year;
+        $month = (int) $month;
+        $paychecks = Paycheck::with('bills')->whereHas('income', function(Builder $query) use ($request) {
+            $query->where('user_id', $request->user()->id);
+        })->whereYear('paid_on', $year)->whereMonth('paid_on', $month)->get();
+        /* authorization */
+        $paychecks->each(function(Paycheck $paycheck) {
+            $this->authorize('viewLeftover', $paycheck);
+        });
+        /* return resource collection */
+        return LeftoverPaycheckResource::collection($paychecks);
     }
 
     /**
