@@ -19,10 +19,10 @@
                   <label for="email" class="col-md-4 col-form-label text-md-right">Email Address</label>
 
                   <div class="col-md-6">
-                    <input v-model="email" id="email" type="email" :class="['form-control', errors.email ? 'is-invalid' : '']" required autocomplete="email" autofocus>
+                    <input v-model="email" id="email" type="email" :class="['form-control', errors.all.email ? 'is-invalid' : '']" required autocomplete="email" autofocus>
 
-                    <template v-if="errors.email">
-                      <span v-for="error in errors.email" class="invalid-feedback" role="alert">
+                    <template v-if="errors.all.email">
+                      <span v-for="error in errors.all.email" class="invalid-feedback" role="alert">
                         <strong>{{ error }}</strong>
                       </span>
                     </template>
@@ -33,10 +33,10 @@
                   <label for="password" class="col-md-4 col-form-label text-md-right">Password</label>
 
                   <div class="col-md-6">
-                    <input v-model="password" id="password" type="password" :class="['form-control', errors.password ? 'is-invalid' : '']" required autocomplete="current-password">
+                    <input v-model="password" id="password" type="password" :class="['form-control', errors.all.password ? 'is-invalid' : '']" required autocomplete="current-password">
 
-                    <template v-if="errors.password">
-                      <span v-for="error in errors.password" class="invalid-feedback" role="alert">
+                    <template v-if="errors.all.password">
+                      <span v-for="error in errors.all.password" class="invalid-feedback" role="alert">
                         <strong>{{ error }}</strong>
                       </span>
                     </template>
@@ -103,7 +103,7 @@ function login() {
     if (result.success) {
       router.push({ name: 'home' });
     } else {
-      errors.all = result.errors;
+      errors.all = { ...result.errors };
     }
   });
 }
