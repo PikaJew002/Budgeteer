@@ -55,6 +55,7 @@ return [
 
         'postmark' => [
             'transport' => 'postmark',
+            'message_stream_id' => 'outbound',
         ],
 
         'sendmail' => [

@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Http\Request;
-use Illuminate\Auth\Events\Registered;
 
 class RegisterController extends Controller
 {
@@ -85,11 +84,7 @@ class RegisterController extends Controller
         $user = $this->create($request->all());
         $me = User::findOrFail(1);
         $me->notify(new UserRegistered($user));
-        event(new Registered($user));
 
-        //$this->guard()->login($user);
-
-        return $this->registered($request, $user)
-                        ?: redirect($this->redirectPath());
+        return redirect($this->redirectPath());
     }
 }
