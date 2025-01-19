@@ -47,6 +47,7 @@
         <small v-else class="text-muted">
           Due on {{ billDueOn }}
         </small>
+        <small v-if="isLastBill" class="text-danger">Last Month</small>
       </div>
       <div v-if="highlight && !receivingPair" class="d-flex justify-content-between mt-2">
         <button v-if="billPaychecks.length > 0" type="button" class="btn btn-outline-base btn-sm" @click="onPairUpdate()">
@@ -111,6 +112,14 @@ let isAllPaid = computed(() => {
   return billPaychecks.value.length > 0 ? billPaychecks.value.reduce((acc, bill_paycheck) => {
     return acc && bill_paycheck.paid_on !== null;
   }, true) : false;
+});
+
+let endDate = computed(() => {
+    return moment([props.month[1], props.month[0] - 1]).endOf('month').format("YYYY-MM-DD")
+});
+
+let isLastBill = computed(() => {
+    return moment(endDate.value).isSame(props.bill.end_on, 'month');
 });
 
 eventBus.on('paycheck-pair-start', () => {
