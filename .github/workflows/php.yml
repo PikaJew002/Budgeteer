@@ -49,4 +49,4 @@ jobs:
 
     - name: Copy Build Artifact
       run: |
-        ssh ${{ vars.DEPLOY_SERVER_USER }}@${{ vars.DEPLOY_SERVER_IP }} "mkdir -p ${{ vars.DEPLOY_SERVER_BUILD_PATH }}" && scp -pr public/build/ ${{ vars.DEPLOY_SERVER_USER }}@${{ vars.DEPLOY_SERVER_IP }}:${{ vars.DEPLOY_SERVER_BUILD_PATH }}
+        ssh ${{ vars.DEPLOY_SERVER_USER }}@${{ vars.DEPLOY_SERVER_IP }} "mkdir -p ${{ vars.DEPLOY_SERVER_BUILD_PATH }}build" && scp -pr public/build/ ${{ vars.DEPLOY_SERVER_USER }}@${{ vars.DEPLOY_SERVER_IP }}:${{ vars.DEPLOY_SERVER_BUILD_PATH }}
