@@ -32,7 +32,7 @@ jobs:
     - name: Composer install
       run: |
         composer install --no-dev --no-interaction --prefer-dist
-      
+
     - name: Download `deployer.phar`
       run: composer global require deployer/deployer:^7.3.1 --no-interaction --verbose --ansi
 
@@ -49,4 +49,4 @@ jobs:
 
     - name: Copy Build Artifact
       run: |
-        scp -pr public/build/ ${{ vars.DEPLOY_SERVER_USER }}@${{ vars.DEPLOY_SERVER_IP }}:${{ vars.DEPLOY_SERVER_BUILD_PATH }}
+        ssh ${{ vars.DEPLOY_SERVER_USER }}@${{ vars.DEPLOY_SERVER_IP }} "mkdir -p ${{ vars.DEPLOY_SERVER_BUILD_PATH }}" && scp -pr public/build/ ${{ vars.DEPLOY_SERVER_USER }}@${{ vars.DEPLOY_SERVER_IP }}:${{ vars.DEPLOY_SERVER_BUILD_PATH }}
